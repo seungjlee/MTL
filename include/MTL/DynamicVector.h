@@ -64,21 +64,31 @@ class DynamicVector
 public:
   // Default constructor.
   MTL_INLINE DynamicVector()
-    : First_(0), Size_(0), BufferSize_(0), AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK) {}
+    : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
+      AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK) {}
 
   // Constructs array of specified size. Elements might be uninitialized.
   MTL_INLINE DynamicVector(SizeType size)
-    : First_(0), Size_(0), BufferSize_(0), AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
-  { Resize(size); }
+    : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
+      AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
+  {
+    Resize(size);
+  }
 
   // Constructs array of specified size. Elements might be uninitialized.
   MTL_INLINE DynamicVector(SizeType size, const T& initialValue)
-    : First_(0), Size_(0), BufferSize_(0), AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
-  { Resize(size, initialValue); }
+    : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
+      AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
+  {
+    Resize(size, initialValue);
+  }
 
   MTL_INLINE DynamicVector(const DynamicVector& rhs)
-    : First_(0), Size_(0), BufferSize_(0), AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
-  { *this = rhs; }
+    : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
+      AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
+  {
+    *this = rhs;
+  }
 
   ~DynamicVector()  { DestroyAndDelete(); }
 
@@ -95,14 +105,17 @@ public:
     if (newSize > BufferSize_)
     {
       SizeType newBufferSize;
-      T *p = AllocateMemory(newBufferSize, newSize);
+      T* pBuffer;
+      T* pFirst = AllocateAlignedMemory(newBufferSize, &pBuffer, newSize);
+      assert((reinterpret_cast<U64>(pFirst) & (MTL_STREAM_BYTES-1)) == 0);
 
-      ConstructElements(p, p + newBufferSize, value);
+      ConstructElements(pFirst, pFirst + newBufferSize, value);
 
       // Destroy old elements.
       DestroyAndDelete();
 
-      First_ = p;
+      Buffer_ = pBuffer;
+      First_ = pFirst;
       BufferSize_ = newBufferSize;
 
       AllocBlock_ = Min(BufferSize_, (SizeType)MTL_MAX_ALLOCATION_BLOCK);
@@ -120,21 +133,24 @@ public:
     if (newSize > BufferSize_)
     {
       SizeType newBufferSize;
-      T *p = AllocateMemory(newBufferSize, newSize);
+      T* pBuffer;
+      T* pFirst = AllocateAlignedMemory(newBufferSize, &pBuffer, newSize);
+      assert((reinterpret_cast<SizeType>(pFirst) & (MTL_STREAM_BYTES-1)) == 0);
 
       // Call default constructors for new elements. This can be disabled with the macro
       // MTL_DYNAMIC_VECTOR_NO_CONSTRUCTOR_DESTRUCTOR.
-      ConstructElements(p, p + newBufferSize);
+      ConstructElements(pFirst, pFirst + newBufferSize);
 
       // User can enable this feature with the macro MTL_DYNAMIC_VECTOR_ZERO_INIT.
-      FastZeroInit(p, newBufferSize);
+      FastZeroInit(pFirst, newBufferSize);
 
-      OptimizedCopy(p, First_, Size_);  // Assuming no overlap in buffers.
+      OptimizedCopy(pFirst, First_, Size_);  // Assuming no overlap in buffers.
 
       // Destroy old elements.
       DestroyAndDelete();
 
-      First_ = p;
+      Buffer_ = pBuffer;
+      First_ = pFirst;
       BufferSize_ = newBufferSize;
 
       AllocBlock_ = Min(BufferSize_, (SizeType)MTL_MAX_ALLOCATION_BLOCK);
@@ -206,7 +222,8 @@ public:
   MTL_INLINE void Release()
   {
     DestroyAndDelete();
-    First_     = 0;
+    Buffer_ = 0;
+    First_ = 0;
     BufferSize_ = 0;
     AllocBlock_ = MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK;
     Size_ = 0;
@@ -243,22 +260,31 @@ protected:
   }
 
 private:
+  T *Buffer_;
   T *First_;
   SizeType Size_;        // Vector size in number of elements.
   SizeType BufferSize_;  // Actual buffer size for this vector.
   SizeType AllocBlock_;  // Allocation block size.
 
-  MTL_INLINE T* AllocateMemory(SizeType& newBufferSize, SizeType newSize)
+  MTL_INLINE T* AllocateAlignedMemory(SizeType& newBufferSize, T** pBuffer, SizeType newSize)
   {
     // Might need to align the pointer to first element here?
     newBufferSize = (newSize / AllocBlock_ + 1) * AllocBlock_;
-    return (T*) ::operator new (sizeof(T) * newBufferSize);
+    *pBuffer = (T*) ::operator new (sizeof(T) * newBufferSize + MTL_STREAM_BYTES-1);
+    SizeType address = reinterpret_cast<SizeType>(*pBuffer);
+    SizeType offset = address & (MTL_STREAM_BYTES-1);
+    if (offset != 0)
+    {
+      SizeType complement = MTL_STREAM_BYTES - offset;
+      *pBuffer = reinterpret_cast<T*>(address + complement);
+    }
+    return *pBuffer;
   }
 
   MTL_INLINE void DestroyAndDelete()
   {
     DestroyElements(First_, First_ + BufferSize_);
-    ::operator delete(First_);
+    ::operator delete(Buffer_);
   }
 
   MTL_INLINE static void ConstructElements(T *p, const T* pEnd)
