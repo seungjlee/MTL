@@ -46,44 +46,10 @@ static Test_ ## TestName                                                        
  Test_ ## TestName ## _Instance_(String(TOWCHAR(#TestName)));                                      \
 void Test_ ## TestName::Run()
 
-#define MTL_VERIFY(Expression)                                                                     \
-do                                                                                                 \
-{                                                                                                  \
-  if (!(Expression))                                                                               \
-  {                                                                                                \
-    NumberOfFailures_++;                                                                           \
-    Out() << "[In file '" << MTL__FILE__ << "' - line " << __LINE__  << "]" << std::endl           \
-          << "  '" << #Expression << "' failed!" << std::endl;                                     \
-}                                                                                                  \
-while(0)
-
-#define MTL_EQUAL(Actual, Expected)                                                                \
-do                                                                                                 \
-{                                                                                                  \
-  if ((Actual) != (Expected))                                                                      \
-  {                                                                                                \
-    NumberOfFailures_++;                                                                           \
-    Out() << "[File '" << MTL__FILE__ << "' - line " << __LINE__  << "]" << std::endl              \
-          << "  Actual value is '" << (Actual) << "' but '"                                        \
-          << (Expected) << "' is expected!'" << std::endl;                                         \
-  }                                                                                                \
-}                                                                                                  \
-while(0)
-
-#define MTL_EQUAL_FLOAT(Actual, Expected, Tolerance)                                               \
-do                                                                                                 \
-{                                                                                                  \
-  double actual = (Actual); double expected = (Expected);                                          \
-  double difference = actual - expected;                                                           \
-  if (MTL::Abs(difference)  > (Tolerance) || actual != actual)                                     \
-  {                                                                                                \
-    NumberOfFailures_++;                                                                           \
-    Out() << "[File '" << MTL__FILE__ << "' - line " << __LINE__  << "]" << std::endl              \
-          << "  Actual value is " << actual << " but " << expected                                 \
-          << " is expected; difference is: " << difference << std::endl;                           \
-  }                                                                                                \
-}                                                                                                  \
-while(0)
+#define MTL_VERIFY(Expression)  MTL::Test::Verify(Expression, #Expression, MTL__FILE__, __LINE__)
+#define MTL_EQUAL(Actual, Expected)  MTL::Test::Equal(Actual, Expected, MTL__FILE__, __LINE__)
+#define MTL_EQUAL_FLOAT(Actual, Expected, Tolerance) \
+MTL::Test::EqualFloat(double(Actual), double(Expected), double(Tolerance), MTL__FILE__, __LINE__)
 
 namespace MTL
 {
@@ -159,6 +125,40 @@ protected:
   double TimeElapsed_;  // In seconds.
 
   static String FilePath_;
+
+  void Verify(bool e, char* expression, wchar_t* file, U64 line)
+  {
+    if (!e)
+    {
+      NumberOfFailures_++;
+      Out() << "[In file '" << file << "' - line " << line  << "]" << std::endl
+            << "  '" << expression << "' failed!" << std::endl;
+    }
+  }
+
+  template <class T1, class T2>
+  void Equal(const T1& actual, const T2& expected, wchar_t* file, U64 line)
+  {
+    if (actual != expected)
+    {
+      NumberOfFailures_++;
+      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
+            << "  Actual value is '" << actual << "' but '"
+            << (Expected) << "' is expected!'" << std::endl;
+    }
+  }
+
+  void EqualFloat(double actual, double expected, double tolerance, wchar_t* file, U64 line)
+  {
+    double difference = actual - expected;
+    if (MTL::Abs(difference) > tolerance || actual != actual)
+    {
+      NumberOfFailures_++;
+      Out() << "[File '" << file << "' - line " << line  << "]" << std::endl
+            << "  Actual value is " << actual << " but " << expected
+            << " is expected; difference is: " << difference << std::endl;
+    }
+  }
 
 private:
   String Name_;
