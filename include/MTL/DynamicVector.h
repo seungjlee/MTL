@@ -27,8 +27,9 @@
 #define MTL_DYNAMIC_VECTOR_H
 
 #include <assert.h>
-#include "StreamArray.h"
 #include "OpenMP.h"
+#include "StreamArray.h"
+#include "StreamMath.h"
 
 //
 // Some user overridable macros/constants.

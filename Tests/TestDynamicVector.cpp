@@ -28,7 +28,8 @@
 
 using namespace MTL;
 
-static const double kTol = 1e-14;
+static const double kTolF32 = 1e-6;
+static const double kTolF64 = 1e-14;
 
 TEST(TestClassNoDefaultConstructor)
 {
@@ -51,56 +52,61 @@ TEST(TestSetAll)
   v.SetAll(42);
 
   FOR_EACH_INDEX(v)
-    MTL_EQUAL_FLOAT(v[vIndex], 42, kTol);
+    MTL_EQUAL_FLOAT(v[vIndex], 42, kTolF64);
 }
 
-TEST(TestReductionsSmallVectors)
+TEST(TestReductionsSmallVectorsF64)
 {
-  DynamicVector<double> a1(1, 3);
-  DynamicVector<double> a2(1, -7);
+  DynamicVector<F64> a1(1, 3);
+  DynamicVector<F64> a2(1, -7);
 
-  MTL_EQUAL_FLOAT(Sum(a1), 3, kTol);
-  MTL_EQUAL_FLOAT(SumOfAbsolutes(a1), 3, kTol);
-  MTL_EQUAL_FLOAT(SumOfSquares(a1), 9, kTol);
-  MTL_EQUAL_FLOAT(Min(a1), 3, kTol);
-  MTL_EQUAL_FLOAT(Max(a1), 3, kTol);
-  MTL_EQUAL_FLOAT(MinOfAbsolutes(a1), 3, kTol);
-  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a1), 3, kTol);
-  MTL_EQUAL_FLOAT(MaxNorm(a1), 3, kTol);
+  MTL_EQUAL_FLOAT(Sum(a1), 3, kTolF64);
+  MTL_EQUAL_FLOAT(SumOfAbsolutes(a1), 3, kTolF64);
+  MTL_EQUAL_FLOAT(SumOfSquares(a1), 9, kTolF64);
+  MTL_EQUAL_FLOAT(Min(a1), 3, kTolF64);
+  MTL_EQUAL_FLOAT(Max(a1), 3, kTolF64);
+  MTL_EQUAL_FLOAT(MinOfAbsolutes(a1), 3, kTolF64);
+  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a1), 3, kTolF64);
+  MTL_EQUAL_FLOAT(MaxNorm(a1), 3, kTolF64);
 
-  MTL_EQUAL_FLOAT(Sum(a2), -7, kTol);
-  MTL_EQUAL_FLOAT(SumOfAbsolutes(a2), 7, kTol);
-  MTL_EQUAL_FLOAT(SumOfSquares(a2), 49, kTol);
-  MTL_EQUAL_FLOAT(Min(a2), -7, kTol);
-  MTL_EQUAL_FLOAT(Max(a2), -7, kTol);
-  MTL_EQUAL_FLOAT(MinOfAbsolutes(a2), 7, kTol);
-  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a2), 7, kTol);
-  MTL_EQUAL_FLOAT(MaxNorm(a2), 7, kTol);
+  MTL_EQUAL_FLOAT(Sum(a2), -7, kTolF64);
+  MTL_EQUAL_FLOAT(SumOfAbsolutes(a2), 7, kTolF64);
+  MTL_EQUAL_FLOAT(SumOfSquares(a2), 49, kTolF64);
+  MTL_EQUAL_FLOAT(Min(a2), -7, kTolF64);
+  MTL_EQUAL_FLOAT(Max(a2), -7, kTolF64);
+  MTL_EQUAL_FLOAT(MinOfAbsolutes(a2), 7, kTolF64);
+  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a2), 7, kTolF64);
+  MTL_EQUAL_FLOAT(MaxNorm(a2), 7, kTolF64);
 
-  MTL_EQUAL_FLOAT(DotProduct(a1, a2), -21, kTol);
+  MTL_EQUAL_FLOAT(DotProduct(a1, a2), -21, kTolF64);
 
   double aa1[] = { 3.0, 1.2,  4.5};
   double aa2[] = {-2.0, 5.0, -1.0};
   a1.Assign(aa1, 3);
   a2.Assign(aa2, 3);
 
-  MTL_EQUAL_FLOAT(Sum(a1), 8.7, kTol);
-  MTL_EQUAL_FLOAT(SumOfAbsolutes(a1), 8.7, kTol);
-  MTL_EQUAL_FLOAT(SumOfSquares(a1), 30.69, kTol);
-  MTL_EQUAL_FLOAT(Min(a1), 1.2, kTol);
-  MTL_EQUAL_FLOAT(Max(a1), 4.5, kTol);
-  MTL_EQUAL_FLOAT(MinOfAbsolutes(a1), 1.2, kTol);
-  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a1), 4.5, kTol);
-  MTL_EQUAL_FLOAT(MaxNorm(a1), 4.5, kTol);
+  MTL_EQUAL_FLOAT(Sum(a1), 8.7, kTolF64);
+  MTL_EQUAL_FLOAT(SumOfAbsolutes(a1), 8.7, kTolF64);
+  MTL_EQUAL_FLOAT(SumOfSquares(a1), 30.69, kTolF64);
+  MTL_EQUAL_FLOAT(Min(a1), 1.2, kTolF64);
+  MTL_EQUAL_FLOAT(Max(a1), 4.5, kTolF64);
+  MTL_EQUAL_FLOAT(MinOfAbsolutes(a1), 1.2, kTolF64);
+  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a1), 4.5, kTolF64);
+  MTL_EQUAL_FLOAT(MaxNorm(a1), 4.5, kTolF64);
 
-  MTL_EQUAL_FLOAT(Sum(a2), 2, kTol);
-  MTL_EQUAL_FLOAT(SumOfAbsolutes(a2), 8, kTol);
-  MTL_EQUAL_FLOAT(SumOfSquares(a2), 30, kTol);
-  MTL_EQUAL_FLOAT(Min(a2), -2, kTol);
-  MTL_EQUAL_FLOAT(Max(a2),  5, kTol);
-  MTL_EQUAL_FLOAT(MinOfAbsolutes(a2), 1, kTol);
-  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a2), 5, kTol);
-  MTL_EQUAL_FLOAT(MaxNorm(a2), 5, kTol);
+  MTL_EQUAL_FLOAT(Sum(a2), 2, kTolF64);
+  MTL_EQUAL_FLOAT(SumOfAbsolutes(a2), 8, kTolF64);
+  MTL_EQUAL_FLOAT(SumOfSquares(a2), 30, kTolF64);
+  MTL_EQUAL_FLOAT(Min(a2), -2, kTolF64);
+  MTL_EQUAL_FLOAT(Max(a2),  5, kTolF64);
+  MTL_EQUAL_FLOAT(MinOfAbsolutes(a2), 1, kTolF64);
+  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a2), 5, kTolF64);
+  MTL_EQUAL_FLOAT(MaxNorm(a2), 5, kTolF64);
 
-  MTL_EQUAL_FLOAT(DotProduct(a1, a2), -4.5, kTol);
+  MTL_EQUAL_FLOAT(DotProduct(a1, a2), -4.5, kTolF64);
+
+  MTL_EQUAL_FLOAT(Mean(a1), 2.9, kTolF64);
+  MTL_EQUAL_FLOAT(Variance(a1, Mean(a1)), 2.73, kTolF64);
+  MTL_EQUAL_FLOAT(RMS(a1), sqrt(30.69 /3), kTolF64);
+  MTL_EQUAL_FLOAT(FrobeniusNorm(a1), sqrt(30.69), kTolF64);
 }

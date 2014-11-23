@@ -319,6 +319,39 @@ template <class T> MTL_INLINE static T DotProduct(const DynamicVector<T>& v1,
   return DotProduct_Sequential(v1.Begin(), v2.Begin(), v1.End());
 }
 
+//
+// Some extra operations.
+//
+
+template <class T> MTL_INLINE static T Mean(const DynamicVector<T>& v)
+{
+  return Sum(v) / v.Size();
+}
+
+template <class T> MTL_INLINE static T Variance(const DynamicVector<T>& v, const T& mean)
+{
+  if (v.Size() < 2)
+    return T(0);
+
+  DynamicVector<T> deltas = v;
+  deltas -= mean;
+  return SumOfSquares(deltas) / (deltas.Size()-1);
+}
+
+template <class T> MTL_INLINE static T RMS(const DynamicVector<T>& v)
+{
+  if (v.Size() > 0)
+    return Sqrt(SumOfSquares(v) / v.Size());
+  else
+    return kINF;
+}
+
+template <class T> MTL_INLINE static T FrobeniusNorm(const DynamicVector<T>& v)
+{
+  return Sqrt(SumOfSquares(v));
+}
+
+
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM(T)                                                          \
 MTL_INLINE static T Sum(const MTL::DynamicVector<T>& v)                                           \
 {                                                                                                 \

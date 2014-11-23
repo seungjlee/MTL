@@ -240,8 +240,8 @@ public:
   MTL_INLINE X128 operator/(const X128& y) const  { return _mm_div_ps(Data_, y.Data_);         }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_ps(Data_, y.Data_);         }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_ps(Data_, y.Data_);          }
-  MTL_INLINE X128 sqrt()                  const   { return _mm_sqrt_ps(Data_);                 }
-  MTL_INLINE X128 sqrtSingle()            const   { return _mm_sqrt_ss(Data_);                 }
+  MTL_INLINE X128 Sqrt()                  const   { return _mm_sqrt_ps(Data_);                 }
+  MTL_INLINE X128 SqrtSingle()            const   { return _mm_sqrt_ss(Data_);                 }
 
   MTL_STREAM_EXTRA_OPERATORS;
 };
@@ -279,8 +279,8 @@ public:
   MTL_INLINE X128 operator/(const X128& y) const  { return _mm_div_pd(Data_, y.Data_);         }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_pd(Data_, y.Data_);         }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_pd(Data_, y.Data_);          }
-  MTL_INLINE X128 sqrt()                  const   { return _mm_sqrt_pd(Data_);                 }
-  MTL_INLINE X128 sqrtSingle()            const   { return _mm_sqrt_sd(kX128_ZerosF64, Data_); }
+  MTL_INLINE X128 Sqrt()                  const   { return _mm_sqrt_pd(Data_);                 }
+  MTL_INLINE X128 SqrtSingle()            const   { return _mm_sqrt_sd(kX128_ZerosF64, Data_); }
 
   MTL_STREAM_EXTRA_OPERATORS;
 };
@@ -311,14 +311,6 @@ MTL_INLINE static X128<F64> Abs(const X128<F64>& a)
 MTL_INLINE static X128<F32> Abs(const X128<F32>& a)
 {
   return a & kX128_NoSignF32;
-}
-
-template <class T>
-MTL_INLINE static T Abs(const T& a)
-{
-  X128<T> X;
-  X.LoadSingle(&a);
-  return Abs(X)[0];
 }
 
 }  // namespace MTL
