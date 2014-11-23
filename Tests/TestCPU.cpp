@@ -194,3 +194,54 @@ TEST(TestMemoryBandwitdh)
       MTL_EQUAL_FLOAT(testV2[testV2Index], -123.456*9999.777, kTol);
   }
 }
+
+TEST(TestStreamPerformance)
+{
+  static const long kVectorSize = 32*1024;
+  static const long kIterations = 1000;
+  static const long kTries = 30;
+
+  Timer t;
+  double bestTime;
+
+  U64 maxNumberOfThreads = CPU::Instance().NumberOfThreads();
+
+  for (long numberOfThreads = 1; numberOfThreads <= maxNumberOfThreads; numberOfThreads++)
+  {
+    DynamicVector<double> testV1(kVectorSize, -1);
+    DynamicVector<double> testV2(kVectorSize, -2);
+    double* p1 = testV1.Begin();
+    double* p2 = testV2.Begin();
+
+    printf("Number of Threads: %d\n", numberOfThreads);
+    CPU::Instance().NumberOfThreads(numberOfThreads);
+
+    double dotProduct;
+    bestTime = kINF;
+    for (long k = 0; k < kTries; k++)
+    {
+      t.ResetAndStart();
+      for (long i = 0; i < kIterations; i++)
+        dotProduct = DotProduct(testV1, testV2);
+      t.Stop();
+      bestTime = Min(bestTime, t.Seconds() / kIterations);
+    }
+    printf("  Dot product:    %8.3f GFLOPS, %.3f msecs.\n",
+           2 * kVectorSize * 1e-9 / bestTime, bestTime);
+    MTL_EQUAL_FLOAT(dotProduct, 2*kVectorSize, kTol);
+
+    double sumOfSquares;
+    bestTime = kINF;
+    for (long k = 0; k < kTries; k++)
+    {
+      t.ResetAndStart();
+      for (long i = 0; i < kIterations; i++)
+        sumOfSquares = SumOfSquares(testV1);
+      t.Stop();
+      bestTime = Min(bestTime, t.Seconds() / kIterations);
+    }
+    printf("  Sum of Squares: %8.3f GFLOPS, %.3f msecs.\n",
+           2 * kVectorSize * 1e-9 / bestTime, bestTime);
+    MTL_EQUAL_FLOAT(sumOfSquares, kVectorSize, kTol);
+  }
+}

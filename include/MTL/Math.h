@@ -89,6 +89,33 @@ template <class T> class PowHelper<1,T>
 {
 public:  MTL_INLINE static T Compute(const T& x)  { return x; }
 };
+template <int N, class T> class MinHelper
+{
+public:
+  MTL_INLINE static T Compute(const T* p)  { return Min(MinHelper<N-1,T>::Compute(p), p[N-1]); }
+};
+template <class T> class MinHelper<1,T>
+{
+public:  MTL_INLINE static T Compute(const T* p)  { return p[0]; }
+};
+template <int N, class T> class MaxHelper
+{
+public:
+  MTL_INLINE static T Compute(const T* p)  { return Max(MaxHelper<N-1,T>::Compute(p), p[N-1]); }
+};
+template <class T> class MaxHelper<1,T>
+{
+public:  MTL_INLINE static T Compute(const T* p)  { return p[0]; }
+};
+template <int N, class T> class DotHelper
+{
+public:  MTL_INLINE static T Compute(const T* p1, const T* p2)
+         { return DotHelper<N-1,T>::Compute(p1, p2) + p1[N-1] * p2[N-1]; }
+};
+template <class T> class DotHelper<1,T>
+{
+public:  MTL_INLINE static T Compute(const T* p1, const T* p2)  { return p1[0] * p2[0]; }
+};
 
 // Sum & mean of fixed sized array.
 template <int N, class T> MTL_INLINE static T Sum(const T* p)
@@ -112,6 +139,22 @@ template <class T> MTL_INLINE static T Square(const T& x)
 template <class T> MTL_INLINE static T Cube(const T& x)
 {
   return Pow<3>(x);
+}
+
+// Minimum and maximum.
+template <int N, class T> MTL_INLINE static T Minimum(const T* p)
+{
+  return MinHelper<N,T>::Compute(p);
+}
+template <int N, class T> MTL_INLINE static T Maximum(const T* p)
+{
+  return MaxHelper<N,T>::Compute(p);
+}
+
+// Dot product.
+template <int N, class T> MTL_INLINE static T Dot(const T* p1, const T* p2)
+{
+  return DotHelper<N,T>::Compute(p1, p2);
 }
 
 // Simple swap.

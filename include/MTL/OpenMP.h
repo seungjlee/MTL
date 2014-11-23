@@ -41,6 +41,8 @@
 namespace MTL
 {
 
+template <class T> class DynamicVector;
+
 // Returns true if OpenMP should be used for the data size and number of threads.
 template <class T>
 MTL_INLINE static bool DoOpenMP(SizeType size, SizeType numberOfThreads)
@@ -106,6 +108,53 @@ MTL_INLINE static void Parallel_1Dst_1Val(T* p, const T& val, SizeType size)
   else
 #endif
     Func(p, val, size);
+}
+
+template <class ReductionT, class T, ReductionT (*Func)(const T*, SizeType)>
+MTL_INLINE static DynamicVector<ReductionT> ParallelReduction_1Src(const T* pSrc, SizeType size)
+{
+#if MTL_ENABLE_OPENMP
+  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (DoOpenMP<T>(size, numberOfThreads))
+  {
+    DynamicVector<ReductionT> subResults(numberOfThreads);
+
+    DynamicVector<SizeType> subSizes, offsets;
+    ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
+
+    #pragma omp parallel for
+    for (I32 i = 0; i < numberOfThreads; i++)
+      subResults[i] = Func(pSrc + offsets[i], subSizes[i]);
+
+    return subResults;
+  }
+  else
+#endif
+    return DynamicVector<ReductionT>(1, Func(pSrc, size));
+}
+
+template <class ReductionT, class T, ReductionT (*Func)(const T*, const T*, SizeType)>
+MTL_INLINE static DynamicVector<ReductionT> ParallelReduction_2Src(const T* pSrc1, const T* pSrc2,
+                                                                   SizeType size)
+{
+#if MTL_ENABLE_OPENMP
+  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (DoOpenMP<T>(size, numberOfThreads))
+  {
+    DynamicVector<ReductionT> subResults(numberOfThreads);
+
+    DynamicVector<SizeType> subSizes, offsets;
+    ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
+
+    #pragma omp parallel for
+    for (long i = 0; i < numberOfThreads; i++)
+      subResults[i] = Func(pSrc1 + offsets[i], pSrc2 + offsets[i], subSizes[i]);
+
+    return subResults;
+  }
+  else
+#endif
+    return DynamicVector<ReductionT>(1, Func(pSrc1, pSrc2, size));
 }
 
 }  // namespace MTL

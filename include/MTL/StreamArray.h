@@ -32,6 +32,9 @@
 namespace MTL
 {
 
+//
+// Regular single-threaded operations.
+//
 template <class T> MTL_INLINE static void
 UnaryMinus_Sequential(T* pDst, const T* pDstEnd)
 {
@@ -87,6 +90,97 @@ Division_Sequential(DstT* pDst, const SrcT* pSrc, const DstT* pDstEnd)
     *pDst = DstT(*pDst / *pSrc);
 }
 
+template <class T> MTL_INLINE static T Sum_Sequential(const T* p, const T* pEnd)
+{
+  T sum(0);
+  for (; p < pEnd; p++)
+    sum += *p;
+
+  return sum;
+}
+template <class T> MTL_INLINE static T SumOfAbsolutes_Sequential(const T* p, const T* pEnd)
+{
+  T sum(0);
+  for (; p < pEnd; p++)
+    sum += Abs(*p);
+
+  return sum;
+}
+template <class T> MTL_INLINE static T SumOfSquares_Sequential(const T* p, const T* pEnd)
+{
+  T sum(0);
+  for (; p < pEnd; p++)
+    sum += Square(*p);
+
+  return sum;
+}
+
+template <class T> MTL_INLINE static T Min_Sequential(const T* p, const T* pEnd)
+{
+  if (p < pEnd)
+  {
+    T min = *p++;
+    for (; p < pEnd; p++)
+      min = Min(min, *p);
+
+    return min;
+  }
+  else
+    return T();
+}
+template <class T> MTL_INLINE static T Max_Sequential(const T* p, const T* pEnd)
+{
+  if (p < pEnd)
+  {
+    T max = *p++;
+    for (; p < pEnd; p++)
+      max = Max(max, *p);
+
+    return max;
+  }
+  else
+    return T();
+}
+template <class T> MTL_INLINE static T MinOfAbsolutes_Sequential(const T* p, const T* pEnd)
+{
+  if (p < pEnd)
+  {
+    T min = Abs(*p++);
+    for (; p < pEnd; p++)
+      min = Min(min, Abs(*p));
+
+    return min;
+  }
+  else
+    return T();
+}
+template <class T> MTL_INLINE static T MaxOfAbsolutes_Sequential(const T* p, const T* pEnd)
+{
+  if (p < pEnd)
+  {
+    T max = Abs(*p++);
+    for (; p < pEnd; p++)
+      max = Max(max, Abs(*p));
+
+    return max;
+  }
+  else
+    return T();
+}
+
+template <class T> MTL_INLINE static
+T DotProduct_Sequential(const T* p1, const T* p2, const T* pEnd1)
+{
+  T sum(0);
+  for (; p1 < pEnd1; p1++, p2++)
+    sum += *p1 * *p2;
+
+  return sum;
+}
+
+//
+// Streamed single-threaded operations.
+//
 template <class T> MTL_INLINE static void
 UnaryMinus_StreamAligned_Sequential(T* pDst, SizeType size)
 {
@@ -364,6 +458,341 @@ ScalarDivision_StreamUnaligned_Sequential(T* pDst, const T& scalar, SizeType siz
   ScalarDivision_Sequential(pDst, scalar, pDstEnd);
 }
 
+template <class T> MTL_INLINE static T
+Sum_StreamAligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  XX<T> xSum(0);
+  FOR_STREAM(p, size)
+  {
+    XX<T> xx;
+    xx.LoadPackedAligned(p);
+    xSum += xx;
+  }
+  return Sum< XX<T>::Increment >(xSum.pData()) + Sum_Sequential(p, pEnd);
+}
+template <class T> MTL_INLINE static void
+Sum_StreamUnaligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  XX<T> xSum(0);
+  FOR_STREAM(p, size)
+  {
+    XX<T> xx;
+    xx.LoadPackedUnaligned(p);
+    xSum += xx;
+  }
+  return Sum< XX<T>::Increment >(xSum.pData()) + Sum_Sequential(p, pEnd);
+}
+
+template <class T> MTL_INLINE static T
+SumOfAbsolutes_StreamAligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  XX<T> xSum(0);
+  FOR_STREAM(p, size)
+  {
+    XX<T> xx;
+    xx.LoadPackedAligned(p);
+    xSum += Abs(xx);
+  }
+  return Sum< XX<T>::Increment >(xSum.pData()) + SumOfAbsolutes_Sequential(p, pEnd);
+}
+template <class T> MTL_INLINE static void
+SumOfAbsolutes_StreamUnaligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  XX<T> xSum(0);
+  FOR_STREAM(p, size)
+  {
+    XX<T> xx;
+    xx.LoadPackedUnaligned(p);
+    xSum += Abs(xx);
+  }
+  return Sum< XX<T>::Increment >(xSum.pData()) + SumOfAbsolutes_Sequential(p, pEnd);
+}
+
+template <class T> MTL_INLINE static T
+SumOfSquares_StreamAligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  XX<T> xSum(0);
+  FOR_STREAM(p, size)
+  {
+    XX<T> xx;
+    xx.LoadPackedAligned(p);
+    xSum += Square(xx);
+  }
+  return Sum< XX<T>::Increment >(xSum.pData()) + SumOfSquares_Sequential(p, pEnd);
+}
+template <class T> MTL_INLINE static void
+SumOfSquares_StreamUnaligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  XX<T> xSum(0);
+  FOR_STREAM(p, size)
+  {
+    XX<T> xx;
+    xx.LoadPackedUnaligned(p);
+    xSum += Square(xx);
+  }
+  return Sum< XX<T>::Increment >(xSum.pData()) + SumOfSquares_Sequential(p, pEnd);
+}
+
+template <class T> MTL_INLINE static T
+Min_StreamAligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  if (size >= XX<T>::Increment)
+  {
+    XX<T> xMin;
+    xMin.LoadPackedAligned(p);
+    p += XX<T>::Increment;
+
+    FOR_STREAM(p, size - XX<T>::Increment)
+    {
+      XX<T> xx;
+      xx.LoadPackedAligned(p);
+      xMin = Min(xMin, xx);
+    }
+
+    return Min(Minimum< XX<T>::Increment >(xMin.pData()), Min_Sequential(p, pEnd));
+  }
+  else
+    return Min_Sequential(p, pEnd);
+}
+template <class T> MTL_INLINE static T
+Min_StreamUnaligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  if (size >= XX<T>::Increment)
+  {
+    XX<T> xMin;
+    xMin.LoadPackedUnaligned(p);
+    p += XX<T>::Increment;
+
+    FOR_STREAM(p, size - XX<T>::Increment)
+    {
+      XX<T> xx;
+      xx.LoadPackedUnaligned(p);
+      xMin = Min(xMin, xx);
+    }
+
+    return Min(Minimum< XX<T>::Increment >(xSum.pData()), Min_Sequential(p, pEnd));
+  }
+  else
+    return Min_Sequential(p, pEnd);
+}
+
+template <class T> MTL_INLINE static T
+Max_StreamAligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  if (size >= XX<T>::Increment)
+  {
+    XX<T> xMax;
+    xMax.LoadPackedAligned(p);
+    p += XX<T>::Increment;
+
+    FOR_STREAM(p, size - XX<T>::Increment)
+    {
+      XX<T> xx;
+      xx.LoadPackedAligned(p);
+      xMax = Max(xMax, xx);
+    }
+
+    return Max(Maximum< XX<T>::Increment >(xMax.pData()), Max_Sequential(p, pEnd));
+  }
+  else
+    return Max_Sequential(p, pEnd);
+}
+template <class T> MTL_INLINE static T
+Max_StreamUnaligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  if (size >= XX<T>::Increment)
+  {
+    XX<T> xMax;
+    xMax.LoadPackedUnaligned(p);
+    p += XX<T>::Increment;
+
+    FOR_STREAM(p, size - XX<T>::Increment)
+    {
+      XX<T> xx;
+      xx.LoadPackedUnaligned(p);
+      xMax = Max(xMax, xx);
+    }
+
+    return Max(Maximum< XX<T>::Increment >(xMax.pData()), Max_Sequential(p, pEnd));
+  }
+  else
+    return Max_Sequential(p, pEnd);
+}
+
+template <class T> MTL_INLINE static T
+MinOfAbsolutes_StreamAligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  if (size >= XX<T>::Increment)
+  {
+    XX<T> xMin;
+    xMin.LoadPackedAligned(p);
+    xMin = Abs(xMin);
+    p += XX<T>::Increment;
+
+    FOR_STREAM(p, size - XX<T>::Increment)
+    {
+      XX<T> xx;
+      xx.LoadPackedAligned(p);
+      xMin = Min(xMin, Abs(xx));
+    }
+
+    return Min(Minimum< XX<T>::Increment >(xMin.pData()), MinOfAbsolutes_Sequential(p, pEnd));
+  }
+  else
+    return MinOfAbsolutes_Sequential(p, pEnd);
+}
+template <class T> MTL_INLINE static T
+MinOfAbsolutes_StreamUnaligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  if (size >= XX<T>::Increment)
+  {
+    XX<T> xMin;
+    xMin.LoadPackedUnaligned(p);
+    xMin = Abs(xMin);
+    p += XX<T>::Increment;
+
+    FOR_STREAM(p, size - XX<T>::Increment)
+    {
+      XX<T> xx;
+      xx.LoadPackedUnaligned(p);
+      xMin = Min(xMin, Abs(xx));
+    }
+
+    return Min(Minimum< XX<T>::Increment >(xMin.pData()), MinOfAbsolutes_Sequential(p, pEnd));
+  }
+  else
+    return MinOfAbsolutes_Sequential(p, pEnd);
+}
+
+template <class T> MTL_INLINE static T
+MaxOfAbsolutes_StreamAligned_Sequential(const T* p, SizeType size)
+{
+  const T* pEnd = p + size;
+
+  if (size >= XX<T>::Increment)
+  {
+    XX<T> xMax;
+    xMax.LoadPackedAligned(p);
+    xMax = Abs(xMax);
+    p += XX<T>::Increment;
+
+    FOR_STREAM(p, size - XX<T>::Increment)
+    {
+      XX<T> xx;
+      xx.LoadPackedAligned(p);
+      xMax = Max(xMax, Abs(xx));
+    }
+
+    return Max(Maximum< XX<T>::Increment >(xMax.pData()), MaxOfAbsolutes_Sequential(p, pEnd));
+  }
+  else
+    return MaxOfAbsolutes_Sequential(p, pEnd);
+}
+template <class T> MTL_INLINE static T
+MaxOfAbsolutes_StreamUnaligned_Sequential(const T* p, SizeType size)
+{
+  if (size >= XX<T>::Increment)
+  {
+    const T* pEnd = p + size;
+
+    XX<T> xMax;
+    xMax.LoadPackedUnaligned(p);
+    xMax = Abs(xMax);
+    p += XX<T>::Increment;
+
+    FOR_STREAM(p, size - XX<T>::Increment)
+    {
+      XX<T> xx;
+      xx.LoadPackedUnaligned(p);
+      xMax = Max(xMax, Abs(xx));
+    }
+
+    return Max(Maximum< XX<T>::Increment >(xMax.pData()), MaxOfAbsolutes_Sequential(p, pEnd));
+  }
+  else
+    return MaxOfAbsolutes_Sequential(p, pEnd);
+}
+
+template <class T> MTL_INLINE static T
+DotProduct_StreamAligned_Sequential(const T* p1, const T* p2, SizeType size)
+{
+  const T* pEnd1 = p1 + size;
+
+  if (size >= XX<T>::Increment)
+  {
+    XX<T> xDot, x1, x2;
+    xDot.LoadPackedAligned(p1);
+    x2.LoadPackedAligned(p2);
+    xDot *= x2;
+    p1 += XX<T>::Increment;
+    p2 += XX<T>::Increment;
+
+    FOR_STREAM2(p1, p2, size - XX<T>::Increment)
+    {
+      x1.LoadPackedAligned(p1);
+      x2.LoadPackedAligned(p2);
+      xDot += x1 * x2;
+    }
+
+    return Sum< XX<T>::Increment >(xDot.pData()) + DotProduct_Sequential(p1, p2, pEnd1);
+  }
+  else
+    return DotProduct_Sequential(p1, p2, pEnd1);
+}
+template <class T> MTL_INLINE static T
+DotProduct_StreamUnaligned_Sequential(const T* p1, const T* p2, SizeType size)
+{
+  const T* pEnd1 = p1 + size;
+
+  if (size >= XX<T>::Increment)
+  {
+    XX<T> xDot, x1, x2;
+    xDot.LoadPackedUnaligned(p1);
+    x2.LoadPackedUnaligned(p2);
+    xDot *= x2;
+    p1 += XX<T>::Increment;
+    p2 += XX<T>::Increment;
+
+    FOR_STREAM2(p1, p2, size - XX<T>::Increment)
+    {
+      x1.LoadPackedUnaligned(p1);
+      x2.LoadPackedUnaligned(p2);
+      xDot += x1 * x2;
+    }
+
+    return Dot< XX<T>::Increment >(xDot.pData()) + DotProduct_Sequential(p1, p2, pEnd1);
+  }
+  else
+    return DotProduct_Sequential(p1, p2, pEnd1);
+}
+
+//
+// Multi-threaded operations.
+//
 template <class T> MTL_INLINE static void
 UnaryMinus_StreamAligned_Parallel(T* pDst, SizeType size)
 {
@@ -461,6 +890,142 @@ template <class T> MTL_INLINE static void
 ScalarDivision_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size)
 {
   Parallel_1Dst_1Val< T, ScalarDivision_StreamUnaligned_Sequential<T> >(pDst, scalar, size);
+}
+
+template <class T> MTL_INLINE static T
+Sum_StreamAligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, Sum_StreamAligned_Sequential<T> >(p, size);
+
+  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+template <class T> MTL_INLINE static T
+Sum_StreamUnaligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, Sum_StreamUnaligned_Sequential<T> >(p, size);
+
+  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+
+template <class T> MTL_INLINE static T
+SumOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamAligned_Sequential<T> >(p, size);
+
+  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+template <class T> MTL_INLINE static T
+SumOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamUnaligned_Sequential<T> >(p, size);
+
+  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+
+template <class T> MTL_INLINE static T
+SumOfSquares_StreamAligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, SumOfSquares_StreamAligned_Sequential<T> >(p, size);
+
+  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+template <class T> MTL_INLINE static T
+SumOfSquares_StreamUnaligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, SumOfSquares_StreamUnaligned_Sequential<T> >(p, size);
+
+  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+
+template <class T> MTL_INLINE static T
+Min_StreamAligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, Min_StreamAligned_Sequential<T> >(p, size);
+
+  return Min_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+template <class T> MTL_INLINE static T
+Min_StreamUnaligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, Min_StreamUnaligned_Sequential<T> >(p, size);
+
+  return Min_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+
+template <class T> MTL_INLINE static T
+Max_StreamAligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, Max_StreamAligned_Sequential<T> >(p, size);
+
+  return Max_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+template <class T> MTL_INLINE static T
+Max_StreamUnaligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, Max_StreamUnaligned_Sequential<T> >(p, size);
+
+  return Max_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+
+template <class T> MTL_INLINE static T
+MinOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamAligned_Sequential<T> >(p, size);
+
+  return Min_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+template <class T> MTL_INLINE static T
+MinOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamUnaligned_Sequential<T> >(p, size);
+
+  return Min_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+
+template <class T> MTL_INLINE static T
+MaxOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamAligned_Sequential<T> >(p, size);
+
+  return Max_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+template <class T> MTL_INLINE static T
+MaxOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamUnaligned_Sequential<T> >(p, size);
+
+  return Max_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+
+template <class T> MTL_INLINE static T
+DotProduct_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_2Src<T, T, DotProduct_StreamAligned_Sequential<T> >(p1, p2, size);
+
+  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+}
+template <class T> MTL_INLINE static T
+DotProduct_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeType size)
+{
+  DynamicVector<T> subResults =
+    ParallelReduction_2Src<T, T, DotProduct_StreamUnaligned_Sequential<T> >(p1, p2, size);
+
+  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
 }
 
 }  // namespace MTL

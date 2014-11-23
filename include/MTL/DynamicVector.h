@@ -75,7 +75,7 @@ public:
     Resize(size);
   }
 
-  // Constructs array of specified size. Elements might be uninitialized.
+  // Constructs array of specified size. Elements are initialized with the initialValue.
   MTL_INLINE DynamicVector(SizeType size, const T& initialValue)
     : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
       AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
@@ -83,11 +83,42 @@ public:
     Resize(size, initialValue);
   }
 
+  // Copy constructor.
   MTL_INLINE DynamicVector(const DynamicVector& rhs)
     : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
       AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
   {
     *this = rhs;
+  }
+
+  // Constructors that initialize from array.
+  MTL_INLINE DynamicVector(const T* pSrc, SizeType size)
+    : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
+      AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
+  {
+    Assign(pSrc, size);
+  }
+  MTL_INLINE DynamicVector(const T* pSrcBegin, const T* pSrcEnd)
+    : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
+      AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
+  {
+    Assign(pSrcBegin, pSrcEnd);
+  }
+
+  // Constructor that casts types.
+  template <class T2>
+  MTL_INLINE DynamicVector(const DynamicVector<T2>& rhs)
+    : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
+      AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
+  {
+    Resize(rhs.Size());
+
+    T* pDst = First_;
+    const T* pDstEnd = pDst + size();
+    const T2* pSrc = rhs.Begin();
+
+    for (; pDst < pDstEnd; pDst++, pSrc++)
+      *pDst = T(*pSrc);
   }
 
   ~DynamicVector()  { DestroyAndDelete(); }
@@ -227,6 +258,17 @@ public:
     BufferSize_ = 0;
     AllocBlock_ = MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK;
     Size_ = 0;
+  }
+
+  MTL_INLINE void Assign(const T* pSrc, SizeType size)
+  {
+    assert(pSrc + size <= Begin() || pSrc >= End());
+    Resize(size);
+    OptimizedCopy(First_, pSrc, Size_);
+  }
+  MTL_INLINE void Assign(const T* pSrcBegin, const T* pSrcEnd)
+  {
+    Assign(pSrcBegin, pSrcEnd - pSrcBegin);
   }
 
 protected:

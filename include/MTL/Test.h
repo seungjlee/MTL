@@ -144,7 +144,7 @@ protected:
       NumberOfFailures_++;
       Out() << "[File '" << file << "' - line " << line << "]" << std::endl
             << "  Actual value is '" << actual << "' but '"
-            << (Expected) << "' is expected!'" << std::endl;
+            << expected << "' is expected!'" << std::endl;
     }
   }
 

@@ -36,10 +36,10 @@ namespace MTL
 // Set all values in the XMM register with the same single input value.
 MTL_INLINE static __m128  X128_SetPacked(F32 val)    { return _mm_set1_ps(val);                    }
 MTL_INLINE static __m128d X128_SetPacked(F64 val)    { return _mm_set1_pd(val);                    }
-MTL_INLINE static __m128i X128_SetPacked(I8 val)     { return _mm_set1_epi8(val);                  }
+MTL_INLINE static __m128i X128_SetPacked(I8  val)    { return _mm_set1_epi8(val);                  }
 MTL_INLINE static __m128i X128_SetPacked(I16 val)    { return _mm_set1_epi16(val);                 }
 MTL_INLINE static __m128i X128_SetPacked(I32 val)    { return _mm_set1_epi32(val);                 }
-MTL_INLINE static __m128i X128_SetPacked(U8 val)     { return _mm_set1_epi8(val);                  }
+MTL_INLINE static __m128i X128_SetPacked(U8  val)    { return _mm_set1_epi8(val);                  }
 MTL_INLINE static __m128i X128_SetPacked(U16 val)    { return _mm_set1_epi16(val);                 }
 MTL_INLINE static __m128i X128_SetPacked(U32 val)    { return _mm_set1_epi32(val);                 }
 MTL_INLINE static __m128i X128_SetPacked(I64 val)    { return (__m128i&)X128_SetPacked((F64&)val); }
@@ -284,6 +284,24 @@ public:
 
   MTL_STREAM_EXTRA_OPERATORS;
 };
+
+// Minimum and maximum.
+template <> MTL_INLINE static X128<F32> Min(const X128<F32>& a, const X128<F32>& b)
+{
+  return _mm_min_ps(a.Data(), b.Data());
+}
+template <> MTL_INLINE static X128<F64> Min(const X128<F64>& a, const X128<F64>& b)
+{
+  return _mm_min_pd(a.Data(), b.Data());
+}
+template <> MTL_INLINE static X128<F32> Max(const X128<F32>& a, const X128<F32>& b)
+{
+  return _mm_max_ps(a.Data(), b.Data());
+}
+template <> MTL_INLINE static X128<F64> Max(const X128<F64>& a, const X128<F64>& b)
+{
+  return _mm_max_pd(a.Data(), b.Data());
+}
 
 // Absolute value.
 MTL_INLINE static X128<F64> Abs(const X128<F64>& a)
