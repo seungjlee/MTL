@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee
+// Copyright (c) 2014: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -24,7 +24,6 @@
 
 #include <MTL/Test.h>
 #include <MTL/DynamicVectorOperators.h>
-#include <vector>
 
 using namespace MTL;
 
@@ -109,4 +108,60 @@ TEST(TestReductionsSmallVectorsF64)
   MTL_EQUAL_FLOAT(Variance(a1, Mean(a1)), 2.73, kTolF64);
   MTL_EQUAL_FLOAT(RMS(a1), sqrt(30.69 /3), kTolF64);
   MTL_EQUAL_FLOAT(FrobeniusNorm(a1), sqrt(30.69), kTolF64);
+}
+
+TEST(TestReductionsSmallVectorsF32)
+{
+  DynamicVector<F32> a1(1, 3);
+  DynamicVector<F32> a2(1, -7);
+
+  MTL_EQUAL_FLOAT(Sum(a1), 3, kTolF32);
+  MTL_EQUAL_FLOAT(SumOfAbsolutes(a1), 3, kTolF32);
+  MTL_EQUAL_FLOAT(SumOfSquares(a1), 9, kTolF32);
+  MTL_EQUAL_FLOAT(Min(a1), 3, kTolF32);
+  MTL_EQUAL_FLOAT(Max(a1), 3, kTolF32);
+  MTL_EQUAL_FLOAT(MinOfAbsolutes(a1), 3, kTolF32);
+  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a1), 3, kTolF32);
+  MTL_EQUAL_FLOAT(MaxNorm(a1), 3, kTolF32);
+
+  MTL_EQUAL_FLOAT(Sum(a2), -7, kTolF32);
+  MTL_EQUAL_FLOAT(SumOfAbsolutes(a2), 7, kTolF32);
+  MTL_EQUAL_FLOAT(SumOfSquares(a2), 49, kTolF32);
+  MTL_EQUAL_FLOAT(Min(a2), -7, kTolF32);
+  MTL_EQUAL_FLOAT(Max(a2), -7, kTolF32);
+  MTL_EQUAL_FLOAT(MinOfAbsolutes(a2), 7, kTolF32);
+  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a2), 7, kTolF32);
+  MTL_EQUAL_FLOAT(MaxNorm(a2), 7, kTolF32);
+
+  MTL_EQUAL_FLOAT(DotProduct(a1, a2), -21, kTolF32);
+
+  float aa1[] = { 3.0f, 1.2f,  4.5f};
+  float aa2[] = {-2.0f, 5.0f, -1.0f};
+  a1.Assign(aa1, 3);
+  a2.Assign(aa2, 3);
+
+  MTL_EQUAL_FLOAT(Sum(a1), 8.7, kTolF32);
+  MTL_EQUAL_FLOAT(SumOfAbsolutes(a1), 8.7, kTolF32);
+  MTL_EQUAL_FLOAT(SumOfSquares(a1), 30.69, kTolF32);
+  MTL_EQUAL_FLOAT(Min(a1), 1.2, kTolF32);
+  MTL_EQUAL_FLOAT(Max(a1), 4.5, kTolF32);
+  MTL_EQUAL_FLOAT(MinOfAbsolutes(a1), 1.2, kTolF32);
+  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a1), 4.5, kTolF32);
+  MTL_EQUAL_FLOAT(MaxNorm(a1), 4.5, kTolF32);
+
+  MTL_EQUAL_FLOAT(Sum(a2), 2, kTolF32);
+  MTL_EQUAL_FLOAT(SumOfAbsolutes(a2), 8, kTolF32);
+  MTL_EQUAL_FLOAT(SumOfSquares(a2), 30, kTolF32);
+  MTL_EQUAL_FLOAT(Min(a2), -2, kTolF32);
+  MTL_EQUAL_FLOAT(Max(a2),  5, kTolF32);
+  MTL_EQUAL_FLOAT(MinOfAbsolutes(a2), 1, kTolF32);
+  MTL_EQUAL_FLOAT(MaxOfAbsolutes(a2), 5, kTolF32);
+  MTL_EQUAL_FLOAT(MaxNorm(a2), 5, kTolF32);
+
+  MTL_EQUAL_FLOAT(DotProduct(a1, a2), -4.5, kTolF32);
+
+  MTL_EQUAL_FLOAT(Mean(a1), 2.9, kTolF32);
+  MTL_EQUAL_FLOAT(Variance(a1, Mean(a1)), 2.73, kTolF32);
+  MTL_EQUAL_FLOAT(RMS(a1), sqrt(30.69 /3), kTolF32);
+  MTL_EQUAL_FLOAT(FrobeniusNorm(a1), sqrt(30.69), kTolF32);
 }

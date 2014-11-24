@@ -343,7 +343,7 @@ template <class T> MTL_INLINE static T RMS(const DynamicVector<T>& v)
   if (v.Size() > 0)
     return Sqrt(SumOfSquares(v) / v.Size());
   else
-    return kINF;
+    return T(kINF);
 }
 
 template <class T> MTL_INLINE static T FrobeniusNorm(const DynamicVector<T>& v)

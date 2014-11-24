@@ -23,13 +23,62 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef MTL_AVX_H
-#define MTL_AVX_H
+#ifndef MTL_AFFINE_TRANSFORM_3D_H
+#define MTL_AFFINE_TRANSFORM_3D_H
 
-#include "Math.h"
+#include "Point3D.h"
+#include "Vector3D.h"
 
 namespace MTL
 {
+
+template <class T>
+class AffineTransform3D
+{
+public:
+  typedef SquareMatrix<3,T> MatrixType;
+  typedef Vector3D<T> VectorType;
+
+  AffineTransform3D(const MatrixType& m, const Vector3D<T>& v)
+    : Matrix_(m), Vector_(v)
+  {
+  }
+
+  MTL_INLINE AffineTransform3D operator*(const AffineTransform3D& transform) const
+  {
+    return AffineTransform3D(Matrix_ * transform.Matrix_, Matrix_ * transform.Vector_ + Vector_);
+  }
+  MTL_INLINE AffineTransform3D& operator*=(const AffineTransform3D& transform)
+  {
+    *this = *this * transform;
+    return *this;
+  }
+
+  virtual AffineTransform3D Inverse() const
+  {
+    MatrixType inv = Matrix_.Inverse();
+    return AffineTransform3D(inv, inv * -Vector_);
+  }
+
+  MTL_INLINE Point3D<T> operator*(const Point3D<T>& point) const
+  {
+    return Matrix_ * point + Vector_;
+  }
+  MTL_INLINE Vector3D<T> operator*(const Vector3D<T>& vector) const
+  {
+    return Matrix_ * vector;
+  }
+
+  MTL_INLINE const MatrixType& Matrix() const  { return Matrix_; }
+  MTL_INLINE void Matrix(const MatrixType& m)  { Matrix_ = m;    }
+  MTL_INLINE const VectorType& vector() const  { return Vector_; }
+  MTL_INLINE void vector(const VectorType& v)  { Vector_ = v;    }
+
+protected:
+  MatrixType Matrix_;
+  VectorType Vector_;  // Translation vector.
+};
+
 }  // namespace MTL
 
-#endif  // MTL_AVX_H
+#endif // MTL_AFFINE_TRANSFORM_3D_H

@@ -22,14 +22,14 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <MTL/Test.h>
+#include <MTL/RotationTranslation3D.h>
 
-#ifndef MTL_AVX_H
-#define MTL_AVX_H
+using namespace MTL;
 
-#include "Math.h"
+static const double kTol = 1e-12;
 
-namespace MTL
+TEST(TestRotationTranslation3D)
 {
-}  // namespace MTL
-
-#endif  // MTL_AVX_H
+  RotationTranslation3D<F64> T;
+}

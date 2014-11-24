@@ -23,13 +23,23 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef MTL_AVX_H
-#define MTL_AVX_H
+#ifndef MTL_ROTATION_3D_H
+#define MTL_ROTATION_3D_H
 
-#include "Math.h"
+#include "Point3D.h"
 
 namespace MTL
 {
-}  // namespace MTL
 
-#endif  // MTL_AVX_H
+template <class T>
+class Rotation3D : public SquareMatrix<3,T>
+{
+public:
+  MTL_SQUARE_MATRIX_COMMON_DEFINITIONS(Rotation3D, SquareMatrix, 3, T);
+
+  Rotation3D() : SquareMatrix<3,T>(eIdentity) {}
+};
+
+};
+
+#endif // MTL_ROTATION_3D_H

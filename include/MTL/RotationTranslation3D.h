@@ -23,13 +23,33 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef MTL_AVX_H
-#define MTL_AVX_H
+#ifndef MTL_ROTATION_TRANSLATION_3D_H
+#define MTL_ROTATION_TRANSLATION_3D_H
 
-#include "Math.h"
+#include "AffineTransform3D.h"
+#include "Rotation3D.h"
 
 namespace MTL
 {
+
+template <class T>
+class RotationTranslation3D : public AffineTransform3D<T>
+{
+public:
+
+  RotationTranslation3D(const Rotation3D<T>& r = Rotation3D<T>(),
+                        const Vector3D<T>& v = Vector3D<T>(0,0,0))
+    : AffineTransform3D<T>(r, v)
+  {
+  }
+
+  virtual AffineTransform3D<T> Inverse() const
+  {
+    MatrixType inv = Matrix_.ComputeTranspose();
+    return AffineTransform3D<T>(inv, inv * -Vector_);
+  }
+};
+
 }  // namespace MTL
 
-#endif  // MTL_AVX_H
+#endif // MTL_ROTATION_TRANSLATION_3D_H

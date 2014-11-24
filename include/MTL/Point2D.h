@@ -23,13 +23,29 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef MTL_AVX_H
-#define MTL_AVX_H
+#ifndef MTL_POINT_2D_H
+#define MTL_POINT_2D_H
 
-#include "Math.h"
+#include "Matrix.h"
 
 namespace MTL
 {
+
+template<class T>
+class Point2D : public ColumnVector<2,T>
+{
+public:
+  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Point2D, ColumnVector, 2, T);
+
+  MTL_INLINE Point2D() : ColumnVector2D() {}
+
+  const T& x() const   { return (*this)[0]; }
+  const T& y() const   { return (*this)[1]; }
+
+  void x(const T& xx)  { (*this)[0] = xx;   }
+  void y(const T& yy)  { (*this)[1] = yy;   }
+};
+
 }  // namespace MTL
 
-#endif  // MTL_AVX_H
+#endif // MTL_POINT_2D_H

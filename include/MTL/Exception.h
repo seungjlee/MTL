@@ -1,7 +1,8 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee
+// Copyright (c) 2014: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
+//
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
