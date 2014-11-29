@@ -50,6 +50,7 @@ void Test_ ## TestName::Run()
 #define MTL_EQUAL(Actual, Expected)  MTL::Test::Equal(Actual, Expected, MTL__FILE__, __LINE__)
 #define MTL_EQUAL_FLOAT(Actual, Expected, Tolerance) \
 MTL::Test::EqualFloat(double(Actual), double(Expected), double(Tolerance), MTL__FILE__, __LINE__)
+#define MTL_LESS_THAN(Actual, Limit)  MTL::Test::LessThan(Actual, Limit, MTL__FILE__, __LINE__)
 
 namespace MTL
 {
@@ -58,7 +59,7 @@ class Test
 {
 public:
   Test(const String& name)
-    : Name_(name), NumberOfFailures_(0), TimeElapsed_(0)
+    : Name_(name), TimeElapsed_(0)
   { List_.PushBack(this); }
 
   virtual ~Test()  {}
@@ -81,29 +82,25 @@ public:
       }
       catch(const Exception& e)
       {
-        List_[i]->NumberOfFailures_++;
+        List_[i]->TotalNumberOfFailures_++;
         Out() << "ERROR: " << e.Message() << std::endl;
       }
       catch(const std::exception& e)
       {
-        List_[i]->NumberOfFailures_++;
+        List_[i]->TotalNumberOfFailures_++;
         Out() << "std::exception: " << e.what() << std::endl;
       }
       catch(...)
       {
-        List_[i]->NumberOfFailures_++;
+        List_[i]->TotalNumberOfFailures_++;
         Out() << "UNEXPECTED ERROR!" << std::endl;
       }
 
       Out() << "[" << List_[i]->Name_ << "]" << " Ends.";
-      if (List_[i]->NumberOfFailures_ > 0)
-        Out() << "  FAILED!";
 
-      Out() << "  Number of errors: " << List_[i]->NumberOfFailures_
-            << ", Time: " << float(List_[i]->TimeElapsed_) << " seconds."
+      Out() << "  Time: " << float(List_[i]->TimeElapsed_) << " seconds."
             << std::endl << std::endl;
 
-      TotalNumberOfFailures_ += List_[i]->NumberOfFailures_;
       TotalTimeElapsed_ += List_[i]->TimeElapsed_;
     }
 
@@ -120,45 +117,80 @@ public:
 
   static U64 TotalNumberOfFailures()  { return TotalNumberOfFailures_; }
 
-protected:
-  U64 NumberOfFailures_;
-  double TimeElapsed_;  // In seconds.
+  static const String& TestFilePathName() throw()
+  { return FilePath_; }
 
-  static String FilePath_;
+  static String TestPath() throw()
+  {
+    String fullPath = FilePath_;
+    for (U32 i = 0; i < fullPath.length(); i++)
+      if (fullPath[i] == L'\\')
+        fullPath[i] = L'/';
 
-  void Verify(bool e, char* expression, wchar_t* file, U64 line)
+    I32 slashIndex = -1;
+    for (U32 i = 0; i < fullPath.length(); i++)
+      if (fullPath[i] == L'/')
+        slashIndex = i;
+
+    if (slashIndex != -1)
+      fullPath.erase(slashIndex + 1, fullPath.length() - slashIndex - 1);
+
+    return fullPath;
+  }
+
+  static double Random()               { return double(rand()) / RAND_MAX; }
+  static double RandomMinusOneToOne()  { return Random() * 2 - 1;          }
+
+  static void Verify(bool e, char* expression, wchar_t* file, U64 line)
   {
     if (!e)
     {
-      NumberOfFailures_++;
+      TotalNumberOfFailures_++;
       Out() << "[In file '" << file << "' - line " << line  << "]" << std::endl
             << "  '" << expression << "' failed!" << std::endl;
     }
   }
 
   template <class T1, class T2>
-  void Equal(const T1& actual, const T2& expected, wchar_t* file, U64 line)
+  static void Equal(const T1& actual, const T2& expected, wchar_t* file, U64 line)
   {
     if (actual != expected)
     {
-      NumberOfFailures_++;
+      TotalNumberOfFailures_++;
       Out() << "[File '" << file << "' - line " << line << "]" << std::endl
             << "  Actual value is '" << actual << "' but '"
             << expected << "' is expected!'" << std::endl;
     }
   }
 
-  void EqualFloat(double actual, double expected, double tolerance, wchar_t* file, U64 line)
+  static void EqualFloat(double actual, double expected, double tolerance, wchar_t* file, U64 line)
   {
     double difference = actual - expected;
     if (MTL::Abs(difference) > tolerance || actual != actual)
     {
-      NumberOfFailures_++;
+      TotalNumberOfFailures_++;
       Out() << "[File '" << file << "' - line " << line  << "]" << std::endl
             << "  Actual value is " << actual << " but " << expected
             << " is expected; difference is: " << difference << std::endl;
     }
   }
+
+  template <class T1, class T2>
+  static void LessThan(const T1& actual, const T2& limit, wchar_t* file, U64 line)
+  {
+    if (actual > limit)
+    {
+      TotalNumberOfFailures_++;
+      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
+            << "  Actual value is '" << actual << "' which is greater than the limit '"
+            << limit << "'" << std::endl;
+    }
+  }
+
+protected:
+  double TimeElapsed_;  // In seconds.
+
+  static String FilePath_;
 
 private:
   String Name_;

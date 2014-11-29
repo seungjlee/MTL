@@ -64,37 +64,37 @@ public:
 
   MTL_INLINE explicit Matrix(const T data[M][N])
   {
-    memcpy(data_, data, DataSizeInBytes());
+    memcpy(Data_, data, DataSizeInBytes());
   }
 
   // Sets matrix to be the identity matrix.
   MTL_INLINE void Identity()
   {
     Zeros();
-    SetDiagonal<kMinimumDimension_>(data_, T(1));
+    SetDiagonal<kMinimumDimension_>(Data_, T(1));
   }
 
   MTL_INLINE void Zeros()
   {
-    memset(data_, 0, DataSizeInBytes());
+    memset(Data_, 0, DataSizeInBytes());
   }
 
   // Sets all elements in the matrix to newVal
   MTL_INLINE void SetAll(const T& newVal)
   {
-    Set<M*N>((T*)data_, newVal);
+    Set<M*N>(Data_[0], newVal);
   }
 
   MTL_INLINE void SetColumn(I32 col, const Matrix<M,1,T>& v)
   {
     assert(col >= 0 && col < N);
-    SetColumn<M>(data_, v.Data(), col);
+    SetColumn<M>(Data_, v.Data(), col);
   }
 
   MTL_INLINE void SetRow(I32 row, const Matrix<1,N,T>& v)
   {
     assert(row >= 0 && row < M);
-    memcpy((*this)[row], v.data(), N*sizeof(T));
+    memcpy((*this)[row], v.data_[0], N*sizeof(T));
   }
 
   // Multiplication.
@@ -103,7 +103,7 @@ public:
   {
     Matrix<M,P,T> result;
     for (I32 row = 0; row < M; row++)
-      MultiplyRowByMatrix<N,P>::compute<P>(result[row], data_[row], B.Data());
+      MultiplyRowByMatrix<N,P>::Compute<P>(result[row], Data_[row], B.Data());
 
     return result;
   }
@@ -161,8 +161,8 @@ public:
   MTL_INLINE Matrix<M+P,N,T> operator&&(const Matrix<P,N,T>& B) const
   {
     Matrix<M+P,N,T> matrix;
-    memcpy(matrix[0],   data(), M*N*sizeof(T));
-    memcpy(matrix[M], B.data(), P*N*sizeof(T));
+    memcpy(matrix[0],   Data_[0], M*N*sizeof(T));
+    memcpy(matrix[M], B.Data_[0], P*N*sizeof(T));
     return matrix;
   }
 
@@ -222,7 +222,7 @@ public:
 
   MTL_INLINE Matrix& operator+=(const Matrix& B)
   {
-    Add<M*N>((T*)data_, (T*)B.data_);
+    Add<M*N>(Data_[0], B.Data_[0]);
     return *this;
   }
   MTL_INLINE Matrix operator+(const Matrix& B) const
@@ -234,7 +234,7 @@ public:
 
   MTL_INLINE Matrix& operator-=(const Matrix& B)
   {
-    Subtract<M*N>((T*)data_, (T*)B.data_);
+    Subtract<M*N>(Data_[0], B.Data_[0]);
     return *this;
   }
   MTL_INLINE Matrix operator-(const Matrix& B) const
@@ -247,13 +247,13 @@ public:
   MTL_INLINE Matrix operator-() const
   {
     Matrix A;
-    UnaryMinus<M*N>((T*)A.data_, (T*)data_);
+    UnaryMinus<M*N>(A.Data_[0], Data_[0]);
     return A;
   }
 
   MTL_INLINE Matrix& operator+=(const T& scalar)
   {
-    ScalarAdd<M*N>((T*)data_, scalar);
+    ScalarAdd<M*N>(Data_[0], scalar);
     return *this;
   }
   MTL_INLINE Matrix operator+(const T& scalar) const
@@ -265,7 +265,7 @@ public:
 
   MTL_INLINE Matrix& operator-=(const T& scalar)
   {
-    ScalarSubtract<M*N>((T*)data_, scalar);
+    ScalarSubtract<M*N>(Data_[0], scalar);
     return *this;
   }
   MTL_INLINE Matrix operator-(const T& scalar) const
@@ -277,7 +277,7 @@ public:
 
   MTL_INLINE Matrix& operator*=(const T& scalar)
   {
-    ScalarMultiply<M*N>((T*)data_, scalar);
+    ScalarMultiply<M*N>(Data_[0], scalar);
     return *this;
   }
   MTL_INLINE Matrix operator*(const T& scalar) const
@@ -289,7 +289,7 @@ public:
 
   MTL_INLINE Matrix& operator/=(const T& scalar)
   {
-    ScalarDivide<M*N>((T*)data_, scalar);
+    ScalarDivide<M*N>(Data_[0], scalar);
     return *this;
   }
   MTL_INLINE Matrix operator/(const T& scalar) const
@@ -301,34 +301,44 @@ public:
 
   MTL_INLINE T Sum() const
   {
-    return Sum<M*N>(data());
+    return MTL::Sum<M*N>(Data_[0]);
   }
 
   // Sum of the squares of all elements.
   MTL_INLINE T SumOfSquares() const
   {
-    return SumOfSquares<M*N>(data());
+    return SumOfSquares<M*N>(Data_[0]);
   }
 
   // Returns maximum of all elements.
   MTL_INLINE T Max() const
   {
-    return Maximum<M*N>(data_[0]);
+    return Maximum<M*N>(Data_[0]);
   }
 
   // Returns minimum of all elements.
   MTL_INLINE T Min() const
   {
-    return Minimum<M*N>(data_[0]);
+    return Minimum<M*N>(Data_[0]);
   }
 
-  MTL_INLINE void RowMultiply(I32 row, const T& scalar)  { ScalarMultiply<N>(data_[row], scalar); }
-  MTL_INLINE void RowDivide  (I32 row, const T& scalar)  { ScalarDivide<N>  (data_[row], scalar); }
+  MTL_INLINE T MaxOfAbsolutes() const
+  {
+    return Maximum<M*N>(Data_[0]);
+  }
+  MTL_INLINE T MinOfAbsolutes() const
+  {
+    return Minimum<M*N>(Data_[0]);
+  }
+
+
+  MTL_INLINE void RowMultiply(I32 row, const T& scalar)  { ScalarMultiply<N>(Data_[row], scalar); }
+  MTL_INLINE void RowDivide  (I32 row, const T& scalar)  { ScalarDivide<N>  (Data_[row], scalar); }
 
   MTL_INLINE void ColumnMultiply(I32 col, const T& scalar)
-  { ColumnScalarMultiply<M>(data_[0] + col, scalar); }
+  { ColumnScalarMultiply<M>(Data_[0] + col, scalar); }
   MTL_INLINE void ColumnDivide(I32 col, const T& scalar)
-  { ColumnScalarDivide<M>(data_[0] + col, scalar); }
+  { ColumnScalarDivide<M>(Data_[0] + col, scalar); }
 
   MTL_INLINE T ColumnSum(I32 col) const           { return ColumnSum<M>(col);          }
   MTL_INLINE T ColumnSumOfSquares(I32 col) const  { return ColumnSumOfSquares<M>(col); }
@@ -342,7 +352,7 @@ public:
 
   MTL_INLINE T FrobeniusNorm() const
   {
-    return Sqrt(sumOfSquares());
+    return Sqrt(SumOfSquares());
   }
 
   MTL_INLINE Matrix<N,M,T> ComputeTranspose() const
@@ -350,14 +360,14 @@ public:
     Matrix<N,M,T> t;
     for (I32 i = 0; i < M; i++)
       for (I32 j = 0; j < N; j++)
-        t[j][i] = data_[i][j];
+        t[j][i] = Data_[i][j];
 
     return t;
   }
 
   MTL_INLINE bool operator==(const Matrix& B) const
   {
-    return !memcmp(data_, B.data_, DataSizeInBytes());
+    return !memcmp(Data_, B.Data_, DataSizeInBytes());
   }
   MTL_INLINE bool operator!=(const Matrix& B) const
   {
@@ -367,88 +377,20 @@ public:
   MTL_INLINE bool IsZero() const      { return *this == Matrix(eZeros);    }
   MTL_INLINE bool IsIdentity() const  { return *this == Matrix(eIdentity); }
 
-  MTL_INLINE const T* operator[](I32 row) const  { assert(row >= 0 && row < M); return data_[row]; }
-  MTL_INLINE T*       operator[](I32 row)        { assert(row >= 0 && row < M); return data_[row]; }
+  MTL_INLINE const T* operator[](I32 row) const  { assert(row >= 0 && row < M); return Data_[row]; }
+  MTL_INLINE T*       operator[](I32 row)        { assert(row >= 0 && row < M); return Data_[row]; }
 
   MTL_INLINE I32 Rows() const              { return M;             }
   MTL_INLINE I32 Cols() const              { return N;             }
 
-  MTL_INLINE const DataType& Data() const  { return data_;         }
-  MTL_INLINE DataType& Data()              { return data_;         }
+  MTL_INLINE const DataType& Data() const  { return Data_;         }
+  MTL_INLINE DataType& Data()              { return Data_;         }
 
-  MTL_INLINE I32 DataSizeInBytes() const   { return sizeof(data_); }
-
-protected:
-  DataType data_;
-
-  template<I32 Q> void SetDiagonal(T ptr[M][N], const T& newVal)
-  {
-    SetDiagonal<Q-1>(ptr, newVal);
-    ptr[Q-1][Q-1] = newVal;
-  }
-  template<> void SetDiagonal<1>(T ptr[M][N], const T& newVal)
-  {
-    ptr[0][0] = newVal;
-  }
-
-  template<I32 Q> void SetDiagonal(T ptr[M][N], const T newVals[])
-  {
-    SetDiagonal<Q-1>(ptr, newVals);
-    ptr[Q-1][Q-1] = newVals[Q-1];
-  }
-  template<> void SetDiagonal<1>(T ptr[M][N], const T newVals[])
-  {
-    ptr[0][0] = newVals[0];
-  }
-
-  template<I32 Q> static T DotProduct(const T* a, const T* b)
-  {
-    return DotProduct<Q-1>(a, b) + a[Q-1] * b[Q-1];
-  }
-  template<> T static DotProduct<1>(const T* a, const T* b)
-  {
-    return a[0] * b[0];
-  }
-
-  template <I32 Cols>
-  struct MultiplyRowByCol
-  {
-    template<I32 Q> static T compute(const T* pRow, const T colData[][Cols], I32 col)
-    {
-      return compute<Q-1>(pRow, colData, col) + pRow[Q-1] * colData[Q-1][col];
-    }
-    template<> static T compute<1>(const T* pRow, const T colData[][Cols], I32 col)
-    {
-      return pRow[0] * colData[0][col];
-    }
-  };
-
-  template <I32 Cols1, I32 Cols2>
-  struct MultiplyRowByMatrix
-  {
-    template<I32 Q> static void compute(T* pDst, const T* pRow, const T colData[][Cols2])
-    {
-      MultiplyRowByMatrix<Cols1,Cols2>::compute<Q-1>(pDst, pRow, colData);
-      pDst[Q-1] = MultiplyRowByCol<Cols2>::compute<Cols1>(pRow, colData, Q-1);
-    }
-    template<> static void compute<1>(T* pDst, const T* pRow, const T colData[][Cols2])
-    {
-      pDst[0] = MultiplyRowByCol<Cols2>::compute<Cols1>(pRow, colData, 0);
-    }
-  };
-
-  template<I32 N> static T Max_Norm(const T* a)
-  {
-    return Max(Max_Norm<N-1>(a), Abs(a[N-1]));
-  }
-  template<> T static Max_Norm<1>(const T* a)
-  {
-    return Abs(a[0]);
-  }
+  MTL_INLINE I32 DataSizeInBytes() const   { return sizeof(Data_); }
 
   template<I32 N> static T Maximum(const T* a)
   {
-    return Max(Maximum<N-1>(a), a[N-1]);
+    return MTL::Max(Maximum<N-1>(a), a[N-1]);
   }
   template<> T static Maximum<1>(const T* a)
   {
@@ -457,54 +399,29 @@ protected:
 
   template<I32 N> static T Minimum(const T* a)
   {
-    return Min(Minimum<N-1>(a), a[N-1]);
+    return MTL::Min(Minimum<N-1>(a), a[N-1]);
   }
   template<> T static Minimum<1>(const T* a)
   {
     return a[0];
   }
 
-  template<I32 N> static void Multiply(T* a, const T* b)
+  template<I32 N> static T MaximumOfAbsolutes(const T* a)
   {
-    Multiply<N-1>(a, b);
-    a[N-1] *= b[N-1];
+    return MTL::Max(MaximumOfAbsolutes<N-1>(a), Abs(a[N-1]));
   }
-  template<> static void Multiply<1>(T* a, const T* b)
+  template<> T static MaximumOfAbsolutes<1>(const T* a)
   {
-    a[0] *= b[0];
-  }
-
-  template<I32 N> static void Divide(T* a, const T* b)
-  {
-    Divide<N-1>(a, b);
-    a[N-1] /= b[N-1];
-  }
-  template<> static void Divide<1>(T* a, const T* b)
-  {
-    a[0] /= b[0];
+    return Abs(a[0]);
   }
 
-private:
-  enum { kMinimumDimension_ = M < N ? M : N };
-
-  template<I32 Q> static void Set(T* ptr, const T& newVal)
+  template<I32 N> static T MinimumOfAbsolutes(const T* a)
   {
-    Set<Q-1>(ptr, newVal);
-    ptr[Q-1] = newVal;
+    return MTL::Min(MinimumOfAbsolutes<N-1>(a), Abs(a[N-1]));
   }
-  template<> static void Set<1>(T* ptr, const T& newVal)
+  template<> T static MinimumOfAbsolutes<1>(const T* a)
   {
-    ptr[0] = newVal;
-  }
-
-  template<I32 Q> static void SetColumn(T dst[M][N], const T src[M][1], I32 col)
-  {
-    SetColumn<Q-1>(dst, src, col);
-    dst[Q-1][col] = src[Q-1][0];
-  }
-  template<> static void SetColumn<1>(T dst[M][N], const T src[M][1], I32 col)
-  {
-    dst[0][col] = src[0][0];
+    return Abs(a[0]);
   }
 
   template<I32 Q> static T SumOfSquares(const T* ptr)
@@ -514,6 +431,16 @@ private:
   template<> static T SumOfSquares<1>(const T* ptr)
   {
     return Pow<2>(ptr[0]);
+  }
+
+  template<I32 Q> static void UnaryMinus(T* a, const T* b)
+  {
+    UnaryMinus<Q-1>(a, b);
+    a[Q-1] = -b[Q-1];
+  }
+  template<> static void UnaryMinus<1>(T* a, const T* b)
+  {
+    a[0] = -b[0];
   }
 
   template<I32 Q> static void Add(T* a, const T* b)
@@ -536,14 +463,24 @@ private:
     a[0] -= b[0];
   }
 
-  template<I32 Q> static void UnaryMinus(T* a, const T* b)
+  template<I32 N> static void Multiply(T* a, const T* b)
   {
-    UnaryMinus<Q-1>(a, b);
-    a[Q-1] = -b[Q-1];
+    Multiply<N-1>(a, b);
+    a[N-1] *= b[N-1];
   }
-  template<> static void UnaryMinus<1>(T* a, const T* b)
+  template<> static void Multiply<1>(T* a, const T* b)
   {
-    a[0] = -b[0];
+    a[0] *= b[0];
+  }
+
+  template<I32 N> static void Divide(T* a, const T* b)
+  {
+    Divide<N-1>(a, b);
+    a[N-1] /= b[N-1];
+  }
+  template<> static void Divide<1>(T* a, const T* b)
+  {
+    a[0] /= b[0];
   }
 
   template<I32 Q> static void ScalarAdd(T* a, const T& scalar)
@@ -586,6 +523,97 @@ private:
     a[0] /= scalar;
   }
 
+protected:
+  DataType Data_;
+
+  template<I32 Q> void SetDiagonal(T ptr[M][N], const T& newVal)
+  {
+    SetDiagonal<Q-1>(ptr, newVal);
+    ptr[Q-1][Q-1] = newVal;
+  }
+  template<> void SetDiagonal<1>(T ptr[M][N], const T& newVal)
+  {
+    ptr[0][0] = newVal;
+  }
+
+  template<I32 Q> void SetDiagonal(T ptr[M][N], const T newVals[])
+  {
+    SetDiagonal<Q-1>(ptr, newVals);
+    ptr[Q-1][Q-1] = newVals[Q-1];
+  }
+  template<> void SetDiagonal<1>(T ptr[M][N], const T newVals[])
+  {
+    ptr[0][0] = newVals[0];
+  }
+
+  template<I32 Q> static T DotProduct(const T* a, const T* b)
+  {
+    return DotProduct<Q-1>(a, b) + a[Q-1] * b[Q-1];
+  }
+  template<> T static DotProduct<1>(const T* a, const T* b)
+  {
+    return a[0] * b[0];
+  }
+
+  template <I32 Cols>
+  struct MultiplyRowByCol
+  {
+    template<I32 Q> static T Compute(const T* pRow, const T colData[][Cols], I32 col)
+    {
+      return Compute<Q-1>(pRow, colData, col) + pRow[Q-1] * colData[Q-1][col];
+    }
+    template<> static T Compute<1>(const T* pRow, const T colData[][Cols], I32 col)
+    {
+      return pRow[0] * colData[0][col];
+    }
+  };
+
+  template <I32 Cols1, I32 Cols2>
+  struct MultiplyRowByMatrix
+  {
+    template<I32 Q> static void Compute(T* pDst, const T* pRow, const T colData[][Cols2])
+    {
+      MultiplyRowByMatrix<Cols1,Cols2>::Compute<Q-1>(pDst, pRow, colData);
+      pDst[Q-1] = MultiplyRowByCol<Cols2>::Compute<Cols1>(pRow, colData, Q-1);
+    }
+    template<> static void Compute<1>(T* pDst, const T* pRow, const T colData[][Cols2])
+    {
+      pDst[0] = MultiplyRowByCol<Cols2>::Compute<Cols1>(pRow, colData, 0);
+    }
+  };
+
+  template<I32 N> static T Max_Norm(const T* a)
+  {
+    return Max(Max_Norm<N-1>(a), Abs(a[N-1]));
+  }
+  template<> T static Max_Norm<1>(const T* a)
+  {
+    return Abs(a[0]);
+  }
+
+private:
+  enum { kMinimumDimension_ = M < N ? M : N };
+
+  template<I32 Q> static void Set(T* ptr, const T& newVal)
+  {
+    Set<Q-1>(ptr, newVal);
+    ptr[Q-1] = newVal;
+  }
+  template<> static void Set<1>(T* ptr, const T& newVal)
+  {
+    ptr[0] = newVal;
+  }
+
+  template<I32 Q> static void SetColumn(T dst[M][N], const T src[M][1], I32 col)
+  {
+    SetColumn<Q-1>(dst, src, col);
+    dst[Q-1][col] = src[Q-1][0];
+  }
+  template<> static void SetColumn<1>(T dst[M][N], const T src[M][1], I32 col)
+  {
+    dst[0][col] = src[0][0];
+  }
+
   template<I32 Q> static void ColumnScalarMultiply(T* a, const T& scalar)
   {
     *a *= scalar;
@@ -608,29 +636,29 @@ private:
 
   template<I32 Q> T ColumnSum(I32 col) const
   {
-    return ColumnSum<Q-1>(col) + data_[Q-1][col];
+    return ColumnSum<Q-1>(col) + Data_[Q-1][col];
   }
   template<> T ColumnSum<1>(I32 col) const
   {
-    return data_[0][col];
+    return Data_[0][col];
   }
 
   template<I32 Q> T ColumnSumOfSquares(I32 col) const
   {
-    return ColumnSumOfSquares<Q-1>(col) + Pow<2>(data_[Q-1][col]);
+    return ColumnSumOfSquares<Q-1>(col) + Pow<2>(Data_[Q-1][col]);
   }
   template<> T ColumnSumOfSquares<1>(I32 col) const
   {
-    return Pow<2>(data_[0][col]);
+    return Pow<2>(Data_[0][col]);
   }
 
   template<I32 Q> T DotProductOfColumns(I32 col1, I32 col2) const
   {
-    return DotProductOfColumns<Q-1>(col1, col2) + data_[Q-1][col1] * data_[Q-1][col2];
+    return DotProductOfColumns<Q-1>(col1, col2) + Data_[Q-1][col1] * Data_[Q-1][col2];
   }
   template<> T DotProductOfColumns<1>(I32 col1, I32 col2) const
   {
-    return data_[0][col1] * data_[0][col2];
+    return Data_[0][col1] * Data_[0][col2];
   }
 };
 
@@ -697,12 +725,12 @@ public:
 
   MTL_INLINE explicit ColumnVector(const T data[M])
   {
-    memcpy(data_, data, DataSizeInBytes());
+    memcpy(Data_, data, DataSizeInBytes());
   }
 
   MTL_INLINE ColumnVector& operator*=(const ColumnVector& v)
   {
-    Multiply<M>(data(), v.data());
+    Multiply<M>(Data_[0], v.Data_[0]);
     return *this;
   }
   MTL_INLINE ColumnVector& operator*=(const Base& v)
@@ -718,7 +746,7 @@ public:
 
   MTL_INLINE ColumnVector& operator/=(const ColumnVector& v)
   {
-    Divide<M>(data(), v.data());
+    Divide<M>(Data_[0], v.Data_[0]);
     return *this;
   }
   MTL_INLINE ColumnVector& operator/=(const Base& v)
@@ -734,12 +762,12 @@ public:
 
   MTL_INLINE T Dot(const Base& v2) const
   {
-    return DotProduct<M>(data(), v2.data());
+    return DotProduct<M>(Data_[0], v2.Data_[0]);
   }
 
   MTL_INLINE T MaxNorm() const
   {
-    return Max_Norm<M>(data());
+    return Max_Norm<M>(Data_[0]);
   }
 
   MTL_INLINE void Normalize()
@@ -747,8 +775,8 @@ public:
     *this /= Sqrt(SumOfSquares());
   }
 
-  MTL_INLINE T& operator[](I32 i)               { assert(i >= 0 && i < M);  return data_[i][0]; }
-  MTL_INLINE const T& operator[](I32 i) const   { assert(i >= 0 && i < M);  return data_[i][0]; }
+  MTL_INLINE T& operator[](I32 i)               { assert(i >= 0 && i < M);  return Data_[i][0]; }
+  MTL_INLINE const T& operator[](I32 i) const   { assert(i >= 0 && i < M);  return Data_[i][0]; }
 
   MTL_INLINE I32 Size() const  { return Rows();}
 };
@@ -825,12 +853,12 @@ public:
 
   MTL_INLINE void SetDiagonals(const T& value)
   {
-    SetDiagonal<N>(data_, value);
+    SetDiagonal<N>(Data_, value);
   }
 
   MTL_INLINE void SetDiagonals(const T values[N])
   {
-    SetDiagonal<N>(data_, values);
+    SetDiagonal<N>(Data_, values);
   }
 
   // Transposes this matrix.
@@ -838,7 +866,7 @@ public:
   {
     for (I32 i = 0; i < N; i++)
       for (I32 j = i + 1; j < N; j++)
-        Swap(data_[i][j], data_[j][i]);
+        Swap(Data_[i][j], Data_[j][i]);
   }
 
   MTL_INLINE bool IsSingular() const  { return determinant() == 0; }
@@ -858,9 +886,9 @@ public:
   MTL_INLINE static T Determinant(const SquareMatrix& LU, const ColumnVector<N,I32>& P,
                                   const T& sign)
   {
-    T product = LU.data_[P[0]][0];
+    T product = LU.Data_[P[0]][0];
     for (I32 i = 1; i < N; i++)
-      product *= LU.data_[P[i]][i];
+      product *= LU.Data_[P[i]][i];
 
     return sign * product;
   }
@@ -875,7 +903,7 @@ public:
     SquareMatrix inverse;
     inverse.Identity();
 
-    if (solveLUP(inverse))
+    if (SolveLUP(inverse))
       return inverse;
     else
       return SquareMatrix(T(kNAN));
@@ -894,11 +922,11 @@ public:
     {
       P[row] = row;
 
-      scale[row] = Abs(LU.data_[row][1]);
+      scale[row] = Abs(LU.Data_[row][1]);
 
       for (I32 col = 2; col < N; col++)
       {
-        T temp = Abs(LU.data_[row][col]);
+        T temp = Abs(LU.Data_[row][col]);
         if (temp > scale[row])
           scale[row] = temp;
       }
@@ -909,10 +937,10 @@ public:
       I32 pivot = row;
 
       // Find max for pivot row.
-      T max = Abs(LU.data_[P[pivot]][row]) / scale[P[pivot]];
+      T max = Abs(LU.Data_[P[pivot]][row]) / scale[P[pivot]];
       for (I32 i = row + 1; i < N; i++)
       {
-        T temp = Abs(LU.data_[P[i]][row]) / scale[P[i]];
+        T temp = Abs(LU.Data_[P[i]][row]) / scale[P[i]];
         if (temp > max)
         {
           max = temp;
@@ -926,17 +954,17 @@ public:
         sign = -sign;
       }
 
-      if (Abs(LU.data_[P[row]][row]) < Epsilon<T>())
+      if (Abs(LU.Data_[P[row]][row]) < Epsilon<T>())
         return false;
 
       // Compute L and U.
       for (I32 i = row + 1; i < N; i++)
       {
-        T temp = LU.data_[P[i]][row] / LU.data_[P[row]][row];
-        LU.data_[P[i]][row] = temp;
+        T temp = LU.Data_[P[i]][row] / LU.Data_[P[row]][row];
+        LU.Data_[P[i]][row] = temp;
 
         for (I32 j = row + 1; j < N; j++)
-          LU.data_[P[i]][j] -= temp * LU.data_[P[row]][j];
+          LU.Data_[P[i]][j] -= temp * LU.Data_[P[row]][j];
       }
     }
 
@@ -1009,37 +1037,37 @@ MTL_INLINE void SquareMatrix1x1::Transpose()
 }
 MTL_INLINE void SquareMatrix2x2::Transpose()
 {
-  Swap(data_[0][1], data_[1][0]);
+  Swap(Data_[0][1], Data_[1][0]);
 }
 MTL_INLINE void SquareMatrix3x3::Transpose()
 {
-  Swap(data_[0][1], data_[1][0]);
-  Swap(data_[0][2], data_[2][0]);
-  Swap(data_[1][2], data_[2][1]);
+  Swap(Data_[0][1], Data_[1][0]);
+  Swap(Data_[0][2], Data_[2][0]);
+  Swap(Data_[1][2], Data_[2][1]);
 }
 MTL_INLINE void SquareMatrix4x4::Transpose()
 {
-  Swap(data_[0][1], data_[1][0]);
-  Swap(data_[0][2], data_[2][0]);
-  Swap(data_[0][3], data_[3][0]);
-  Swap(data_[1][2], data_[2][1]);
-  Swap(data_[1][3], data_[3][1]);
-  Swap(data_[2][3], data_[3][2]);
+  Swap(Data_[0][1], Data_[1][0]);
+  Swap(Data_[0][2], Data_[2][0]);
+  Swap(Data_[0][3], Data_[3][0]);
+  Swap(Data_[1][2], Data_[2][1]);
+  Swap(Data_[1][3], Data_[3][1]);
+  Swap(Data_[2][3], Data_[3][2]);
 }
 
 MTL_INLINE F64 SquareMatrix1x1::Determinant() const
 {
-  return data_[0][0];
+  return Data_[0][0];
 }
 MTL_INLINE F64 SquareMatrix2x2::Determinant() const
 {
-  return data_[0][0] * data_[1][1] - data_[0][1] * data_[1][0];
+  return Data_[0][0] * Data_[1][1] - Data_[0][1] * Data_[1][0];
 }
 MTL_INLINE F64 SquareMatrix3x3::Determinant() const
 {
-  return (data_[0][0] * (data_[1][1] * data_[2][2] - data_[1][2] * data_[2][1]) +
-          data_[0][1] * (data_[1][2] * data_[2][0] - data_[1][0] * data_[2][2]) +
-          data_[0][2] * (data_[1][0] * data_[2][1] - data_[1][1] * data_[2][0]));
+  return (Data_[0][0] * (Data_[1][1] * Data_[2][2] - Data_[1][2] * Data_[2][1]) +
+          Data_[0][1] * (Data_[1][2] * Data_[2][0] - Data_[1][0] * Data_[2][2]) +
+          Data_[0][2] * (Data_[1][0] * Data_[2][1] - Data_[1][1] * Data_[2][0]));
 }
 
 MTL_INLINE SquareMatrix1x1 SquareMatrix1x1::ComputeTranspose() const
@@ -1049,46 +1077,46 @@ MTL_INLINE SquareMatrix1x1 SquareMatrix1x1::ComputeTranspose() const
 MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::ComputeTranspose() const
 {
   SquareMatrix2x2 t;
-  t[0][0] = data_[0][0];
-  t[0][1] = data_[1][0];
-  t[1][0] = data_[0][1];
-  t[1][1] = data_[1][1];
+  t[0][0] = Data_[0][0];
+  t[0][1] = Data_[1][0];
+  t[1][0] = Data_[0][1];
+  t[1][1] = Data_[1][1];
   return t;
 }
 MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::ComputeTranspose() const
 {
   SquareMatrix3x3 t;
-  t[0][0] = data_[0][0];
-  t[0][1] = data_[1][0];
-  t[0][2] = data_[2][0];
-  t[1][0] = data_[0][1];
-  t[1][1] = data_[1][1];
-  t[1][2] = data_[2][1];
-  t[2][0] = data_[0][2];
-  t[2][1] = data_[1][2];
-  t[2][2] = data_[2][2];
+  t[0][0] = Data_[0][0];
+  t[0][1] = Data_[1][0];
+  t[0][2] = Data_[2][0];
+  t[1][0] = Data_[0][1];
+  t[1][1] = Data_[1][1];
+  t[1][2] = Data_[2][1];
+  t[2][0] = Data_[0][2];
+  t[2][1] = Data_[1][2];
+  t[2][2] = Data_[2][2];
   return t;
 }
 
 MTL_INLINE SquareMatrix4x4 SquareMatrix4x4::ComputeTranspose() const
 {
   SquareMatrix4x4 t;
-  t[0][0] = data_[0][0];
-  t[0][1] = data_[1][0];
-  t[0][2] = data_[2][0];
-  t[0][3] = data_[3][0];
-  t[1][0] = data_[0][1];
-  t[1][1] = data_[1][1];
-  t[1][2] = data_[2][1];
-  t[1][3] = data_[3][1];
-  t[2][0] = data_[0][2];
-  t[2][1] = data_[1][2];
-  t[2][2] = data_[2][2];
-  t[2][3] = data_[3][2];
-  t[3][0] = data_[0][3];
-  t[3][1] = data_[1][3];
-  t[3][2] = data_[2][3];
-  t[3][3] = data_[3][3];
+  t[0][0] = Data_[0][0];
+  t[0][1] = Data_[1][0];
+  t[0][2] = Data_[2][0];
+  t[0][3] = Data_[3][0];
+  t[1][0] = Data_[0][1];
+  t[1][1] = Data_[1][1];
+  t[1][2] = Data_[2][1];
+  t[1][3] = Data_[3][1];
+  t[2][0] = Data_[0][2];
+  t[2][1] = Data_[1][2];
+  t[2][2] = Data_[2][2];
+  t[2][3] = Data_[3][2];
+  t[3][0] = Data_[0][3];
+  t[3][1] = Data_[1][3];
+  t[3][2] = Data_[2][3];
+  t[3][3] = Data_[3][3];
   return t;
 }
 
@@ -1137,7 +1165,7 @@ MTL_INLINE static SquareMatrix3x3 Inverse(const SquareMatrix3x3& M, F64 determin
 
 MTL_INLINE SquareMatrix1x1 SquareMatrix1x1::Inverse() const
 {
-  return SquareMatrix1x1(1./data_[0][0]);
+  return SquareMatrix1x1(1./Data_[0][0]);
 }
 MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::Inverse() const
 {
@@ -1151,9 +1179,9 @@ MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::Inverse() const
 MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::operator*(const SquareMatrix3x3& B) const
 {
   SquareMatrix3x3 product;
-  MultiplyRowByMatrix<3,3>::compute<3>(product[0], data_[0], B.Data());
-  MultiplyRowByMatrix<3,3>::compute<3>(product[1], data_[1], B.Data());
-  MultiplyRowByMatrix<3,3>::compute<3>(product[2], data_[2], B.Data());
+  MultiplyRowByMatrix<3,3>::Compute<3>(product[0], Data_[0], B.Data());
+  MultiplyRowByMatrix<3,3>::Compute<3>(product[1], Data_[1], B.Data());
+  MultiplyRowByMatrix<3,3>::Compute<3>(product[2], Data_[2], B.Data());
 
   return product;
 }
@@ -1161,9 +1189,9 @@ MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::operator*(const SquareMatrix3x3& B) 
 MTL_INLINE ColumnVector3D SquareMatrix3x3::operator*(const ColumnVector3D& B) const
 {
   ColumnVector3D product;
-  product[0] = MultiplyRowByCol<1>::compute<3>(data_[0], B.Data(), 0);
-  product[1] = MultiplyRowByCol<1>::compute<3>(data_[1], B.Data(), 0);
-  product[2] = MultiplyRowByCol<1>::compute<3>(data_[2], B.Data(), 0);
+  product[0] = MultiplyRowByCol<1>::Compute<3>(Data_[0], B.Data(), 0);
+  product[1] = MultiplyRowByCol<1>::Compute<3>(Data_[1], B.Data(), 0);
+  product[2] = MultiplyRowByCol<1>::Compute<3>(Data_[2], B.Data(), 0);
 
   return product;
 }
@@ -1171,8 +1199,8 @@ MTL_INLINE ColumnVector3D SquareMatrix3x3::operator*(const ColumnVector3D& B) co
 MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::operator*(const SquareMatrix2x2& B) const
 {
   SquareMatrix2x2 product;
-  MultiplyRowByMatrix<2,2>::compute<2>(product[0], data_[0], B.Data());
-  MultiplyRowByMatrix<2,2>::compute<2>(product[1], data_[1], B.Data());
+  MultiplyRowByMatrix<2,2>::Compute<2>(product[0], Data_[0], B.Data());
+  MultiplyRowByMatrix<2,2>::Compute<2>(product[1], Data_[1], B.Data());
 
   return product;
 }
@@ -1180,8 +1208,8 @@ MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::operator*(const SquareMatrix2x2& B) 
 MTL_INLINE ColumnVector2D SquareMatrix2x2::operator*(const ColumnVector2D& B) const
 {
   ColumnVector2D product;
-  product[0] = MultiplyRowByCol<1>::compute<2>(data_[0], B.Data(), 0);
-  product[1] = MultiplyRowByCol<1>::compute<2>(data_[1], B.Data(), 0);
+  product[0] = MultiplyRowByCol<1>::Compute<2>(Data_[0], B.Data(), 0);
+  product[1] = MultiplyRowByCol<1>::Compute<2>(Data_[1], B.Data(), 0);
 
   return product;
 }

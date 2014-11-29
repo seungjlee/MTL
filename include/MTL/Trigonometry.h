@@ -23,37 +23,41 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef MTL_POINT_3D_H
-#define MTL_POINT_3D_H
+#ifndef MTL_TRIGONOMETRY_H
+#define MTL_TRIGONOMETRY_H
 
-#include "Matrix.h"
+#include "Math.h"
 
 namespace MTL
 {
 
-template<class T>
-class Point3D : public ColumnVector<3,T>
+// Large offset to simplify computation by only dealing with positive numbers when we compute the
+// correct sign.
+static const double kTruncateOffset = 1e15;
+
+template <class T> MTL_INLINE static void ComputeCosineSine(T& c, T& s, const T& angle)
 {
-public:
-  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Point3D, ColumnVector, 3, T);
-
-  MTL_INLINE Point3D() : ColumnVector3D() {}
-  MTL_INLINE Point3D(double xx, double yy, double zz)
+  // Figure out if we should compute sine from cosine or viceversa. Better pick the best way to
+  // avoid losing precision.
+  U64 test = U64((angle+kPiOverFour)*kTwoOverPi+kTruncateOffset);
+  if (test & 1)
   {
-    x(xx);
-    y(yy);
-    z(zz);
+    c = cos(angle);
+    s = Sqrt(1-Pow<2>(c));
+
+    assert(angle*kOneOverPi >= -T(kTruncateOffset));
+    s = U64(angle*kOneOverPi+T(kTruncateOffset)) & 1 ? -s : s;
   }
+  else
+  {
+    s = sin(angle);
+    c = Sqrt(1-Pow<2>(s));
 
-  const T& x() const   { return (*this)[0]; }
-  const T& y() const   { return (*this)[1]; }
-  const T& z() const   { return (*this)[2]; }
-
-  void x(const T& xx)  { (*this)[0] = xx;   }
-  void y(const T& yy)  { (*this)[1] = yy;   }
-  void z(const T& yy)  { (*this)[2] = yy;   }
-};
+    assert((angle+kPiOverTwo)*kOneOverPi >= -T(kTruncateOffset));
+    c = U64((angle+kPiOverTwo)*kOneOverPi+T(kTruncateOffset)) & 1 ? -c : c;
+  }
+}
 
 }  // namespace MTL
 
-#endif // MTL_POINT_3D_H
+#endif // MTL_TRIGONOMETRY_H

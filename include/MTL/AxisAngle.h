@@ -23,37 +23,39 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef MTL_POINT_3D_H
-#define MTL_POINT_3D_H
+#ifndef MTL_AXIS_ANGLE_H
+#define MTL_AXIS_ANGLE_H
 
-#include "Matrix.h"
+#include "Vector3D.h"
 
 namespace MTL
 {
 
+// Compact 3D axis angle rotation representation class.
 template<class T>
-class Point3D : public ColumnVector<3,T>
+class AxisAngle
 {
 public:
-  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Point3D, ColumnVector, 3, T);
+  AxisAngle()
+    : RotationVector_(0,0,0), DirtyCachedValues_(true) {}
+  AxisAngle(const Vector3D<T>& rotationVector)
+    : RotationVector_(rotationVector), DirtyCachedValues_(true) {}
 
-  MTL_INLINE Point3D() : ColumnVector3D() {}
-  MTL_INLINE Point3D(double xx, double yy, double zz)
-  {
-    x(xx);
-    y(yy);
-    z(zz);
-  }
+  MTL_INLINE AxisAngle Inverse() const  { return AxisAngle(-RotationVector_); }
 
-  const T& x() const   { return (*this)[0]; }
-  const T& y() const   { return (*this)[1]; }
-  const T& z() const   { return (*this)[2]; }
+private:
+  Vector3D<T> RotationVector_;
 
-  void x(const T& xx)  { (*this)[0] = xx;   }
-  void y(const T& yy)  { (*this)[1] = yy;   }
-  void z(const T& yy)  { (*this)[2] = yy;   }
+  // Cached values.
+  T Angle_;
+  T SinHalfAngle_;
+  T CosHalfAngle_;
+  T SinAngle_;
+  T CosAngle_;
+  Vector3D<T> UnitRotationVector_;
+  bool DirtyCachedValues_;
 };
 
 }  // namespace MTL
 
-#endif // MTL_POINT_3D_H
+#endif // MTL_AXIS_ANGLE_H

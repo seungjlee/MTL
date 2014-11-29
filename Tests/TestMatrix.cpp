@@ -23,7 +23,7 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Test.h>
-#include <MTL/Matrix.h>
+#include <MTL/LDLt.h>
 
 using namespace MTL;
 
@@ -96,4 +96,102 @@ TEST(TestInverseAndDeterminant)
       MTL_EQUAL_FLOAT(InvA1[row][col], InvA2[row][col], kTol);
 
   MTL_EQUAL_FLOAT(A.Determinant(), DeterminantRecursive(A), kTol);
+}
+
+template<I32 N, class T>
+void TestSolvers(const T& tol)
+{
+  enum
+  {
+    kRepeats = 10000
+  };
+
+  Timer time_LDLt;
+  Timer time_LUP;
+  Timer time_Inverse;
+  T maxRMS_LUP = 0;
+  T maxRMS_LDLt = 0;
+  T maxRMS_Inverse = 0;
+
+  T maxConditionNumber = 0;
+
+  ColumnVector<N,T> residuals;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    SquareMatrix<N,T> A;
+    ColumnVector<N,T> b;
+
+    for (I32 row = 0; row < N; row++)
+    {
+      for (I32 col = 0; col < N; col++)
+        A[row][col] = T(Test::RandomMinusOneToOne());
+
+      b[row] = T(Test::RandomMinusOneToOne());
+    }
+
+    // Create a positive definite symmetric matrix that is well conditioned.
+    A = A.MultiplyByTranspose();
+    A += SquareMatrix<N,T>(SquareMatrix<N,T>::eIdentity);
+
+    // Until SVD is implemented, use LDLt based condition number.
+    T D[N];
+    LDLt_JustForSolver(SquareMatrix<N,T>(A), D);
+    T conditionNumber = ConditionNumberLDLt<N>(D);
+    maxConditionNumber = Max(maxConditionNumber, conditionNumber);
+
+    ColumnVector<N,T> xLDLt = b;
+    time_LDLt.Start();
+    SolveLDLt<N>(xLDLt, SquareMatrix<N,T>(A), tol);
+    time_LDLt.Stop();
+    residuals = A * xLDLt - b;
+    maxRMS_LDLt = Max(maxRMS_LDLt, residuals.FrobeniusNorm());
+
+    ColumnVector<N,T> xLUP = b;
+    time_LUP.Start();
+    A.SolveLUP(xLUP);
+    time_LUP.Stop();
+    residuals = A * xLUP - b;
+    maxRMS_LUP = Max(maxRMS_LUP, residuals.FrobeniusNorm());
+
+    time_Inverse.Start();
+    ColumnVector<N,T> xInverse = A.Inverse() * b;
+    time_Inverse.Stop();
+    residuals = A * xInverse - b;
+    maxRMS_Inverse = Max(maxRMS_Inverse, residuals.FrobeniusNorm());
+  }
+
+  printf("  Maximum condition number was: %f\n", maxConditionNumber);
+  printf("  Every solver ran %d times (%dx%d matrices).\n", kRepeats, N, N);
+
+  printf("  Solve LDLt:    %9.3f msecs, Max RMS = %e\n",
+         time_LDLt.Milliseconds(), maxRMS_LDLt);
+  printf("  Solve LUP:     %9.3f msecs, Max RMS = %e\n",
+         time_LUP.Milliseconds(), maxRMS_LUP);
+  printf("  Solve Inverse: %9.3f msecs, Max RMS = %e\n\n",
+         time_Inverse.Milliseconds(), maxRMS_Inverse);
+
+  MTL_LESS_THAN(maxRMS_LDLt, tol);
+}
+
+TEST(TestSolversF32)
+{
+  static const float kTol = 5e-6f;
+
+  TestSolvers< 3,F32>(kTol);
+  TestSolvers< 5,F32>(kTol);
+  TestSolvers< 6,F32>(kTol);
+  TestSolvers< 9,F32>(kTol);
+  TestSolvers<11,F32>(kTol);
+}
+
+TEST(TestSolversF64)
+{
+  static const double kTol = 1e-14;
+
+  TestSolvers< 3,F64>(kTol);
+  TestSolvers< 5,F64>(kTol);
+  TestSolvers< 6,F64>(kTol);
+  TestSolvers< 9,F64>(kTol);
+  TestSolvers<11,F64>(kTol);
 }
