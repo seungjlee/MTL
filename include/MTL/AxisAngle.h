@@ -26,7 +26,7 @@
 #ifndef MTL_AXIS_ANGLE_H
 #define MTL_AXIS_ANGLE_H
 
-#include "Vector3D.h"
+#include "Rotation3D.h"
 
 namespace MTL
 {
@@ -41,19 +41,143 @@ public:
   AxisAngle(const Vector3D<T>& rotationVector)
     : RotationVector_(rotationVector), DirtyCachedValues_(true) {}
 
+  AxisAngle(const Rotation3D& R)
+    : DirtyCachedValues_(true)
+  {
+    // From Multiple View Geometry (2nd Edition), R. Hartley and A. Zisserman (A4.10).
+    Rotation3D<T> A = R - Rotation3D();
+
+    long rank;
+    T conditionNumber;
+    SolveJacobiSVDHomogeneous(A, RotationVector_, rank, conditionNumber);
+
+    Vector3D<T> v(R[2][1] - R[1][2], R[0][2] - R[2][0], R[1][0] - R[0][1]);
+
+    T angle = atan2(RotationVector_.Dot(v), R[0][0] + R[1][1] + R[2][2] - 1);
+
+    RotationVector_ *= angle;
+  }
+
   MTL_INLINE AxisAngle Inverse() const  { return AxisAngle(-RotationVector_); }
+
+  MTL_INLINE Vector3D<T> operator*(const Vector3D<T>& pt) const
+  {
+    const_cast<AxisAngle*>(this)->ComputeCachedValues();
+
+    // Use Rodrigues' rotation formula.
+    return pt *CcosAngle_ + UnitRotationVector_.Cross(pt) * SinAngle_ + 
+           UnitRotationVector_ * (UnitRotationVector_.Dot(pt) * (1 - CosAngle_));
+  }
+
+  MTL_INLINE AxisAngle operator*(const AxisAngle& other) const
+  {
+    return AxisAngle(Multiply(other));
+  }
+
+  MTL_INLINE AxisAngle& operator*=(const AxisAngle& other)
+  {
+    *this = *this * other;
+    return *this;
+  }
+
+  MTL_INLINE void GetUnitQuaternions(double& qs, Vector3D<T>& qv) const
+  {
+    const_cast<AxisAngle*>(this)->computeCachedValues();
+    qs = CosHalfAngle_;
+    qv = UnitRotationVector_ * SinHalfAngle_;
+  }
+
+  MTL_INLINE bool IsIdentity() const      { return RotationVector_ == vector3D<T>(0,0,0); }
+
+  MTL_INLINE Rotation3D GetRotationMatrix() const
+  {
+    const_cast<axisAngleRotation3D*>(this)->computeCachedValues();
+
+    if (sinAngle_ == 0 && cosAngle_ > 0)
+      return fixedMatrix3x3(fixedMatrix3x3::eIdentity);
+
+    const vector3DD& u = unitRotationVector_;
+    fixedMatrix3x3 m1(         cosAngle_, -u.z() * sinAngle_,  u.y() * sinAngle_,
+                       u.z() * sinAngle_,          cosAngle_, -u.x() * sinAngle_,
+                      -u.y() * sinAngle_,  u.x() * sinAngle_,          cosAngle_);
+
+    double xx = u.x() * u.x();
+    double xy = u.x() * u.y();
+    double xz = u.x() * u.z();
+    double yy = u.y() * u.y();
+    double yz = u.y() * u.z();
+    double zz = u.z() * u.z();
+    fixedMatrix3x3 m2(xx, xy, xz,
+                      xy, yy, yz,
+                      xz, yz, zz);
+
+    return m1 + m2 * (1 - cosAngle_);
+  }
 
 private:
   Vector3D<T> RotationVector_;
 
   // Cached values.
-  T Angle_;
   T SinHalfAngle_;
   T CosHalfAngle_;
   T SinAngle_;
   T CosAngle_;
+  T Angle_;
   Vector3D<T> UnitRotationVector_;
   bool DirtyCachedValues_;
+
+  MTL_INLINE Vector3D<T> Multiply(const AxisAngle& other) const
+  {
+    // Compute product of unit quaternions.
+    double    qs1, qs2;
+    Vector3DD qv1, qv2;
+    GetUnitQuaternions(qs1, qv1);
+    other.GetUnitQuaternions(qs2, qv2);
+
+    T qs = qs1*qs2 - qv1.dot(qv2);
+
+    if (Abs(qs) >= 1)
+    {
+      return Vector3DD(0, 0, 0);
+    }
+    else
+    {
+      T angle = 2*acos(qs);
+      T sinHalfAngle = sin(0.5*angle);
+      Vector3D<T> qv = qv1*qs2 + qv2*qs1 + qv1.Cross(qv2);
+      Vector3D<T> rotationVector = qv * angle / sinHalfAngle;
+
+      return rotationVector;
+    }
+  }
+
+  MTL_INLINE void ComputeCachedValues()
+  {
+    if (DirtyCachedValues_)
+    {
+      T angle = rotationVector_.length();
+      if (angle == 0)
+      {
+        unitRotationVector_ = Vector3D<T>(0,0,0);
+        sinAngle_ = 0.0;
+        cosAngle_ = 1.0;
+        sinHalfAngle_ = 0.0;
+        cosHalfAngle_ = 1.0;
+      }
+      else
+      {
+        unitRotationVector_ = rotationVector_ / angle;
+
+        T halfAngle = 0.5 * angle;
+        ComputeSineAndCosine(sinHalfAngle_, cosHalfAngle_, halfAngle);
+
+        sinAngle_ = 2 * sinHalfAngle_ * cosHalfAngle_;
+        cosAngle_ = Square(cosHalfAngle_) - Square(sinHalfAngle_);
+      }
+
+      DirtyCachedValues_ = false;
+    }
+  }
 };
 
 }  // namespace MTL

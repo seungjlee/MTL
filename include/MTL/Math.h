@@ -191,9 +191,9 @@ MTL_INLINE static T Hypotenuse(const T& a, const T& b)
   aa = MTL::Abs(a);
   bb = MTL::Abs(b);
   if (aa > bb)
-    return aa * MTL::Sqrt(1.0 + Square(bb/aa));
+    return aa * Sqrt(T(1.0) + Square(bb/aa));
   else
-    return (bb == 0.0 ? 0.0 : bb * Sqrt(1.0 + MTL::Square<2>(aa/bb)));
+    return (bb == T(0.0) ? T(0.0) : bb * Sqrt(T(1.0) + Square(aa/bb)));
 }
 
 template <class T> MTL_INLINE static T Epsilon();
