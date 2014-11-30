@@ -27,6 +27,8 @@
 #define MTL_AXIS_ANGLE_H
 
 #include "Rotation3D.h"
+#include "SVD.h"
+#include "Trigonometry.h"
 
 namespace MTL
 {
@@ -41,11 +43,11 @@ public:
   AxisAngle(const Vector3D<T>& rotationVector)
     : RotationVector_(rotationVector), DirtyCachedValues_(true) {}
 
-  AxisAngle(const Rotation3D& R)
+  AxisAngle(const Rotation3D<T>& R)
     : DirtyCachedValues_(true)
   {
     // From Multiple View Geometry (2nd Edition), R. Hartley and A. Zisserman (A4.10).
-    Rotation3D<T> A = R - Rotation3D();
+    Rotation3D<T> A = R - Rotation3D<T>();
 
     long rank;
     T conditionNumber;
@@ -65,7 +67,7 @@ public:
     const_cast<AxisAngle*>(this)->ComputeCachedValues();
 
     // Use Rodrigues' rotation formula.
-    return pt *CcosAngle_ + UnitRotationVector_.Cross(pt) * SinAngle_ + 
+    return pt * CosAngle_ + Cross(UnitRotationVector_, pt) * SinAngle_ + 
            UnitRotationVector_ * (UnitRotationVector_.Dot(pt) * (1 - CosAngle_));
   }
 
@@ -80,38 +82,38 @@ public:
     return *this;
   }
 
-  MTL_INLINE void GetUnitQuaternions(double& qs, Vector3D<T>& qv) const
+  MTL_INLINE void GetUnitQuaternions(T& qs, Vector3D<T>& qv) const
   {
     const_cast<AxisAngle*>(this)->computeCachedValues();
     qs = CosHalfAngle_;
     qv = UnitRotationVector_ * SinHalfAngle_;
   }
 
-  MTL_INLINE bool IsIdentity() const      { return RotationVector_ == vector3D<T>(0,0,0); }
+  MTL_INLINE bool IsIdentity() const  { return RotationVector_ == vector3D<T>(0,0,0); }
 
-  MTL_INLINE Rotation3D GetRotationMatrix() const
+  MTL_INLINE Rotation3D<T> GetRotationMatrix() const
   {
-    const_cast<axisAngleRotation3D*>(this)->computeCachedValues();
+    const_cast<AxisAngle*>(this)->ComputeCachedValues();
 
-    if (sinAngle_ == 0 && cosAngle_ > 0)
-      return fixedMatrix3x3(fixedMatrix3x3::eIdentity);
+    if (SinAngle_ == 0 && CosAngle_ > 0)
+      return Rotation3D<T>(Rotation3D<T>::eIdentity);
 
-    const vector3DD& u = unitRotationVector_;
-    fixedMatrix3x3 m1(         cosAngle_, -u.z() * sinAngle_,  u.y() * sinAngle_,
-                       u.z() * sinAngle_,          cosAngle_, -u.x() * sinAngle_,
-                      -u.y() * sinAngle_,  u.x() * sinAngle_,          cosAngle_);
+    const Vector3D<T>& u = UnitRotationVector_;
+    T m1[3][3] = {{          cosAngle_, -u.z() * sinAngle_,  u.y() * sinAngle_ },
+                  {  u.z() * sinAngle_,          cosAngle_, -u.x() * sinAngle_ },
+                  { -u.y() * sinAngle_,  u.x() * sinAngle_,          cosAngle_ }};
 
-    double xx = u.x() * u.x();
-    double xy = u.x() * u.y();
-    double xz = u.x() * u.z();
-    double yy = u.y() * u.y();
-    double yz = u.y() * u.z();
-    double zz = u.z() * u.z();
-    fixedMatrix3x3 m2(xx, xy, xz,
-                      xy, yy, yz,
-                      xz, yz, zz);
+    T xx = u.x() * u.x();
+    T xy = u.x() * u.y();
+    T xz = u.x() * u.z();
+    T yy = u.y() * u.y();
+    T yz = u.y() * u.z();
+    T zz = u.z() * u.z();
+    T m2[3][3] = {{ xx, xy, xz },
+                  { xy, yy, yz },
+                  { xz, yz, zz }};
 
-    return m1 + m2 * (1 - cosAngle_);
+    return Rotation3D<T>(m1) + Rotation3D<T>(m2) * (1 - cosAngle_);
   }
 
 private:
@@ -129,7 +131,7 @@ private:
   MTL_INLINE Vector3D<T> Multiply(const AxisAngle& other) const
   {
     // Compute product of unit quaternions.
-    double    qs1, qs2;
+    T    qs1, qs2;
     Vector3DD qv1, qv2;
     GetUnitQuaternions(qs1, qv1);
     other.GetUnitQuaternions(qs2, qv2);
@@ -155,24 +157,24 @@ private:
   {
     if (DirtyCachedValues_)
     {
-      T angle = rotationVector_.length();
-      if (angle == 0)
+      Angle_ = RotationVector_.FrobeniusNorm();
+      if (Angle_ == T(0.0))
       {
-        unitRotationVector_ = Vector3D<T>(0,0,0);
-        sinAngle_ = 0.0;
-        cosAngle_ = 1.0;
-        sinHalfAngle_ = 0.0;
-        cosHalfAngle_ = 1.0;
+        UnitRotationVector_ = Vector3D<T>(0,0,0);
+        SinAngle_ = T(0.0);
+        CosAngle_ = T(1.0);
+        SinHalfAngle_ = T(0.0);
+        CosHalfAngle_ = T(1.0);
       }
       else
       {
-        unitRotationVector_ = rotationVector_ / angle;
+        UnitRotationVector_ = RotationVector_ / Angle_;
 
-        T halfAngle = 0.5 * angle;
-        ComputeSineAndCosine(sinHalfAngle_, cosHalfAngle_, halfAngle);
+        T halfAngle = T(0.5) * Angle_;
+        ComputeCosineSine(CosHalfAngle_, SinHalfAngle_, halfAngle);
 
-        sinAngle_ = 2 * sinHalfAngle_ * cosHalfAngle_;
-        cosAngle_ = Square(cosHalfAngle_) - Square(sinHalfAngle_);
+        SinAngle_ = T(2.0) * CosHalfAngle_ * SinHalfAngle_;
+        CosAngle_ = Square(CosHalfAngle_) - Square(SinHalfAngle_);
       }
 
       DirtyCachedValues_ = false;

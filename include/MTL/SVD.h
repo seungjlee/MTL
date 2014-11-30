@@ -191,10 +191,10 @@ MTL_INLINE static bool SolveJacobiSVD(Matrix<M,N,T>& A, ColumnVector<N,T>& x,
   SquareMatrix<N,T> V;
   T D[N];
 
-  bool fullyConverged = JacobiSVD<M,N>(A, D, V);
+  bool converged = JacobiSVD<M,N>(A, D, V);
   conditionNumber = SolveSVD<M,N>(x, A, D, V, rank, b, tolerance);
 
-  return fullyConverged;
+  return converged;
 }
 template <I32 N, class T>
 MTL_INLINE static bool SolveJacobiSVD(SquareMatrix<N,T>& A, ColumnVector<N,T>& x,
@@ -202,6 +202,32 @@ MTL_INLINE static bool SolveJacobiSVD(SquareMatrix<N,T>& A, ColumnVector<N,T>& x
                                       const T& tol = T(-1.0))
 {
   return SolveJacobiSVD(A, x, rank, conditionNumber, x, tol);
+}
+
+template <long M, long N, class T>
+MTL_INLINE static bool SolveJacobiSVDHomogeneous(Matrix<M,N,T>& A, ColumnVector<N,T>& x,
+                                                 long& rank, T& conditionNumber,
+                                                 const T& tol = T(-1.0))
+{
+  SquareMatrix<N,T> V;
+  T D[N];
+
+  bool converged = JacobiSVD<M,N>(A, D, V);
+
+  T tolerance = tol;
+  if (tolerance < 0)
+    tolerance = A.Rows() * Epsilon<T>() * D[0];
+
+  rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
+
+  assert(rank > 0);
+
+  for (long i = 0; i < N; i++)
+    x[i] = V[i][N-1];
+
+  conditionNumber = D[0] / D[rank-1];
+
+  return converged;
 }
 
 template<I32 M, I32 N, class T>

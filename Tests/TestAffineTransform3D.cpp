@@ -37,9 +37,11 @@ TEST(TestRotation3D)
   Rotation3D<F64> Ry = Rotation3D<F64>::RotationY(90 * kDegreesToRadians);
   Rotation3D<F64> Rz = Rotation3D<F64>::RotationZ(90 * kDegreesToRadians);
 
-  Point3D<F64> v1 = Rx * Point3D<F64>(1,0,0);
-  Point3D<F64> v2 = Ry * Point3D<F64>(1,0,0);
-  Point3D<F64> v3 = Rz * Point3D<F64>(1,0,0);
+  Point3D<F64> v1, v2, v3;
+
+  v1 = Rx * Point3D<F64>(1,0,0);
+  v2 = Ry * Point3D<F64>(1,0,0);
+  v3 = Rz * Point3D<F64>(1,0,0);
   MTL_EQUAL_FLOAT(v1.x(),    1.0, kTol);
   MTL_EQUAL_FLOAT(v1.Sum(),  1.0, kTol);
   MTL_EQUAL_FLOAT(v2.z(),   -1.0, kTol);
@@ -75,18 +77,52 @@ TEST(TestRotation3D)
   MTL_EQUAL_FLOAT(v1.SumOfSquares(), 1.0, kTol);
   MTL_EQUAL_FLOAT(v2.SumOfSquares(), 1.0, kTol);
   MTL_EQUAL_FLOAT(v3.SumOfSquares(), 1.0, kTol);
+
+  AxisAngle<F64> Ax(Rx);
+  AxisAngle<F64> Ay(Ry);
+  AxisAngle<F64> Az(Rz);
+
+  v1 = Ax * Point3D<F64>(1,0,0);
+  v2 = Ay * Point3D<F64>(1,0,0);
+  v3 = Az * Point3D<F64>(1,0,0);
+  MTL_EQUAL_FLOAT(v1.x(),    1.0, kTol);
+  MTL_EQUAL_FLOAT(v1.Sum(),  1.0, kTol);
+  MTL_EQUAL_FLOAT(v2.z(),   -1.0, kTol);
+  MTL_EQUAL_FLOAT(v2.Sum(), -1.0, kTol);
+  MTL_EQUAL_FLOAT(v3.y(),    1.0, kTol);
+  MTL_EQUAL_FLOAT(v3.Sum(),  1.0, kTol);
+  MTL_EQUAL_FLOAT(v1.SumOfSquares(), 1.0, kTol);
+  MTL_EQUAL_FLOAT(v2.SumOfSquares(), 1.0, kTol);
+  MTL_EQUAL_FLOAT(v3.SumOfSquares(), 1.0, kTol);
+
+  v1 = Ax * Point3D<F64>(0,1,0);
+  v2 = Ay * Point3D<F64>(0,1,0);
+  v3 = Az * Point3D<F64>(0,1,0);
+  MTL_EQUAL_FLOAT(v1.z(),    1.0, kTol);
+  MTL_EQUAL_FLOAT(v1.Sum(),  1.0, kTol);
+  MTL_EQUAL_FLOAT(v2.y(),    1.0, kTol);
+  MTL_EQUAL_FLOAT(v2.Sum(),  1.0, kTol);
+  MTL_EQUAL_FLOAT(v3.x(),   -1.0, kTol);
+  MTL_EQUAL_FLOAT(v3.Sum(), -1.0, kTol);
+  MTL_EQUAL_FLOAT(v1.SumOfSquares(), 1.0, kTol);
+  MTL_EQUAL_FLOAT(v2.SumOfSquares(), 1.0, kTol);
+  MTL_EQUAL_FLOAT(v3.SumOfSquares(), 1.0, kTol);
+
+  v1 = Ax * Point3D<F64>(0,0,1);
+  v2 = Ay * Point3D<F64>(0,0,1);
+  v3 = Az * Point3D<F64>(0,0,1);
+  MTL_EQUAL_FLOAT(v1.y(),   -1.0, kTol);
+  MTL_EQUAL_FLOAT(v1.Sum(), -1.0, kTol);
+  MTL_EQUAL_FLOAT(v2.x(),    1.0, kTol);
+  MTL_EQUAL_FLOAT(v2.Sum(),  1.0, kTol);
+  MTL_EQUAL_FLOAT(v3.z(),    1.0, kTol);
+  MTL_EQUAL_FLOAT(v3.Sum(),  1.0, kTol);
+  MTL_EQUAL_FLOAT(v1.SumOfSquares(), 1.0, kTol);
+  MTL_EQUAL_FLOAT(v2.SumOfSquares(), 1.0, kTol);
+  MTL_EQUAL_FLOAT(v3.SumOfSquares(), 1.0, kTol);
 }
 
 TEST(TestRotationTranslation3D)
 {
   RotationTranslation3D<F64> T;
-
-  Out() << TestPath() << std::endl;
-  Out() << TestFilePathName() << std::endl;
-
-  for(int i = 0; i < 10;i++ )
-    printf("  %10f\n", Random());
-
-  for(int i = 0; i < 10;i++ )
-    printf("  %10f\n", RandomMinusOneToOne());
 }

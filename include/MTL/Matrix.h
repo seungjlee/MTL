@@ -88,13 +88,13 @@ public:
   MTL_INLINE void SetColumn(I32 col, const Matrix<M,1,T>& v)
   {
     assert(col >= 0 && col < N);
-    SetColumn<M>(Data_, v.Data(), col);
+    SetColumn<M>(Data(), v.Data(), col);
   }
 
   MTL_INLINE void SetRow(I32 row, const Matrix<1,N,T>& v)
   {
     assert(row >= 0 && row < M);
-    memcpy((*this)[row], v.data_[0], N*sizeof(T));
+    memcpy((*this)[row], v.Data()[0], N*sizeof(T));
   }
 
   // Multiplication.
@@ -161,8 +161,8 @@ public:
   MTL_INLINE Matrix<M+P,N,T> operator&&(const Matrix<P,N,T>& B) const
   {
     Matrix<M+P,N,T> matrix;
-    memcpy(matrix[0],   Data_[0], M*N*sizeof(T));
-    memcpy(matrix[M], B.Data_[0], P*N*sizeof(T));
+    memcpy(matrix[0],   Data()[0], M*N*sizeof(T));
+    memcpy(matrix[M], B.Data()[0], P*N*sizeof(T));
     return matrix;
   }
 
@@ -222,7 +222,7 @@ public:
 
   MTL_INLINE Matrix& operator+=(const Matrix& B)
   {
-    Add<M*N>(Data_[0], B.Data_[0]);
+    Add<M*N>(Data()[0], B.Data()[0]);
     return *this;
   }
   MTL_INLINE Matrix operator+(const Matrix& B) const
@@ -234,7 +234,7 @@ public:
 
   MTL_INLINE Matrix& operator-=(const Matrix& B)
   {
-    Subtract<M*N>(Data_[0], B.Data_[0]);
+    Subtract<M*N>(Data()[0], B.Data()[0]);
     return *this;
   }
   MTL_INLINE Matrix operator-(const Matrix& B) const
@@ -247,13 +247,13 @@ public:
   MTL_INLINE Matrix operator-() const
   {
     Matrix A;
-    UnaryMinus<M*N>(A.Data_[0], Data_[0]);
+    UnaryMinus<M*N>(A.Data()[0], Data()[0]);
     return A;
   }
 
   MTL_INLINE Matrix& operator+=(const T& scalar)
   {
-    ScalarAdd<M*N>(Data_[0], scalar);
+    ScalarAdd<M*N>(Data()[0], scalar);
     return *this;
   }
   MTL_INLINE Matrix operator+(const T& scalar) const
@@ -265,7 +265,7 @@ public:
 
   MTL_INLINE Matrix& operator-=(const T& scalar)
   {
-    ScalarSubtract<M*N>(Data_[0], scalar);
+    ScalarSubtract<M*N>(Data()[0], scalar);
     return *this;
   }
   MTL_INLINE Matrix operator-(const T& scalar) const
@@ -277,7 +277,7 @@ public:
 
   MTL_INLINE Matrix& operator*=(const T& scalar)
   {
-    ScalarMultiply<M*N>(Data_[0], scalar);
+    ScalarMultiply<M*N>(Data()[0], scalar);
     return *this;
   }
   MTL_INLINE Matrix operator*(const T& scalar) const
@@ -289,7 +289,7 @@ public:
 
   MTL_INLINE Matrix& operator/=(const T& scalar)
   {
-    ScalarDivide<M*N>(Data_[0], scalar);
+    ScalarDivide<M*N>(Data()[0], scalar);
     return *this;
   }
   MTL_INLINE Matrix operator/(const T& scalar) const
@@ -301,44 +301,44 @@ public:
 
   MTL_INLINE T Sum() const
   {
-    return MTL::Sum<M*N>(Data_[0]);
+    return MTL::Sum<M*N>(Data()[0]);
   }
 
   // Sum of the squares of all elements.
   MTL_INLINE T SumOfSquares() const
   {
-    return SumOfSquares<M*N>(Data_[0]);
+    return SumOfSquares<M*N>(Data()[0]);
   }
 
   // Returns maximum of all elements.
   MTL_INLINE T Max() const
   {
-    return Maximum<M*N>(Data_[0]);
+    return Maximum<M*N>(Data()[0]);
   }
 
   // Returns minimum of all elements.
   MTL_INLINE T Min() const
   {
-    return Minimum<M*N>(Data_[0]);
+    return Minimum<M*N>(Data()[0]);
   }
 
   MTL_INLINE T MaxOfAbsolutes() const
   {
-    return Maximum<M*N>(Data_[0]);
+    return Maximum<M*N>(Data()[0]);
   }
   MTL_INLINE T MinOfAbsolutes() const
   {
-    return Minimum<M*N>(Data_[0]);
+    return Minimum<M*N>(Data()[0]);
   }
 
 
-  MTL_INLINE void RowMultiply(I32 row, const T& scalar)  { ScalarMultiply<N>(Data_[row], scalar); }
-  MTL_INLINE void RowDivide  (I32 row, const T& scalar)  { ScalarDivide<N>  (Data_[row], scalar); }
+  MTL_INLINE void RowMultiply(I32 row, const T& scalar)  { ScalarMultiply<N>(Data()[row], scalar); }
+  MTL_INLINE void RowDivide  (I32 row, const T& scalar)  { ScalarDivide<N>  (Data()[row], scalar); }
 
   MTL_INLINE void ColumnMultiply(I32 col, const T& scalar)
-  { ColumnScalarMultiply<M>(Data_[0] + col, scalar); }
+  { ColumnScalarMultiply<M>(Data()[0] + col, scalar); }
   MTL_INLINE void ColumnDivide(I32 col, const T& scalar)
-  { ColumnScalarDivide<M>(Data_[0] + col, scalar); }
+  { ColumnScalarDivide<M>(Data()[0] + col, scalar); }
 
   MTL_INLINE T ColumnSum(I32 col) const           { return ColumnSum<M>(col);          }
   MTL_INLINE T ColumnSumOfSquares(I32 col) const  { return ColumnSumOfSquares<M>(col); }
@@ -360,7 +360,7 @@ public:
     Matrix<N,M,T> t;
     for (I32 i = 0; i < M; i++)
       for (I32 j = 0; j < N; j++)
-        t[j][i] = Data_[i][j];
+        t[j][i] = Data()[i][j];
 
     return t;
   }
@@ -431,6 +431,15 @@ public:
   template<> static T SumOfSquares<1>(const T* ptr)
   {
     return Pow<2>(ptr[0]);
+  }
+
+  template<I32 Q> static T DotProduct(const T* a, const T* b)
+  {
+    return DotProduct<Q-1>(a, b) + a[Q-1] * b[Q-1];
+  }
+  template<> T static DotProduct<1>(const T* a, const T* b)
+  {
+    return a[0] * b[0];
   }
 
   template<I32 Q> static void UnaryMinus(T* a, const T* b)
@@ -544,15 +553,6 @@ protected:
   template<> void SetDiagonal<1>(T ptr[M][N], const T newVals[])
   {
     ptr[0][0] = newVals[0];
-  }
-
-  template<I32 Q> static T DotProduct(const T* a, const T* b)
-  {
-    return DotProduct<Q-1>(a, b) + a[Q-1] * b[Q-1];
-  }
-  template<> T static DotProduct<1>(const T* a, const T* b)
-  {
-    return a[0] * b[0];
   }
 
   template <I32 Cols>
@@ -730,7 +730,7 @@ public:
 
   MTL_INLINE ColumnVector& operator*=(const ColumnVector& v)
   {
-    Multiply<M>(Data_[0], v.Data_[0]);
+    Multiply<M>(Data()[0], v.Data()[0]);
     return *this;
   }
   MTL_INLINE ColumnVector& operator*=(const Base& v)
@@ -746,7 +746,7 @@ public:
 
   MTL_INLINE ColumnVector& operator/=(const ColumnVector& v)
   {
-    Divide<M>(Data_[0], v.Data_[0]);
+    Divide<M>(Data()[0], v.Data()[0]);
     return *this;
   }
   MTL_INLINE ColumnVector& operator/=(const Base& v)
@@ -760,14 +760,14 @@ public:
     return v3;
   }
 
-  MTL_INLINE T Dot(const Base& v2) const
+  MTL_INLINE T Dot(const Base& v) const
   {
-    return DotProduct<M>(Data_[0], v2.Data_[0]);
+    return DotProduct<M>(Data()[0], v.Data()[0]);
   }
 
   MTL_INLINE T MaxNorm() const
   {
-    return Max_Norm<M>(Data_[0]);
+    return Max_Norm<M>(Data()[0]);
   }
 
   MTL_INLINE void Normalize()
@@ -788,10 +788,10 @@ typedef ColumnVector<4,F64> ColumnVector4D;
 typedef ColumnVector<5,F64> ColumnVector5D;
 typedef ColumnVector<6,F64> ColumnVector6D;
 
-
-MTL_INLINE static ColumnVector3D Cross(const ColumnVector3D& u, const ColumnVector3D& v)
+template <class T>
+MTL_INLINE static ColumnVector<3,T> Cross(const ColumnVector<3,T>& u, const ColumnVector<3,T>& v)
 {
-  ColumnVector<3,F64> crossProduct;
+  ColumnVector<3,T> crossProduct;
   crossProduct[0] = u[1] * v[2] - u[2] * v[1];
   crossProduct[1] = u[2] * v[0] - u[0] * v[2];
   crossProduct[2] = u[0] * v[1] - u[1] * v[0];
