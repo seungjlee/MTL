@@ -331,7 +331,6 @@ public:
     return Minimum<M*N>(Data()[0]);
   }
 
-
   MTL_INLINE void RowMultiply(I32 row, const T& scalar)  { ScalarMultiply<N>(Data()[row], scalar); }
   MTL_INLINE void RowDivide  (I32 row, const T& scalar)  { ScalarDivide<N>  (Data()[row], scalar); }
 

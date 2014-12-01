@@ -56,9 +56,9 @@ MTL_INLINE static bool DoOpenMP(SizeType size, SizeType numberOfThreads)
 template <class T, void (*Func)(T*, SizeType)>
 MTL_INLINE static void Parallel_1Dst(T* p, SizeType size)
 {
-#ifdef FMTL_OPEN_MP_ENABLED
+#if MTL_ENABLE_OPENMP
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
-  if (DoOpenMP<DstT>(size, numberOfThreads))
+  if (DoOpenMP<T>(size, numberOfThreads))
   {
     DynamicVector<SizeType> subSizes, offsets;
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
