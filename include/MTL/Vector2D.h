@@ -23,8 +23,8 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef MTL_POINT_3D_H
-#define MTL_POINT_3D_H
+#ifndef MTL_VECTOR_2D_H
+#define MTL_VECTOR_2D_H
 
 #include "Matrix.h"
 #include "DynamicVectorOperators.h"
@@ -33,35 +33,32 @@ namespace MTL
 {
 
 template<class T>
-class Point3D : public ColumnVector<3,T>
+class Vector2D : public ColumnVector<2,T>
 {
 public:
-  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Point3D, ColumnVector, 3, T);
+  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Vector2D, ColumnVector, 2, T);
 
-  MTL_INLINE Point3D() : ColumnVector<3,T>() {}
-  MTL_INLINE Point3D(double xx, double yy, double zz)
+  MTL_INLINE Vector2D() : ColumnVector<2,T>() {}
+  MTL_INLINE Vector2D(double xx, double yy)
   {
     x(xx);
     y(yy);
-    z(zz);
   }
 
   T Length() const  { return FrobeniusNorm(); }
 
   const T& x() const   { return (*this)[0]; }
   const T& y() const   { return (*this)[1]; }
-  const T& z() const   { return (*this)[2]; }
 
   void x(const T& xx)  { (*this)[0] = xx;   }
   void y(const T& yy)  { (*this)[1] = yy;   }
-  void z(const T& yy)  { (*this)[2] = yy;   }
 };
 
-//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Point3D<F32>);
-//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Point3D<F64>);
-MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Point3D<F32>,F32);
-MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Point3D<F64>,F64);
+//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Vector2D<F32>);
+//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Vector2D<F64>);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector2D<F32>,F32);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector2D<F64>,F64);
 
 }  // namespace MTL
 
-#endif // MTL_POINT_3D_H
+#endif // MTL_VECTOR_2D_H

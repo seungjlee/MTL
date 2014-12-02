@@ -26,6 +26,7 @@
 #ifndef MTL_MATRIX_H
 #define MTL_MATRIX_H
 
+#include <assert.h>
 #include "StreamMath.h"
 
 namespace MTL

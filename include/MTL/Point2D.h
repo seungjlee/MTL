@@ -27,6 +27,7 @@
 #define MTL_POINT_2D_H
 
 #include "Matrix.h"
+#include "DynamicVectorOperators.h"
 
 namespace MTL
 {
@@ -37,7 +38,14 @@ class Point2D : public ColumnVector<2,T>
 public:
   MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Point2D, ColumnVector, 2, T);
 
-  MTL_INLINE Point2D() : ColumnVector2D() {}
+  MTL_INLINE Point2D() : ColumnVector<2,T>() {}
+  MTL_INLINE Point2D(double xx, double yy)
+  {
+    x(xx);
+    y(yy);
+  }
+
+  T Length() const  { return FrobeniusNorm(); }
 
   const T& x() const   { return (*this)[0]; }
   const T& y() const   { return (*this)[1]; }
@@ -45,6 +53,11 @@ public:
   void x(const T& xx)  { (*this)[0] = xx;   }
   void y(const T& yy)  { (*this)[1] = yy;   }
 };
+
+//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Point2D<F32>);
+//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Point2D<F64>);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Point2D<F32>,F32);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Point2D<F64>,F64);
 
 }  // namespace MTL
 

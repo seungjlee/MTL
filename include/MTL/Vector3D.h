@@ -27,6 +27,7 @@
 #define MTL_VECTOR_3D_H
 
 #include "Matrix.h"
+#include "DynamicVectorOperators.h"
 
 namespace MTL
 {
@@ -37,13 +38,15 @@ class Vector3D : public ColumnVector<3,T>
 public:
   MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Vector3D, ColumnVector, 3, T);
 
-  MTL_INLINE Vector3D() : ColumnVector3D() {}
+  MTL_INLINE Vector3D() : ColumnVector<3,T>() {}
   MTL_INLINE Vector3D(double xx, double yy, double zz)
   {
     x(xx);
     y(yy);
     z(zz);
   }
+
+  T Length() const  { return FrobeniusNorm(); }
 
   const T& x() const   { return (*this)[0]; }
   const T& y() const   { return (*this)[1]; }
@@ -53,6 +56,11 @@ public:
   void y(const T& yy)  { (*this)[1] = yy;   }
   void z(const T& yy)  { (*this)[2] = yy;   }
 };
+
+//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Vector3D<F32>);
+//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Vector3D<F64>);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector3D<F32>,F32);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector3D<F64>,F64);
 
 }  // namespace MTL
 

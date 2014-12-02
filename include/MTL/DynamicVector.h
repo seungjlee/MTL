@@ -27,6 +27,7 @@
 #define MTL_DYNAMIC_VECTOR_H
 
 #include <assert.h>
+#include "Matrix.h"
 #include "OpenMP.h"
 #include "StreamArray.h"
 #include "StreamMath.h"
