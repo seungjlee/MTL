@@ -42,11 +42,12 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
     {
       if (i == j)
       {
-        P[i*rowSizeP + j] = SSE_SumOfSquares(M + i*rowSizeM, cols);
+        P[i*rowSizeP + j] = SumOfSquares_StreamAligned_Parallel(M + i*rowSizeM, cols);
       }
       else
       {
-        P[i*rowSizeP + j] = SSE_DotProduct(M + i*rowSizeM, M + j*rowSizeM, cols);
+        P[i*rowSizeP + j] = DotProduct_StreamAligned_Parallel(M + i*rowSizeM,
+                                                              M + j*rowSizeM, cols);
         P[j*rowSizeP + i] = P[i*rowSizeP + j];
       }
     }
@@ -102,7 +103,7 @@ public:
   MTL_INLINE DynamicMatrix(const Matrix<M,N,T>& matrix, I32 byteAlignment = MTL_STREAM_BYTES)
   {
     Resize(M, N);
-    for (I32 row = 0; row < N; row++)
+    for (I32 row = 0; row < M; row++)
       memcpy((*this)[row], matrix[row], N*sizeof(T));
   }
 
@@ -114,13 +115,13 @@ public:
     RowSize_ =
       ((Cols_ * sizeof(T) + byteAlignment - 1) / byteAlignment) * (byteAlignment / sizeof(T));
 
-    data_.resize(rows_ * RowSize_);
+    Data_.Resize(Rows_ * RowSize_);
   }
 
   MTL_INLINE void Identity()
   {
     Zeros();
-    for (I32 i = 0; i < Min(rows(), cols()); i++)
+    for (I32 i = 0; i < Min(Rows(), Cols()); i++)
       (*this)[i][i] = T(1);
   }
 
@@ -140,8 +141,8 @@ public:
   {
     assert(Cols() == B.Rows());
 
-    DynamicMatrix result(rows(), B.cols());
-    Multiply(result[0], (*this)[0], B[0], rows(), cols(), B.cols(),
+    DynamicMatrix result(Rows(), B.Cols());
+    Multiply(result[0], (*this)[0], B[0], Rows(), Cols(), B.Cols(),
              result.RowSize(), RowSize(), B.RowSize());
 
     return result;
@@ -159,11 +160,11 @@ public:
   }
 
   // Computes (*this) * this->getTranspose().
-  MTL_INLINE DynamicMatrix multiplyByTranspose() const
+  MTL_INLINE DynamicMatrix MultiplyByTranspose() const
   {
     DynamicMatrix squareSymmetricMatrix(Rows(), Rows());
-    MultiplyByTranspose(squareSymmetricMatrix[0], (*this)[0], Rows(), Cols(),
-                        squareSymmetricMatrix.RowSize(), RowSize());
+    ::MultiplyByTranspose(squareSymmetricMatrix[0], (*this)[0], Rows(), Cols(),
+                          squareSymmetricMatrix.RowSize(), RowSize());
 
     return squareSymmetricMatrix;
   }
