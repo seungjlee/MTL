@@ -35,6 +35,9 @@
 namespace MTL
 {
 
+class CPU;
+static CPU* Instance_ = 0;
+
 class CPU
 {
 public:
@@ -196,11 +199,8 @@ private:
   U64 NumberOfThreads_;
   U64 NumberOfCores_;
   U64 NumberOfLogicalCores_;
-  static CPU* Instance_;
   const InstructionSet_Internal CPU_Rep_;
 };
-
-CPU* CPU::Instance_ = 0;
 
 }  // namespace MTL
 

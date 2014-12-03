@@ -284,7 +284,6 @@ public:
     return sum;
   }
 
-  // Sum of all elements.
   MTL_INLINE T SumOfSquares() const
   {
     T sum = T(0);

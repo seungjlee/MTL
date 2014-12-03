@@ -492,17 +492,20 @@ template <> MTL_INLINE static void OptimizedZeros_Sequential(T* p, SizeType size
 }                                                                                  \
 template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)             \
 {                                                                                  \
-  if (MTL::CPU::Instance().NumberOfThreads() > 1)                                  \
-    Parallel_1Dst< T, OptimizedZeros_Sequential >(p, size);                        \
-  else                                                                             \
-    OptimizedZeros_Sequential(p, size);                                            \
+  Parallel_1Dst< T, OptimizedZeros_Sequential<T> >(p, size);                       \
+}
+
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL_CAST(T)                  \
+template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)             \
+{                                                                                  \
+  Parallel_1Dst< I8, OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T));    \
 }
 
 // Initializes all elements in the vector buffer to zero if this is defined for the element.
 #define MTL_DYNAMIC_VECTOR_ZERO_INIT(T)                                                       \
 MTL_INLINE void MTL::FastDynamicVector<T>::FastZeroInit(T *p, SizeType size)                  \
 {                                                                                             \
-  OptimizedZeros(p, size);                                                                    \
+  OptimizedZeros((I8*)p, size * sizeof(T));                                                   \
 }
 
 // Faster copy using intrinsic memcpy.
@@ -510,6 +513,12 @@ MTL_INLINE void MTL::FastDynamicVector<T>::FastZeroInit(T *p, SizeType size)    
 MTL_INLINE void MTL::DynamicVector<T>::OptimizedCopy(T* pDst, const T* pSrc, SizeType size)   \
 {                                                                                             \
   MTL::OptimizedCopy(pDst, pSrc, size);                                                       \
+}
+
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_COPY_CAST(T)                                             \
+MTL_INLINE void MTL::DynamicVector<T>::OptimizedCopy(T* pDst, const T* pSrc, SizeType size)   \
+{                                                                                             \
+  MTL::OptimizedCopy((I8*)pDst, (I8*)pSrc, size * sizeof(T));                                 \
 }
 
 // No initialization required for some cases.
@@ -524,7 +533,6 @@ MTL_DYNAMIC_VECTOR_NO_CONSTRUCTOR_DESTRUCTOR(T)       \
 MTL_DYNAMIC_VECTOR_OPTIMIZED_ASSIGN_ALL(T)            \
 MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL(T)
 
-
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(I8)
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(U8)
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(I16)
@@ -536,6 +544,23 @@ MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(U64)
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(F32)
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(F64)
 
+#define MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(T)       \
+MTL_DYNAMIC_VECTOR_OPTIMIZED_COPY_CAST(T)                  \
+MTL_DYNAMIC_VECTOR_NO_CONSTRUCTOR_DESTRUCTOR(T)            \
+MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL_CAST(T)
+
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ColumnVector1D)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ColumnVector2D)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ColumnVector3D)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ColumnVector4D)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ColumnVector5D)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ColumnVector6D)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(SquareMatrix1x1)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(SquareMatrix2x2)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(SquareMatrix3x3)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(SquareMatrix4x4)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(SquareMatrix5x5)
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(SquareMatrix6x6)
 
 }  // namespace MTL
 

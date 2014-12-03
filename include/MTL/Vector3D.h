@@ -39,7 +39,7 @@ public:
   MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Vector3D, ColumnVector, 3, T);
 
   MTL_INLINE Vector3D() : ColumnVector<3,T>() {}
-  MTL_INLINE Vector3D(double xx, double yy, double zz)
+  MTL_INLINE Vector3D(T xx, T yy, T zz)
   {
     x(xx);
     y(yy);
@@ -57,8 +57,8 @@ public:
   void z(const T& yy)  { (*this)[2] = yy;   }
 };
 
-//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Vector3D<F32>);
-//MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS(Vector3D<F64>);
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(Vector3D<F32>);
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(Vector3D<F64>);
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector3D<F32>,F32);
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector3D<F64>,F64);
 
