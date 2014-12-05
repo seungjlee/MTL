@@ -110,6 +110,25 @@ MTL_INLINE static void Parallel_1Dst_1Val(T* p, const T& val, SizeType size)
     Func(p, val, size);
 }
 
+template <class T, void (*Func)(T*, const T*, const T&, SizeType)>
+MTL_INLINE static void Parallel_1Dst_1Src_1Val(T* pDst, const T* pSrc, const T& val, SizeType size)
+{
+#if MTL_ENABLE_OPENMP
+  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (DoOpenMP<T>(size, numberOfThreads))
+  {
+    DynamicVector<SizeType> subSizes, offsets;
+    ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
+
+    #pragma omp parallel for
+    for (I32 i = 0; i < numberOfThreads; i++)
+      Func(pDst + offsets[i], pSrc + offsets[i], val, subSizes[i]);
+  }
+  else
+#endif
+    Func(pDst, pSrc, val, size);
+}
+
 template <class ReductionT, class T, ReductionT (*Func)(const T*, SizeType)>
 MTL_INLINE static DynamicVector<ReductionT> ParallelReduction_1Src(const T* pSrc, SizeType size)
 {

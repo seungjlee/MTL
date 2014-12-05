@@ -23,7 +23,8 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Test.h>
-#include <MTL/DynamicMatrix.h>
+#include <MTL/DynamicVectorOperators.h>
+#include <MTL/QR.h>
 
 using namespace MTL;
 
@@ -55,4 +56,81 @@ TEST(TestMatrixMultiplication)
 
   Matrix<3,3> Q0 = M1.MultiplyByTranspose();
   DynamicMatrix<F64> Q1 = A1 .MultiplyByTranspose();
+}
+
+TEST(TestHouseholderQR)
+{
+  enum
+  {
+    kSamples = 1024*1024+1
+  };
+
+  DynamicVector<F64> ys(kSamples);
+
+  DynamicMatrix<F64> At(3, kSamples);
+
+  for (int i = 0; i < kSamples; i++)
+  {
+    double x = 2 * i / double(kSamples) - 1;
+
+    At[0][i] = x*x;
+    At[1][i] = x;
+    At[2][i] = 1;
+
+    ys[i] = 2.5 * x*x + 0.3 * x - 1.7;
+  }
+
+  DynamicVector<F64> xs = ys;
+
+  I32 rank = SolveHouseholderQRTransposed(xs, At);
+  MTL_EQUAL(rank, 3);
+  MTL_EQUAL_FLOAT(xs[0],  2.5, kTol);
+  MTL_EQUAL_FLOAT(xs[1],  0.3, kTol);
+  MTL_EQUAL_FLOAT(xs[2], -1.7, kTol);
+}
+
+TEST(TestHouseholderQR_Speed)
+{
+  enum
+  {
+    M = 128*1024,
+    N = 10,
+    kRepeats = 10
+  };
+
+  DynamicMatrix<F64> At(N, M);
+  DynamicVector<F64> b(M);
+
+  Timer t;
+  F64 maxRMS = 0;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    for (I32 row = 0; row < At.Rows(); row++)
+      for (I32 col = 0; col < At.Cols(); col++)
+        At[row][col] = Test::RandomMinusOneToOne();
+
+    for (I32 row = 0; row < At.Rows(); row++)
+      At[row][row] += 10.0;
+
+    for (int k = 0; k < b.Size(); k++)
+      b[k] = Test::RandomMinusOneToOne();
+
+    DynamicVector<F64> x = b;
+
+    t.Start();
+    I32 rank = SolveHouseholderQRTransposed(x, At);
+    t.Stop();
+    MTL_EQUAL(rank, N);
+
+    DynamicMatrix<F64> A = At.ComputeTranspose();
+    DynamicVector<F64> residuals = A*x - b;
+    //printf(" RMS = %e\n", RMS(residuals));
+
+    maxRMS = Max(maxRMS, RMS(residuals));
+  }
+
+  printf("  QR solver: %9.3f msecs (%d times), Max RMS = %e\n",
+         t.Milliseconds(), kRepeats, maxRMS);
+  MTL_LESS_THAN(maxRMS, 0.6);
 }

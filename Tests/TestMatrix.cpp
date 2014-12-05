@@ -24,6 +24,7 @@
 
 #include <MTL/Test.h>
 #include <MTL/LDLt.h>
+#include <MTL/QR.h>
 #include <MTL/SVD.h>
 
 using namespace MTL;
@@ -99,92 +100,6 @@ TEST(TestInverseAndDeterminant)
   MTL_EQUAL_FLOAT(A.Determinant(), DeterminantRecursive(A), kTol);
 }
 
-template<I32 N, class T>
-void TestSolvers(const T& tol)
-{
-  enum
-  {
-    kRepeats = 10000
-  };
-
-  Timer time_SVD;
-  Timer time_LDLt;
-  Timer time_LUP;
-  Timer time_Inverse;
-  T maxRMS_SVD = 0;
-  T maxRMS_LUP = 0;
-  T maxRMS_LDLt = 0;
-  T maxRMS_Inverse = 0;
-
-  T maxConditionNumber = 0;
-
-  ColumnVector<N,T> residuals;
-
-  for (I32 i = 0; i < kRepeats; i++)
-  {
-    SquareMatrix<N,T> A;
-    ColumnVector<N,T> b;
-
-    for (I32 row = 0; row < N; row++)
-    {
-      for (I32 col = 0; col < N; col++)
-        A[row][col] = T(Test::RandomMinusOneToOne());
-
-      b[row] = T(Test::RandomMinusOneToOne());
-    }
-
-    // Create a positive definite symmetric matrix that is well conditioned.
-    A = A.MultiplyByTranspose();
-    A += SquareMatrix<N,T>(SquareMatrix<N,T>::eIdentity);
-
-    I32 rank;
-    T conditionNumber;
-
-    ColumnVector<N,T> xSVD = b;
-    time_SVD.Start();
-    SolveJacobiSVD<N>(SquareMatrix<N,T>(A), xSVD, rank, conditionNumber, tol);
-    time_SVD.Stop();
-    residuals = A * xSVD - b;
-    maxRMS_SVD = Max(maxRMS_SVD, residuals.FrobeniusNorm());
-
-    maxConditionNumber = Max(maxConditionNumber, conditionNumber);
-
-    ColumnVector<N,T> xLDLt = b;
-    time_LDLt.Start();
-    SolveLDLt<N>(xLDLt, SquareMatrix<N,T>(A), tol);
-    time_LDLt.Stop();
-    residuals = A * xLDLt - b;
-    maxRMS_LDLt = Max(maxRMS_LDLt, residuals.FrobeniusNorm());
-
-    ColumnVector<N,T> xLUP = b;
-    time_LUP.Start();
-    A.SolveLUP(xLUP);
-    time_LUP.Stop();
-    residuals = A * xLUP - b;
-    maxRMS_LUP = Max(maxRMS_LUP, residuals.FrobeniusNorm());
-
-    time_Inverse.Start();
-    ColumnVector<N,T> xInverse = A.Inverse() * b;
-    time_Inverse.Stop();
-    residuals = A * xInverse - b;
-    maxRMS_Inverse = Max(maxRMS_Inverse, residuals.FrobeniusNorm());
-  }
-
-  printf("  Maximum condition number was: %f\n", maxConditionNumber);
-  printf("  Every solver ran %d times (%dx%d matrices).\n", kRepeats, N, N);
-
-  printf("  Solve SVD:     %9.3f msecs, Max RMS = %e\n",
-         time_SVD.Milliseconds(), maxRMS_SVD);
-  printf("  Solve LDLt:    %9.3f msecs, Max RMS = %e\n",
-         time_LDLt.Milliseconds(), maxRMS_LDLt);
-  printf("  Solve LUP:     %9.3f msecs, Max RMS = %e\n",
-         time_LUP.Milliseconds(), maxRMS_LUP);
-  printf("  Solve Inverse: %9.3f msecs, Max RMS = %e\n\n",
-         time_Inverse.Milliseconds(), maxRMS_Inverse);
-
-  MTL_LESS_THAN(maxRMS_LDLt, tol);
-}
-
 TEST(TestPseudoinverse)
 {
   static const double kTol = 1e-14;
@@ -221,9 +136,109 @@ TEST(TestPseudoinverse)
   }
 }
 
+template<I32 N, class T>
+void TestSolvers(const T& tol)
+{
+  enum
+  {
+    kRepeats = 10000
+  };
+
+  Timer time_SVD;
+  Timer time_QR;
+  Timer time_LDLt;
+  Timer time_LUP;
+  Timer time_Inverse;
+  T maxRMS_SVD = 0;
+  T maxRMS_QR = 0;
+  T maxRMS_LUP = 0;
+  T maxRMS_LDLt = 0;
+  T maxRMS_Inverse = 0;
+
+  T maxConditionNumber = 0;
+
+  ColumnVector<N,T> residuals;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    SquareMatrix<N,T> A;
+    ColumnVector<N,T> b;
+
+    for (I32 row = 0; row < N; row++)
+    {
+      for (I32 col = 0; col < N; col++)
+        A[row][col] = T(Test::RandomMinusOneToOne());
+
+      b[row] = T(Test::RandomMinusOneToOne());
+    }
+
+    // Create a positive definite symmetric matrix that is well conditioned.
+    A = A.MultiplyByTranspose();
+    A += SquareMatrix<N,T>(SquareMatrix<N,T>::eIdentity) * 10;
+
+    I32 rank;
+    T conditionNumber;
+
+    ColumnVector<N,T> xSVD = b;
+    time_SVD.Start();
+    SolveJacobiSVD<N>(SquareMatrix<N,T>(A), xSVD, rank, conditionNumber, tol);
+    time_SVD.Stop();
+    residuals = A * xSVD - b;
+    maxRMS_SVD = Max(maxRMS_SVD, residuals.RMS());
+
+    maxConditionNumber = Max(maxConditionNumber, conditionNumber);
+
+    ColumnVector<N,T> xQR = b;
+    time_QR.Start();
+    SolveHouseholderQR<N>(xQR, SquareMatrix<N,T>(A));
+    time_QR.Stop();
+    residuals = A * xQR - b;
+    maxRMS_QR = Max(maxRMS_QR, residuals.RMS());
+
+    ColumnVector<N,T> xLDLt = b;
+    time_LDLt.Start();
+    SolveLDLt<N>(xLDLt, SquareMatrix<N,T>(A), tol);
+    time_LDLt.Stop();
+    residuals = A * xLDLt - b;
+    maxRMS_LDLt = Max(maxRMS_LDLt, residuals.RMS());
+
+    ColumnVector<N,T> xLUP = b;
+    time_LUP.Start();
+    A.SolveLUP(xLUP);
+    time_LUP.Stop();
+    residuals = A * xLUP - b;
+    maxRMS_LUP = Max(maxRMS_LUP, residuals.RMS());
+
+    time_Inverse.Start();
+    ColumnVector<N,T> xInverse = A.Inverse() * b;
+    time_Inverse.Stop();
+    residuals = A * xInverse - b;
+    maxRMS_Inverse = Max(maxRMS_Inverse, residuals.RMS());
+  }
+
+  printf("  Maximum condition number was: %f\n", maxConditionNumber);
+  printf("  Every solver ran %d times (%dx%d matrices).\n", kRepeats, N, N);
+
+  printf("  Solve SVD:     %9.3f msecs, Max RMS = %e\n",
+         time_SVD.Milliseconds(), maxRMS_SVD);
+  printf("  Solve QR:      %9.3f msecs, Max RMS = %e\n",
+         time_QR.Milliseconds(), maxRMS_QR);
+  printf("  Solve LDLt:    %9.3f msecs, Max RMS = %e\n",
+         time_LDLt.Milliseconds(), maxRMS_LDLt);
+  printf("  Solve LUP:     %9.3f msecs, Max RMS = %e\n",
+         time_LUP.Milliseconds(), maxRMS_LUP);
+  printf("  Solve Inverse: %9.3f msecs, Max RMS = %e\n\n",
+         time_Inverse.Milliseconds(), maxRMS_Inverse);
+
+  MTL_LESS_THAN(maxRMS_SVD, tol);
+  MTL_LESS_THAN(maxRMS_LDLt, tol);
+  MTL_LESS_THAN(maxRMS_LUP, tol);
+  MTL_LESS_THAN(maxRMS_Inverse, tol);
+}
+
 TEST(TestSolversF32)
 {
-  static const float kTol = 5e-6f;
+  static const float kTol = 1e-6f;
 
   TestSolvers< 3,F32>(kTol);
   TestSolvers< 4,F32>(kTol);

@@ -171,7 +171,8 @@ public:
       TotalNumberOfFailures_++;
       Out() << "[File '" << file << "' - line " << line  << "]" << std::endl
             << "  Actual value is " << actual << " but " << expected
-            << " is expected; difference is: " << difference << std::endl;
+            << " is expected; difference is: " << difference << ", tolerance is: "
+            << tolerance << std::endl;
     }
   }
 

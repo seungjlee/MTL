@@ -26,6 +26,7 @@
 #define MTL_MATH_H
 
 #include "Definitions.h"
+#include <float.h>
 
 namespace MTL
 {

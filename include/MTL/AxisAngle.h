@@ -26,6 +26,7 @@
 #ifndef MTL_AXIS_ANGLE_H
 #define MTL_AXIS_ANGLE_H
 
+#include <float.h>
 #include "Rotation3D.h"
 #include "SVD.h"
 #include "Trigonometry.h"

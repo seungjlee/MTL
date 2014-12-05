@@ -345,14 +345,19 @@ public:
   MTL_INLINE T DotProductOfColumns(I32 col1, I32 col2) const
   { return DotProductOfColumns<M>(col1, col2); }
 
-  MTL_INLINE F64 Mean() const
+  MTL_INLINE T Mean() const
   {
-    return Sum() / F64(M*N);
+    return Sum() / T(M*N);
   }
 
   MTL_INLINE T FrobeniusNorm() const
   {
     return Sqrt(SumOfSquares());
+  }
+
+  MTL_INLINE T RMS() const
+  {
+    return Sqrt(SumOfSquares() / T(M*N));
   }
 
   MTL_INLINE Matrix<N,M,T> ComputeTranspose() const

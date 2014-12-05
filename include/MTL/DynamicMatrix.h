@@ -152,7 +152,7 @@ public:
   {
     assert(Cols() == (I32)v.Size());
 
-    DynamicVector<T> result(rows());
+    DynamicVector<T> result(Rows());
     for (I32 i = 0; i < Rows(); i++)
       result[i] = DotProduct_StreamAligned_Sequential((*this)[i], v.Begin(), Cols());
 
