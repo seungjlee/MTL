@@ -1,7 +1,7 @@
 #
 # Math Template Library
 #
-# Copyright (c) 2014: Seung Jae Lee
+# Copyright (c) 2014: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted
 # provided that the following conditions are met:
@@ -37,7 +37,7 @@ if(MSVC11)
   if(CMAKE_CL_64)
     ADD_DEFINITIONS(-DWIN64)
   endif(CMAKE_CL_64)
-  
+
 endif(MSVC11)
 
 SET(WINVER 0x0501)

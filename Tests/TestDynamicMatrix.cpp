@@ -75,10 +75,10 @@ TEST(TestHouseholderQR)
 
     At[0][i] = x*x;
     At[1][i] = x;
-    At[2][i] = 1;
 
     ys[i] = 2.5 * x*x + 0.3 * x - 1.7;
   }
+  OptimizedAssignAll(At[2], 1.0, At.Cols());
 
   DynamicVector<F64> xs = ys;
 

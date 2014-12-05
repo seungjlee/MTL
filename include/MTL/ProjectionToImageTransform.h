@@ -23,45 +23,38 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef MTL_VECTOR_2D_H
-#define MTL_VECTOR_2D_H
+#ifndef MTL_PROJECTION_TO_IMAGE_TRANSFORM_3D_H
+#define MTL_PROJECTION_TO_IMAGE_TRANSFORM_3D_H
 
-#include "Matrix.h"
-#include "DynamicVectorOperators.h"
+#include "AffineTransform3D.h"
+#include "Point2D.h"
 
 namespace MTL
 {
 
-template<class T>
-class Vector2D : public ColumnVector<2,T>
+template <class T>
+class ProjectionToImageTransform : public AffineTransform3D<T>
 {
 public:
-  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Vector2D, ColumnVector, 2, T);
-
-  MTL_INLINE Vector2D() : ColumnVector<2,T>() {}
-  MTL_INLINE Vector2D(T xx, T yy)
+  ProjectionToImageTransform(const MatrixType& m = MatrixType::eIdentity,
+                             const Vector3D<T>& v = Vector3D<T>(0,0,0))
+    : AffineTransform3D<T>(m, v)
   {
-    x(xx);
-    y(yy);
   }
 
-  T Length() const  { return FrobeniusNorm(); }
+  MTL_INLINE Point2D<T> operator*(const Point3D<T>& point) const
+  {
+    Point3D<T> pt3D = AffineTransform3D<T>::operator*(point);
 
-  // Returns unit vector.
-  Vector2D unit() const  { return *this / Length(); }
-
-  const T& x() const   { return (*this)[0]; }
-  const T& y() const   { return (*this)[1]; }
-
-  void x(const T& xx)  { (*this)[0] = xx;   }
-  void y(const T& yy)  { (*this)[1] = yy;   }
+    return Point2D<T>(pt3D.x() / pt3D.z(), pt3D.y() / pt3D.z());
+  }
 };
 
-MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(Vector2D<F32>);
-MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(Vector2D<F64>);
-MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector2D<F32>,F32);
-MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector2D<F64>,F64);
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ProjectionToImageTransform<F32>);
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ProjectionToImageTransform<F64>);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(ProjectionToImageTransform<F32>,F32);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(ProjectionToImageTransform<F64>,F64);
 
 }  // namespace MTL
 
-#endif // MTL_VECTOR_2D_H
+#endif  // MTL_PROJECTION_TO_IMAGE_TRANSFORM_3D_H

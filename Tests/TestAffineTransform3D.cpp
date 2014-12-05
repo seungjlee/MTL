@@ -25,6 +25,7 @@
 #include <MTL/Test.h>
 #include <MTL/AxisAngle.h>
 #include <MTL/RotationTranslation3D.h>
+#include <MTL/ProjectionToImageTransform.h>
 
 using namespace MTL;
 
@@ -125,4 +126,10 @@ TEST(TestRotation3D)
 TEST(TestRotationTranslation3D)
 {
   RotationTranslation3D<F64> T;
+}
+
+
+TEST(TestProjectionToImageTransform)
+{
+  ProjectionToImageTransform<F64> P;
 }

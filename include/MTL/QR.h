@@ -171,9 +171,10 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
     if (norm < tolerance)
       continue;
 
-    ScalarMultiplication_StreamUnaligned_Parallel(pV, T(1)/norm, Mi);
+    T div = T(1)/norm;
+    ScalarMultiplication_StreamUnaligned_Parallel(pV, div, Mi);
 
-    T dotAii = (Aii * (Aii - normAii) + sumOfSquares)/norm;
+    T dotAii = (Aii * (Aii - normAii) + sumOfSquares) * div;
     for (I32 j = i+1; j < N; j++)
     {
       T dotA = DotProduct_StreamUnaligned_Parallel(pV, At + P[j]*rowSize + i, Mi);

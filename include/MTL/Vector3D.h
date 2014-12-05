@@ -48,6 +48,9 @@ public:
 
   T Length() const  { return FrobeniusNorm(); }
 
+  // Returns unit vector.
+  Vector3D unit() const  { return *this / Length(); }
+
   const T& x() const   { return (*this)[0]; }
   const T& y() const   { return (*this)[1]; }
   const T& z() const   { return (*this)[2]; }
