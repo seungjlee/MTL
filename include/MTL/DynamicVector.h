@@ -116,7 +116,7 @@ public:
     Resize(rhs.Size());
 
     T* pDst = First_;
-    const T* pDstEnd = pDst + size();
+    const T* pDstEnd = pDst + Size();
     const T2* pSrc = rhs.Begin();
 
     for (; pDst < pDstEnd; pDst++, pSrc++)

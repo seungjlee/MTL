@@ -138,9 +138,6 @@ public:
     return fullPath;
   }
 
-  static double Random()               { return double(rand()) / RAND_MAX; }
-  static double RandomMinusOneToOne()  { return Random() * 2 - 1;          }
-
   static void Verify(bool e, char* expression, wchar_t* file, U64 line)
   {
     if (!e)

@@ -26,6 +26,7 @@
 #include <MTL/LDLt.h>
 #include <MTL/QR.h>
 #include <MTL/SVD.h>
+#include <MTL/Random.h>
 
 using namespace MTL;
 
@@ -109,13 +110,11 @@ TEST(TestPseudoinverse)
     kRepeats = 1000
   };
 
+  Random random;
+
   for (I32 i = 0; i < kRepeats; i++)
   {
-    Matrix<5,3> A;
-
-    for (I32 row = 0; row < A.Rows(); row++)
-      for (I32 col = 0; col < A.Cols(); col++)
-        A[row][col] = Test::RandomMinusOneToOne();
+    Matrix<5,3> A = random.Matrix<5,3,F64>(-1, 1);
 
     for (I32 col = 0; col < A.Cols(); col++)
       A[col][col] += 1.0;
@@ -159,18 +158,12 @@ void TestSolvers(const T& tol)
 
   ColumnVector<N,T> residuals;
 
+  Random random;
+
   for (I32 i = 0; i < kRepeats; i++)
   {
-    SquareMatrix<N,T> A;
-    ColumnVector<N,T> b;
-
-    for (I32 row = 0; row < N; row++)
-    {
-      for (I32 col = 0; col < N; col++)
-        A[row][col] = T(Test::RandomMinusOneToOne());
-
-      b[row] = T(Test::RandomMinusOneToOne());
-    }
+    SquareMatrix<N,T> A = random.Matrix<N,N,T>(-1, 1);
+    ColumnVector<N,T> b = random.Matrix<N,1,T>(-1, 1);;
 
     // Create a positive definite symmetric matrix that is well conditioned.
     A = A.MultiplyByTranspose();

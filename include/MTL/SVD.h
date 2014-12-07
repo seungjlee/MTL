@@ -264,6 +264,7 @@ static Matrix<N,M,T> ComputePseudoinverseJacobiSVD(const Matrix<M,N,T>& A,
 
   return pinv;
 }
+
 }  // namespace MTL
 
 #endif // MTL_SVD_H
