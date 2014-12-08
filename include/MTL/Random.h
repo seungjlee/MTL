@@ -48,7 +48,7 @@ public:
   template<class T>
   MTL_INLINE T GetNext(T start, T end)
   {
-    return GetNext(start, end - start);
+    return GetNextInRange(start, end - start);
   }
 
   template<class T>
@@ -124,9 +124,6 @@ private:
 //    start = clock()
 //    for i in range(0, N-1):
 //      x = x * a + c
-//      if x == Seed:  # Find cycle if there is.
-//        print(i)
-//
 //      X[i] = uint32(x)
 //    elapsed = (clock() - start)
 //    print('Random generation time: {0:.3f} secs'.format(elapsed))
