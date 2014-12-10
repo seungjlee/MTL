@@ -39,7 +39,7 @@ public:
   typedef ColumnVector<N> Parameters;
 
   OptimizerNonLinearLeastSquares(SizeType inputDataSize)
-    : MaxIterations_(100), ParametersDeltaTolerance_(N * Epsilon<T>()),
+    : MaxIterations_(100), SquaredParametersDeltaTolerance_(N * Square(Epsilon<T>())),
       FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
       currentResiduals_(inputDataSize), residualsPlusDelta_(inputDataSize),
       newResiduals_(inputDataSize)
@@ -47,8 +47,8 @@ public:
     FiniteDifferenceTwoDelta_ = FiniteDifferenceDelta_ * T(2);
   }
 
-  void MaxIterations(U32 i)             { MaxIterations_ = i;              }
-  void ParametersDeltaTolerance(T tol)  { ParametersDeltaTolerance_ = tol; }
+  void MaxIterations(U32 i)             { MaxIterations_ = i;                             }
+  void ParametersDeltaTolerance(T tol)  { SquaredParametersDeltaTolerance_ = Square(tol); }
 
   virtual void Optimize(Parameters& parameters) = 0;
 
@@ -102,7 +102,7 @@ protected:
   }
 
   U32 MaxIterations_;
-  T ParametersDeltaTolerance_;
+  T SquaredParametersDeltaTolerance_;
   T FiniteDifferenceDelta_;
   T FiniteDifferenceTwoDelta_;
 

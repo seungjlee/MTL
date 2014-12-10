@@ -59,15 +59,13 @@ public:
     for (I32 i = 1; i < N; i++)
       maxDiagonal = Max(maxDiagonal, A[i][i]);
 
-    T mu = T(1e-3);
-    T damping = maxDiagonal * mu;
+    T mu = T(1e-4) * maxDiagonal;
 
     DynamicVector<T> G;
+    Parameters delta;
 
     Iterations_ = 0;
     bool done = false;
-
-    Parameters delta;
 
     do
     {
@@ -84,7 +82,7 @@ public:
 
         if (rank == N)
         {
-          if (delta.SumOfSquares() > ParametersDeltaTolerance_)
+          if (delta.SumOfSquares() > SquaredParametersDeltaTolerance_)
           {
             Parameters newParameters = parameters;
             newParameters -= delta;

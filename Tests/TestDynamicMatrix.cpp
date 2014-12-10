@@ -56,10 +56,15 @@ TEST(TestMatrixMultiplication)
 
 TEST(TestHouseholderQR)
 {
+  static const double kHouseholderTol = 1e-13;
+  static const double kLevenbergMarquardtTol = 1e-15;
+
   enum
   {
     kSamples = 1024*1024+1
   };
+
+  Timer t;
 
   DynamicVector<F64> xs(kSamples);
   DynamicVector<F64> ys(kSamples);
@@ -80,11 +85,15 @@ TEST(TestHouseholderQR)
 
   DynamicVector<F64> b = ys;
 
+  t.Start();
   I32 rank = SolveHouseholderQRTransposed(b, At);
+  t.Stop();
+  printf("  Householder solver time: %.3f msecs\n", t.Milliseconds());
+
   MTL_EQUAL(rank, 3);
-  MTL_EQUAL_FLOAT(b[0],  2.5, kTol);
-  MTL_EQUAL_FLOAT(b[1],  0.3, kTol);
-  MTL_EQUAL_FLOAT(b[2], -1.7, kTol);
+  MTL_EQUAL_FLOAT(b[0],  2.5, kHouseholderTol);
+  MTL_EQUAL_FLOAT(b[1],  0.3, kHouseholderTol);
+  MTL_EQUAL_FLOAT(b[2], -1.7, kHouseholderTol);
 
   class QuadraticOptimizer : public OptimizerLevenbergMarquardt<3,F64>
   {
@@ -110,14 +119,17 @@ TEST(TestHouseholderQR)
   QuadraticOptimizer::Parameters coeffs;
   coeffs.Zeros();
 
+  MTL_EQUAL(rank, 3);
+  t.ResetAndStart();
   optimizer.Optimize(coeffs);
-
-  printf("  Levenberg-Marquardt optimizer finished in %d iterations\n", optimizer.Iterations());
+  t.Stop();
+  printf("  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
+         optimizer.Iterations(), t.Milliseconds());
   printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
 
-  MTL_EQUAL_FLOAT(coeffs[0],  2.5, kTol);
-  MTL_EQUAL_FLOAT(coeffs[1],  0.3, kTol);
-  MTL_EQUAL_FLOAT(coeffs[2], -1.7, kTol);
+  MTL_EQUAL_FLOAT(coeffs[0],  2.5, kLevenbergMarquardtTol);
+  MTL_EQUAL_FLOAT(coeffs[1],  0.3, kLevenbergMarquardtTol);
+  MTL_EQUAL_FLOAT(coeffs[2], -1.7, kLevenbergMarquardtTol);
 }
 
 TEST(TestHouseholderQR_Speed)
