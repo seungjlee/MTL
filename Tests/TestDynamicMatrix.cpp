@@ -25,6 +25,7 @@
 #include <MTL/Test.h>
 #include <MTL/DynamicVectorOperators.h>
 #include <MTL/Random.h>
+#include <MTL/OptimizerLevenbergMarquardt.h>
 #include <MTL/QR.h>
 
 using namespace MTL;
@@ -60,6 +61,7 @@ TEST(TestHouseholderQR)
     kSamples = 1024*1024+1
   };
 
+  DynamicVector<F64> xs(kSamples);
   DynamicVector<F64> ys(kSamples);
 
   DynamicMatrix<F64> At(3, kSamples);
@@ -71,17 +73,51 @@ TEST(TestHouseholderQR)
     At[0][i] = x*x;
     At[1][i] = x;
 
+    xs[i] = x;
     ys[i] = 2.5 * x*x + 0.3 * x - 1.7;
   }
   OptimizedAssignAll(At[2], 1.0, At.Cols());
 
-  DynamicVector<F64> xs = ys;
+  DynamicVector<F64> b = ys;
 
-  I32 rank = SolveHouseholderQRTransposed(xs, At);
+  I32 rank = SolveHouseholderQRTransposed(b, At);
   MTL_EQUAL(rank, 3);
-  MTL_EQUAL_FLOAT(xs[0],  2.5, kTol);
-  MTL_EQUAL_FLOAT(xs[1],  0.3, kTol);
-  MTL_EQUAL_FLOAT(xs[2], -1.7, kTol);
+  MTL_EQUAL_FLOAT(b[0],  2.5, kTol);
+  MTL_EQUAL_FLOAT(b[1],  0.3, kTol);
+  MTL_EQUAL_FLOAT(b[2], -1.7, kTol);
+
+  class QuadraticOptimizer : public OptimizerLevenbergMarquardt<3,F64>
+  {
+  public:
+    QuadraticOptimizer(const DynamicVector<F64>& x, const DynamicVector<F64>& y)
+      : OptimizerLevenbergMarquardt(x.Size()), x_(x), y_(y)
+    {
+      assert(x.Size() == y.Size());
+    }
+
+  protected:
+    virtual void CostFunction(DynamicVector<F64>& residuals, const Parameters& p)
+    {
+      residuals = x_ * (x_ * p[0] + p[1]) + p[2] - y_;
+    }
+
+  private:
+    DynamicVector<F64> x_;
+    DynamicVector<F64> y_;
+  };
+
+  QuadraticOptimizer optimizer(xs, ys);
+  QuadraticOptimizer::Parameters coeffs;
+  coeffs.Zeros();
+
+  optimizer.Optimize(coeffs);
+
+  printf("  Levenberg-Marquardt optimizer finished in %d iterations\n", optimizer.Iterations());
+  printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
+
+  MTL_EQUAL_FLOAT(coeffs[0],  2.5, kTol);
+  MTL_EQUAL_FLOAT(coeffs[1],  0.3, kTol);
+  MTL_EQUAL_FLOAT(coeffs[2], -1.7, kTol);
 }
 
 TEST(TestHouseholderQR_Speed)

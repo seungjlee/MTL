@@ -80,6 +80,21 @@ public:
     memset(Data_, 0, DataSizeInBytes());
   }
 
+  MTL_INLINE void SetDiagonals(const T& value)
+  {
+    SetDiagonal<kMinimumDimension_>(Data_, value);
+  }
+
+  MTL_INLINE void SetDiagonals(const T values[])
+  {
+    SetDiagonal<kMinimumDimension_>(Data_, values);
+  }
+
+  MTL_INLINE void AddToDiagonals(const T& value)
+  {
+    AddToDiagonal<kMinimumDimension_>(Data_, value);
+  }
+
   // Sets all elements in the matrix to newVal
   MTL_INLINE void SetAll(const T& newVal)
   {
@@ -560,6 +575,16 @@ protected:
     ptr[0][0] = newVals[0];
   }
 
+  template<I32 Q> void AddToDiagonal(T ptr[M][N], const T& newVal)
+  {
+    AddToDiagonal<Q-1>(ptr, newVal);
+    ptr[Q-1][Q-1] += newVal;
+  }
+  template<> void AddToDiagonal<1>(T ptr[M][N], const T& newVal)
+  {
+    ptr[0][0] += newVal;
+  }
+
   template <I32 Cols>
   struct MultiplyRowByCol
   {
@@ -855,16 +880,6 @@ public:
 
   MTL_INLINE ColumnVector<N,T> operator*(const ColumnVector<N,T>& b) const
   { return Base::operator*(b); }
-
-  MTL_INLINE void SetDiagonals(const T& value)
-  {
-    SetDiagonal<N>(Data_, value);
-  }
-
-  MTL_INLINE void SetDiagonals(const T values[N])
-  {
-    SetDiagonal<N>(Data_, values);
-  }
 
   // Transposes this matrix.
   MTL_INLINE void Transpose()
