@@ -99,6 +99,9 @@ public:
               ComputeJacobian(Jt, parameters);
               MultiplyByTranspose(A[0], Jt[0], N, Jt.Cols(), N, Jt.RowSize());
 
+              p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
+              p /= delta.Dot(delta * mu + Parameters(G.Begin()));
+
               mu = mu * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
 
               if (Abs(mu) < Epsilon<T>())
