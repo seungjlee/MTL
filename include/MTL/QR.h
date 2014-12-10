@@ -27,7 +27,6 @@
 #define MTL_QR_H
 
 #include "DynamicMatrix.h"
-#include "LinearAlgebra.h"
 
 namespace MTL
 {
