@@ -66,19 +66,15 @@ MTL_INLINE static void GivensRotation(Matrix<M,N,T>& A, I32 i, I32 j, const T& c
 }
 
 template<class T>
-MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, SizeType N)
+MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, const T* xEnd)
 {
-  const T* xEnd = x + N;
-
   for (; x < xEnd; x++, y++)
     GivensRotation(*x, *y, c, s);
 }
 template<class T>
-MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, SizeType N,
+MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, const T* xEnd,
                                                  T& a, T& b)
 {
-  const T* xEnd = x + N;
-
   for (; x < xEnd; x++, y++)
   {
     a += Square(*x);
@@ -87,6 +83,108 @@ MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T
   }
 }
 
+template<class T>
+MTL_INLINE static void GivensRotation_StreamAligned_Sequential(T* x, T* y, const T& c, const T& s,
+                                                               SizeType N)
+{
+  const T* xEnd = x + N;
+
+  if (XX<T>::DoSSE(N))
+  {
+    XX<T> xC(c);
+    XX<T> xS(s);
+
+    FOR_STREAM2(x, y, N)
+    {
+      XX<T> xX, xY;
+      xX.LoadPackedAligned(x);
+      xY.LoadPackedAligned(y);
+      XX<T> xRX = xC*xX + xS*xY;
+      XX<T> xRY = xC*xY - xS*xX;
+      xRX.StorePackedAligned(x);
+      xRY.StorePackedAligned(y);
+    }
+  }
+  GivensRotation_Sequential(x, y, c, s, xEnd);
+}
+template<class T>
+MTL_INLINE static void GivensRotation_StreamAligned_Sequential(T* x, T* y, const T& c, const T& s,
+                                                               SizeType N, T& a, T& b)
+{
+  const T* xEnd = x + N;
+
+  if (XX<T>::DoSSE(N))
+  {
+    XX<T> xA = XX<T>::Zeros();
+    XX<T> xB = XX<T>::Zeros();
+
+    XX<T> xC(c);
+    XX<T> xS(s);
+
+    FOR_STREAM2(x, y, N)
+    {
+      XX<T> xX, xY;
+      xX.LoadPackedAligned(x);
+      xY.LoadPackedAligned(y);
+      XX<T> xRX = xC*xX + xS*xY;
+      XX<T> xRY = xC*xY - xS*xX;
+      xRX.StorePackedAligned(x);
+      xRY.StorePackedAligned(y);
+
+      xA += Square(xX);
+      xB += Square(xY);
+    }
+
+    a = Sum< XX<T>::Increment >(xA.pData());
+    b = Sum< XX<T>::Increment >(xB.pData());
+  }
+
+  T aa, bb;
+  GivensRotation_Sequential(x, y, c, s, xEnd, aa, bb);
+
+  a += aa;
+  b += bb;
+}
+
+template<class T>
+MTL_INLINE static void GivensRotation_StreamAligned_Parallel(T* x, T* y, const T& c, const T& s,
+                                                             SizeType N)
+{
+#if MTL_ENABLE_OPENMP
+  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (DoOpenMP<T>(N, numberOfThreads))
+  {
+    DynamicVector<SizeType> subSizes, offsets;
+    ComputeParallelSubSizes<T>(subSizes, offsets, N, numberOfThreads);
+
+    #pragma omp parallel for
+    for (I32 i = 0; i < numberOfThreads; i++)
+      GivensRotation_StreamAligned_Sequential(x + offsets[i], y + offsets[i], c, s, subSizes[i]);
+  }
+  else
+#endif
+    GivensRotation_StreamAligned_Sequential(x, y, c, s, N);
+}
+template<class T>
+MTL_INLINE static void GivensRotation_StreamAligned_Parallel(T* x, T* y, const T& c, const T& s,
+                                                             SizeType N, T& a, T& b)
+{
+#if MTL_ENABLE_OPENMP
+  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (DoOpenMP<T>(N, numberOfThreads))
+  {
+    DynamicVector<SizeType> subSizes, offsets;
+    ComputeParallelSubSizes<T>(subSizes, offsets, N, numberOfThreads);
+
+    #pragma omp parallel for
+    for (I32 i = 0; i < numberOfThreads; i++)
+      GivensRotation_StreamAligned_Sequential(x + offsets[i], y + offsets[i], c, s,
+                                              subSizes[i], a, b);
+  }
+  else
+#endif
+    GivensRotation_StreamAligned_Sequential(x, y, c, s, N, a, b);
+}
 
 }  // namespace MTL
 

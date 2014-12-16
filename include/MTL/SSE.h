@@ -90,6 +90,8 @@ public:
 
   MTL_INLINE static SizeType StreamSize(SizeType size)  { return size & ~(Increment-1); }
 
+  MTL_INLINE static bool DoSSE(SizeType size)           { return size >= 2 * Increment; }
+
   MTL_INLINE const DataType& Data() const               { return Data_;                 }
   MTL_INLINE const T* pData() const                     { return (T*)&Data_;            }
   MTL_INLINE const T& operator[](SizeType i) const      { return pData()[i];            }

@@ -329,18 +329,18 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 
         if (iteration < 10)
         {
-          GivensRotation_Sequential(Ai, Aj, c, s, M);
+          GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M);
           W[i] += delta;
           W[j] -= delta;
         }
         else
         {
-          GivensRotation_Sequential(Ai, Aj, c, s, M, W[i], W[j]);
+          GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M, W[i], W[j]);
           W[i] += delta * T(0.5);
           W[j] -= delta * T(0.5);
         }
 
-        GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
+        GivensRotation_StreamAligned_Parallel(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
       }
     }
 
