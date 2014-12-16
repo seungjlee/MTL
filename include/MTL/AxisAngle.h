@@ -47,18 +47,46 @@ public:
   AxisAngle(const Rotation3D<T>& R)
     : DirtyCachedValues_(true)
   {
+    T vx = R[2][1] - R[1][2];
+    T vy = R[0][2] - R[2][0];
+    T vz = R[1][0] - R[0][1];
+
+    // Use slower version near singularities.
+    if (Abs(vx) + Abs(vy) + Abs(vz) < Epsilon<T>() ||
+        Pow<4>(vx) + Pow<4>(vy) + Pow<4>(vz) < Epsilon<T>())
+    {
+      RotationVector_ = ComputeFromRotationMatrixPrecise(R);
+    }
+    else
+    {
+      // Much faster than the above code but less precise and trouble with singularities.
+      T angle = acos((R[0][0] + R[1][1] + R[2][2] - T(1)) * T(0.5));
+      T r = Sqrt(Square(vx) + Square(vy) + Square(vz));
+      RotationVector_[0] = vx * angle / r;
+      RotationVector_[1] = vy * angle / r;
+      RotationVector_[2] = vz * angle / r;
+    }
+  }
+
+  MTL_INLINE static Vector3D<T> ComputeFromRotationMatrixPrecise(const Rotation3D<T>& R)
+  {
     // From Multiple View Geometry (2nd Edition), R. Hartley and A. Zisserman (A4.10).
     Rotation3D<T> A = R - Rotation3D<T>();
 
     long rank;
     T conditionNumber;
-    SolveJacobiSVDHomogeneous(A, RotationVector_, rank, conditionNumber);
+    Vector3D<T> rotationVector;
+    SolveJacobiSVDHomogeneous(A, rotationVector, rank, conditionNumber);
 
-    Vector3D<T> v(R[2][1] - R[1][2], R[0][2] - R[2][0], R[1][0] - R[0][1]);
+    T vx = R[2][1] - R[1][2];
+    T vy = R[0][2] - R[2][0];
+    T vz = R[1][0] - R[0][1];
 
-    T angle = atan2(RotationVector_.Dot(v), R[0][0] + R[1][1] + R[2][2] - 1);
+    Vector3D<T> v(vx, vy, vz);
 
-    RotationVector_ *= angle;
+    T angle = atan2(rotationVector.Dot(v), R[0][0] + R[1][1] + R[2][2] - 1);
+
+    return rotationVector * angle;
   }
 
   MTL_INLINE AxisAngle Inverse() const  { return AxisAngle(-RotationVector_); }
@@ -100,21 +128,20 @@ public:
       return Rotation3D<T>(Rotation3D<T>::eIdentity);
 
     const Vector3D<T>& u = UnitRotationVector_;
-    T m1[3][3] = {{          CosAngle_, -u.z() * SinAngle_,  u.y() * SinAngle_ },
-                  {  u.z() * SinAngle_,          CosAngle_, -u.x() * SinAngle_ },
-                  { -u.y() * SinAngle_,  u.x() * SinAngle_,          CosAngle_ }};
-
     T xx = u.x() * u.x();
     T xy = u.x() * u.y();
     T xz = u.x() * u.z();
     T yy = u.y() * u.y();
     T yz = u.y() * u.z();
     T zz = u.z() * u.z();
-    T m2[3][3] = {{ xx, xy, xz },
-                  { xy, yy, yz },
-                  { xz, yz, zz }};
 
-    return Rotation3D<T>(m1) + Rotation3D<T>(m2) * (1 - CosAngle_);
+    T t = 1 - CosAngle_;
+
+    T r[3][3] = {{ t*xx +         CosAngle_, t*xy - u.z() * SinAngle_, t*xz + u.y() * SinAngle_ },
+                 { t*xy + u.z() * SinAngle_, t*yy +         CosAngle_, t*yz - u.x() * SinAngle_ },
+                 { t*xz - u.y() * SinAngle_, t*yz + u.x() * SinAngle_, t*zz +         CosAngle_ }};
+
+    return Rotation3D<T>(r);
   }
 
   const Vector3D<T>& Vector() const  { return RotationVector_; }
@@ -163,7 +190,7 @@ private:
       Angle_ = RotationVector_.Length();
       if (Angle_ < Epsilon<T>())
       {
-        UnitRotationVector_ = Vector3D<T>(0,0,0);
+        UnitRotationVector_.Zeros();
         SinAngle_ = T(0.0);
         CosAngle_ = T(1.0);
         SinHalfAngle_ = T(0.0);

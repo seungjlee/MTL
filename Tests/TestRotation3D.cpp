@@ -126,12 +126,12 @@ TEST(TestRotation3D)
 TEST(TestAxisAngle)
 {
   static const double kPointTol     = 1e-15;
-  static const double kAxisAngleTol = 1e-14;
+  static const double kAxisAngleTol = 1e-11;
   static const double kIdentityTol  = 1e-14;
 
   enum
   {
-    N = 100000
+    N = 1000000
   };
 
   Random random;
