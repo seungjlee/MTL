@@ -35,15 +35,15 @@
 // Macros.
 //
 #define TEST(TestName)                                                                             \
-class Test_ ## TestName : public Test                                                              \
+class Test_ ## TestName : public MTL::Test                                                         \
 {                                                                                                  \
 public:                                                                                            \
-  Test_ ## TestName(const String& testName)                                                        \
+  Test_ ## TestName(const MTL::String& testName)                                                   \
     : Test(testName)  { FilePath_ = MTL__FILE__; }                                                 \
   virtual void Run();                                                                              \
 };                                                                                                 \
 static Test_ ## TestName                                                                           \
- Test_ ## TestName ## _Instance_(String(TOWCHAR(#TestName)));                                      \
+ Test_ ## TestName ## _Instance_(MTL::String(TOWCHAR(#TestName)));                                 \
 void Test_ ## TestName::Run()
 
 #define MTL_VERIFY(Expression)  MTL::Test::Verify(Expression, #Expression, MTL__FILE__, __LINE__)

@@ -26,7 +26,7 @@
 #ifndef MTL_GIVENS_H
 #define MTL_GIVENS_H
 
-#include "Matrix.h"
+#include "DynamicVector.h"
 
 namespace MTL
 {
@@ -60,8 +60,30 @@ MTL_INLINE static void GivensRotation(Matrix<M,N,T>& A, I32 i, I32 j, const T& c
     A[k][i] = c*tx + s*ty;
     A[k][j] = c*ty - s*tx;
 
-    a += tx*tx;
-    b += ty*ty;
+    a += Square(tx);
+    b += Square(ty);
+  }
+}
+
+template<class T>
+MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, SizeType N)
+{
+  const T* xEnd = x + N;
+
+  for (; x < xEnd; x++, y++)
+    GivensRotation(*x, *y, c, s);
+}
+template<class T>
+MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, SizeType N,
+                                                 T& a, T& b)
+{
+  const T* xEnd = x + N;
+
+  for (; x < xEnd; x++, y++)
+  {
+    a += Square(*x);
+    b += Square(*y);
+    GivensRotation(*x, *y, c, s);
   }
 }
 

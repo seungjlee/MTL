@@ -85,7 +85,7 @@ public:
 
   MTL_INLINE void GetUnitQuaternions(T& qs, Vector3D<T>& qv) const
   {
-    const_cast<AxisAngle*>(this)->computeCachedValues();
+    const_cast<AxisAngle*>(this)->ComputeCachedValues();
     qs = CosHalfAngle_;
     qv = UnitRotationVector_ * SinHalfAngle_;
   }
@@ -100,9 +100,9 @@ public:
       return Rotation3D<T>(Rotation3D<T>::eIdentity);
 
     const Vector3D<T>& u = UnitRotationVector_;
-    T m1[3][3] = {{          cosAngle_, -u.z() * sinAngle_,  u.y() * sinAngle_ },
-                  {  u.z() * sinAngle_,          cosAngle_, -u.x() * sinAngle_ },
-                  { -u.y() * sinAngle_,  u.x() * sinAngle_,          cosAngle_ }};
+    T m1[3][3] = {{          CosAngle_, -u.z() * SinAngle_,  u.y() * SinAngle_ },
+                  {  u.z() * SinAngle_,          CosAngle_, -u.x() * SinAngle_ },
+                  { -u.y() * SinAngle_,  u.x() * SinAngle_,          CosAngle_ }};
 
     T xx = u.x() * u.x();
     T xy = u.x() * u.y();
@@ -114,8 +114,10 @@ public:
                   { xy, yy, yz },
                   { xz, yz, zz }};
 
-    return Rotation3D<T>(m1) + Rotation3D<T>(m2) * (1 - cosAngle_);
+    return Rotation3D<T>(m1) + Rotation3D<T>(m2) * (1 - CosAngle_);
   }
+
+  const Vector3D<T>& Vector() const  { return RotationVector_; }
 
 private:
   Vector3D<T> RotationVector_;
@@ -132,16 +134,16 @@ private:
   MTL_INLINE Vector3D<T> Multiply(const AxisAngle& other) const
   {
     // Compute product of unit quaternions.
-    T    qs1, qs2;
-    Vector3DD qv1, qv2;
+    T qs1, qs2;
+    Vector3D<T> qv1, qv2;
     GetUnitQuaternions(qs1, qv1);
     other.GetUnitQuaternions(qs2, qv2);
 
-    T qs = qs1*qs2 - qv1.dot(qv2);
+    T qs = qs1*qs2 - qv1.Dot(qv2);
 
     if (Abs(qs) >= 1)
     {
-      return Vector3DD(0, 0, 0);
+      return Vector3D<T>(0, 0, 0);
     }
     else
     {
@@ -158,8 +160,8 @@ private:
   {
     if (DirtyCachedValues_)
     {
-      Angle_ = RotationVector_.FrobeniusNorm();
-      if (Angle_ == T(0.0))
+      Angle_ = RotationVector_.Length();
+      if (Angle_ < Epsilon<T>())
       {
         UnitRotationVector_ = Vector3D<T>(0,0,0);
         SinAngle_ = T(0.0);

@@ -342,7 +342,6 @@ private:
       ::new (p) T(value);
   }
 
-
   MTL_INLINE static void DestroyElements(T *p, const T* pEnd)
   {
     for (; p < pEnd; p++)

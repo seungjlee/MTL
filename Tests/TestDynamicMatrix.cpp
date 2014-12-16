@@ -27,6 +27,7 @@
 #include <MTL/Random.h>
 #include <MTL/OptimizerLevenbergMarquardt.h>
 #include <MTL/QR.h>
+#include <MTL/SVD.h>
 
 using namespace MTL;
 
@@ -57,6 +58,7 @@ TEST(TestMatrixMultiplication)
 TEST(TestHouseholderQR)
 {
   static const double kHouseholderTol = 1e-13;
+  static const double kSVDTol = 1e-13;
   static const double kLevenbergMarquardtTol = 1e-15;
 
   enum
@@ -86,7 +88,7 @@ TEST(TestHouseholderQR)
   DynamicVector<F64> b = ys;
 
   t.Start();
-  I32 rank = SolveHouseholderQRTransposed(b, At);
+  I32 rank = SolveHouseholderQRTransposed(b, DynamicMatrix<F64>(At));
   t.Stop();
   printf("  Householder solver time: %.3f msecs\n", t.Milliseconds());
 
@@ -94,6 +96,18 @@ TEST(TestHouseholderQR)
   MTL_EQUAL_FLOAT(b[0],  2.5, kHouseholderTol);
   MTL_EQUAL_FLOAT(b[1],  0.3, kHouseholderTol);
   MTL_EQUAL_FLOAT(b[2], -1.7, kHouseholderTol);
+
+  DynamicVector<F64> xx;
+  F64 conditionNumber;
+  t.ResetAndStart();
+  SolveJacobiSVDTransposed(xx, rank, conditionNumber, At, ys);
+  t.Stop();
+  printf("  Jacobi SVD solver time:  %.3f msecs\n", t.Milliseconds());
+  printf("  Condition number %\n", conditionNumber);
+
+  MTL_EQUAL_FLOAT(xx[0],  2.5, kSVDTol);
+  MTL_EQUAL_FLOAT(xx[1],  0.3, kSVDTol);
+  MTL_EQUAL_FLOAT(xx[2], -1.7, kSVDTol);
 
   class QuadraticOptimizer : public OptimizerLevenbergMarquardt<3,F64>
   {
@@ -136,7 +150,7 @@ TEST(TestHouseholderQR_Speed)
 {
   enum
   {
-    M = 128*1024,
+    M = 256*1024,
     N = 10,
     kRepeats = 10
   };
@@ -144,8 +158,10 @@ TEST(TestHouseholderQR_Speed)
   DynamicMatrix<F64> At;
   DynamicVector<F64> b;
 
-  Timer t;
-  F64 maxRMS = 0;
+  Timer t_QR;
+  Timer t_SVD;
+  F64 maxRMS_QR  = 0;
+  F64 maxRMS_SVD = 0;
 
   Random random;
 
@@ -159,19 +175,32 @@ TEST(TestHouseholderQR_Speed)
 
     DynamicVector<F64> x = b;
 
-    t.Start();
+    t_QR.Start();
     I32 rank = SolveHouseholderQRTransposed(x, At);
-    t.Stop();
+    t_QR.Stop();
     MTL_EQUAL(rank, N);
 
     DynamicMatrix<F64> A = At.ComputeTranspose();
     DynamicVector<F64> residuals = A*x - b;
     //printf(" RMS = %e\n", RMS(residuals));
 
-    maxRMS = Max(maxRMS, RMS(residuals));
+    maxRMS_QR = Max(maxRMS_QR, RMS(residuals));
+
+    DynamicVector<F64> xx;
+    F64 conditionNumber;
+    t_SVD.Start();
+    SolveJacobiSVDTransposed(xx, rank, conditionNumber, At, b);
+    t_SVD.Stop();
+
+    residuals = A*xx - b;
+
+    maxRMS_SVD = Max(maxRMS_SVD, RMS(residuals));
   }
 
-  printf("  QR solver: %9.3f msecs (%d times), Max RMS = %e\n",
-         t.Milliseconds(), kRepeats, maxRMS);
-  MTL_LESS_THAN(maxRMS, 1.5);
+  printf("  QR solver:  %9.3f msecs (%d times), Max RMS = %e\n",
+         t_QR.Milliseconds(), kRepeats, maxRMS_QR);
+  printf("  SVD solver: %9.3f msecs (%d times), Max RMS = %e\n",
+         t_SVD.Milliseconds(), kRepeats, maxRMS_SVD);
+  MTL_LESS_THAN(maxRMS_QR,  1.001);
+  MTL_LESS_THAN(maxRMS_SVD, 1.001);
 }

@@ -70,6 +70,13 @@ MTL_INLINE static void Multiply(T* P, const T* A, const T* B, I32 rows, I32 N, I
 }
 
 template<class T>
+MTL_INLINE static void SwapRows(T* a, I32 row1, I32 row2, I32 dataSize, I32 rowSize)
+{
+  for (I32 i = 0; i < dataSize; i++)
+    Swap(a[row1 * rowSize + i], a[row2 * rowSize + i]);
+}
+
+template<class T>
 class DynamicMatrix
 {
 public:

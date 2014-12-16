@@ -26,6 +26,7 @@
 #ifndef MTL_SVD_H
 #define MTL_SVD_H
 
+#include "DynamicMatrix.h"
 #include "Givens.h"
 
 namespace MTL
@@ -263,6 +264,229 @@ static Matrix<N,M,T> ComputePseudoinverseJacobiSVD(const Matrix<M,N,T>& A,
   }
 
   return pinv;
+}
+
+// Dynamic matrix version of SVD. Note that it takes A transposed. It expects At and Vt to be
+// memory aligned.
+template<class T>
+static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, I32 rowSizeV)
+{
+  T epsilon = Epsilon<T>();
+  T epsilon2 = Square(epsilon);
+
+  I32 maxIterations = Max(M, 30L);
+
+  OptimizedZeros(Vt, N*rowSizeV);
+
+  for (I32 i = 0; i < N; i++)
+  {
+    Vt[i*rowSizeV + i] = T(1);
+    W[i] = SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M);
+  }
+
+  I32 iteration;
+  for (iteration = 0; iteration < maxIterations; iteration++)
+  {
+    bool changed = false;
+
+    for (I32 i = 0; i < N-1; i++)
+    {
+      for (I32 j = i+1; j < N; j++)
+      {
+        T* Ai = At + i*rowSizeA;
+        T* Aj = At + j*rowSizeA;
+        T a = W[i];
+        T b = W[j];
+
+        T p = DotProduct_StreamAligned_Parallel(Ai, Aj, M);
+        T pp = p*p;
+
+        if (pp <= epsilon2*a*b)
+          continue;
+
+        T beta = a - b;
+        T gamma = Sqrt(T(4)*pp + beta*beta);
+        T delta;
+        T c, s;
+        if (beta < 0)
+        {
+          delta = (gamma - beta) * 0.5;
+          s = Sqrt(delta/gamma);
+          c = p / (gamma*s);
+        }
+        else
+        {
+          T meanGammaBeta = 0.5 * (gamma + beta);
+          delta = pp / meanGammaBeta;
+          c = Sqrt(meanGammaBeta / gamma);
+          s = p / (gamma*c);
+        }
+
+        if (delta <= 0)
+          continue;
+
+        changed = true;
+
+        if (iteration < 10)
+        {
+          GivensRotation_Sequential(Ai, Aj, c, s, M);
+          W[i] += delta;
+          W[j] -= delta;
+        }
+        else
+        {
+          GivensRotation_Sequential(Ai, Aj, c, s, M, W[i], W[j]);
+          W[i] += delta * T(0.5);
+          W[j] -= delta * T(0.5);
+        }
+
+        GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
+      }
+    }
+
+    if (!changed)
+      break;
+  }
+
+  for (I32 i = 0; i < N; i++)
+    W[i] = Sqrt(SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M));
+
+  // Selection sort of singular values.
+  for (I32 i = 0; i < N-1; i++)
+  {
+    I32 maxIndex = i;
+    for (I32 k = i+1; k < N; k++)
+    {
+      if (W[maxIndex] < W[k])
+        maxIndex = k;
+    }
+
+    if (i != maxIndex)
+    {
+      Swap(W[i], W[maxIndex]);
+      SwapRows(At, i, maxIndex, M, rowSizeA);
+      SwapRows(Vt, i, maxIndex, N, rowSizeV);
+    }
+  }
+
+  for (I32 i = 0; i < N; i++)
+  {
+    if (W[i] > 0)
+      ScalarMultiplication_StreamAligned_Parallel(At + i*rowSizeA, T(1)/W[i], M);
+  }
+
+  return iteration < maxIterations;
+}
+template <class T>
+MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
+                                           DynamicVector<T>& D,
+                                           DynamicMatrix<T>& Vt)
+{
+  Vt.Resize(Ut.Rows(), Ut.Rows());
+  D.Resize(Ut.Rows());
+  return JacobiSVDTransposed(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
+                             Ut.RowSize(), Vt.RowSize());
+}
+
+template <class T>
+MTL_INLINE static T SolveSVDTransposed(DynamicVector<T>& x,
+                                       DynamicMatrix<T>& Ut,
+                                       DynamicVector<T>& D,
+                                       DynamicMatrix<T>& Vt,
+                                       I32& rank,
+                                       const DynamicVector<T>& b,
+                                       const T& tol = T(-1.0))
+{
+  T tolerance = tol;
+  if (tolerance < 0)
+    tolerance = Ut.Cols() * Epsilon<T>() * D[0];
+
+  rank = (I32)D.Size();
+  for (; rank > 0 && D[rank-1] < tolerance; rank--);
+
+  Ut.Resize(rank, Ut.Cols());
+  Vt.Resize(rank, Vt.Cols());
+  D.Resize(rank);
+
+  DynamicVector<T> X = Ut * b;
+  X /= D;
+  x = Vt.ComputeTranspose() * X;
+
+  return D[0] / D[rank-1];
+}
+
+//
+// Solves system of linear equations using SVD (Singular Value Decomposition).
+// Solves A * x = b. A is an MxN matrix. At is A transposed.
+// Returns true if SVD fully converged before reaching the maximum number of iterations.
+// Note that even if it returns false, the answer might be good enough.
+//
+template <class T>
+MTL_INLINE static bool SolveJacobiSVDTransposed(DynamicVector<T>& x, I32& rank,
+                                                T& conditionNumber,
+                                                const DynamicMatrix<T>& At,
+                                                const DynamicVector<T>& b,
+                                                const T& tolerance = T(-1.0))
+{
+  assert(At.Cols() == b.Size());
+
+  DynamicMatrix<T> Ut = At;
+  DynamicMatrix<T> Vt;
+  DynamicVector<T> D;
+
+  bool fullyConverged = JacobiSVDTransposed(Ut, D, Vt);
+  conditionNumber = SolveSVDTransposed(x, Ut, D, Vt, rank, b, tolerance);
+
+  return fullyConverged;
+}
+
+template <class T>
+MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
+(DynamicVector<T>& x, DynamicMatrix<T>& At, I32& rank, T& conditionNumber, const T& tol = T(-1.0))
+{
+  DynamicMatrix<T> Vt(At.Rows(), At.Rows());
+  DynamicVector<T> D(At.Rows());
+
+  bool fullyConverged = JacobiSVDTransposed(At[0], D.Begin(), Vt[0], At.Cols(), At.Rows(),
+                                            At.RowSize(), Vt.RowSize());
+
+  T tolerance = tol;
+  if (tolerance < 0)
+    tolerance = At.Cols() * Tolerance<T>() * D[0];
+
+  rank = (I32)D.size();
+  for(; rank > 0 && D[rank-1] < tolerance; rank--);
+
+  x = Vt.Row(Vt.Rows()-1);
+
+  conditionNumber = D[0] / D[rank-1];
+
+  return fullyConverged;
+}
+template <int N, class T>
+MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
+(ColumnVector<N,T>& x, DynamicMatrix<T>& At,
+ I32& rank, T& conditionNumber, const T& tol = T(-1.0))
+{
+  assert(N == At.Rows());
+
+  SquareMatrix<N,T> Vt;
+  T D[N];
+
+  bool fullyConverged = JacobiSVDTransposed(At[0], D, Vt[0], At.Cols(), N,
+                                            At.RowSize(), Vt.RowSize());
+
+  T tolerance = tol;
+  if (tolerance < 0)
+    tolerance = At.Cols() * Tolerance<T>() * D[0];
+
+  rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
+
+  memcpy(&x[0], Vt[N-1], sizeof(x));
+
+  conditionNumber = D[0] / D[rank-1];
+
+  return fullyConverged;
 }
 
 }  // namespace MTL
