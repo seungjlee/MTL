@@ -27,6 +27,15 @@
 
 #include "CPU.h"
 
+//
+// Microsoft Visual Studio's OpenMP implementation by default sets the environment variable
+// OMP_WAIT_POLICY to ACTIVE. I think they change this behaviour from VS 2005 to VS 2008.
+// They have claimed that this is better for performance but through the years, I have not seen
+// software run faster when OpenMP is wasting CPU cycles by waiting for the next OpenMP threaded
+// task. I do recommend setting/creating the environment variable OMP_WAIT_POLICY with value
+// PASSIVE for those using VS 2008 and newer.
+//
+
 // Note that I have not really tested the code with OpenMP disabled.
 #ifndef MTL_ENABLE_OPENMP
   #define MTL_ENABLE_OPENMP 1

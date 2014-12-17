@@ -720,7 +720,7 @@ private:
   MTL_INLINE bool operator!=(const Base& b) const  { return Base::operator!=(b); }            \
   MTL_INLINE bool operator==(const Class& b) const  { return Base::operator==((Base&)b); }    \
   MTL_INLINE bool operator!=(const Class& b) const  { return Base::operator!=((Base&)b); }    \
-  template <I32 P> MTL_INLINE Matrix<M,P,T> operator*(const Matrix<N,P,T>& b) const           \
+  template <MTL::I32 P> MTL_INLINE Matrix<M,P,T> operator*(const Matrix<N,P,T>& b) const      \
   { return Base::operator*(b); }                                                              \
 
 #define MTL_SQUARE_MATRIX_COMMON_DEFINITIONS(Class, Base, N, T)                               \
