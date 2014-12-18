@@ -100,6 +100,175 @@ public:
 
   MTL_INLINE Vector3D<T> operator*(const Vector3D<T>& pt) const
   { return Base::operator*(pt); }
+
+  //
+  // Computing rotations to/from a different axis using Given rotations.
+  //
+  MTL_INLINE static Rotation3D RotationToXAxis(const Vector3D<T>& v)
+  {
+    if (v.SumOfSquares() < EpsilonSquared<T>())
+      return Rotation3D();
+
+    T c1, c2, s1, s2;
+    RotationToXAxis(c1, c2, s1, s2, v);
+
+    return Rotation3D( c1*c2, -s2, -c2*s1,
+                       c1*s2,  c2, -s1*s2,
+                          s1,   0,     c1 );
+  }
+
+  MTL_INLINE static Rotation3D RotationFromXAxis(const Vector3D<T>& v)
+  {
+    if (v.SumOfSquares() < EpsilonSquared<T>())
+      return Rotation3D();
+
+    T c1, c2, s1, s2;
+    RotationToXAxis(c1, c2, s1, s2, v);
+
+    return Rotation3D(  c1*c2,  c1*s2, s1,
+                          -s2,     c2,  0,
+                       -c2*s1, -s1*s2, c1 );
+  }
+
+  MTL_INLINE static Rotation3D RotationToYAxis(const Vector3D<T>& v)
+  {
+    if (v.SumOfSquares() < EpsilonSquared<T>())
+      return Rotation3D();
+
+    T c1, c2, s1, s2;
+    RotationToYAxis(c1, c2, s1, s2, v);
+
+    return Rotation3D(-s2, -c1*c2, s1*c2,
+                       c2, -c1*s2, s1*s2,
+                        0,     s1,    c1 );
+  }
+
+  MTL_INLINE static Rotation3D RotationFromYAxis(const Vector3D<T>& v)
+  {
+    if (v.SumOfSquares() < EpsilonSquared<T>())
+      return Rotation3D();
+
+    T c1, c2, s1, s2;
+    RotationToYAxis(c1, c2, s1, s2, v);
+
+    return Rotation3D(    -s2,     c2, 0,
+                       -c1*c2, -c1*s2, s1,
+                        s1*c2,  s1*s2, c1 );
+  }
+
+  MTL_INLINE static Rotation3D RotationToZAxis(const Vector3D<T>& v)
+  {
+    if (v.SumOfSquares() < EpsilonSquared<T>())
+      return Rotation3D();
+
+    T c1, c2, s1, s2;
+    RotationToZAxis(c1, c2, s1, s2, v);
+
+    return Rotation3D(    -s1,   0,   -c1,
+                       -c1*c2, -s2, c2*s1,
+                       -c1*s2,  c2, s1*s2 );
+  }
+
+  MTL_INLINE static Rotation3D RotationFromZAxis(const Vector3D<T>& v)
+  {
+    if (v.SumOfSquares() < EpsilonSquared<T>())
+      return Rotation3D();
+
+    T c1, c2, s1, s2;
+    RotationToZAxis(c1, c2, s1, s2, v);
+
+    return Rotation3D( -s1, -c1*c2, -c1*s2,
+                         0,    -s2,     c2,
+                       -c1,  c2*s1,  s1*s2 );
+  }
+
+private:
+  MTL_INLINE static void RotationToXAxis(T& c1, T& c2, T& s1, T& s2,
+                                         const Vector3D<T>& v)
+  {
+    if (v[0] == 0 && v[2] == 0)
+    {
+      assert(v[1] != 0);
+
+      s1 =  0;
+      s2 = -1;
+      c1 =  1;
+      c2 =  0;
+    }
+    else
+    {
+      T r = Hypotenuse(v[0], v[2]);
+      c1 =  v[0]/r;
+      s1 = -v[2]/r;
+
+      T w0 = c1 * v[0] - s1 * v[2];
+
+      r = Hypotenuse(w0, v[1]);
+      c2 = w0/r;
+      s2 =  -v[1]/r;
+    }
+  }
+
+  MTL_INLINE static void RotationToYAxis(T& c1, T& c2, T& s1, T& s2,
+                                         const Vector3D<T>& v)
+  {
+    if (v[1] == 0 && v[2] == 0)
+    {
+      assert(v[0] != 0);
+
+      s1 = 0;
+      s2 = 0;
+      c1 = 1;
+      c2 = 1;
+    }
+    else
+    {
+      T r = Hypotenuse(v[1], v[2]);
+      c1 =  v[1]/r;
+      s1 = -v[2]/r;
+
+      T w1 = c1 * v[1] - s1 * v[2];
+
+      r = Hypotenuse(w1, v[0]);
+      c2 = v[0]/r;
+      s2 =  -w1/r;
+    }
+  }
+
+  MTL_INLINE static void RotationToZAxis(T& c1, T& c2, T& s1, T& s2,
+                                         const Vector3D<T>& v)
+  {
+    if (v[0] == 0 && v[2] == 0)
+    {
+      assert(v[1] != 0);
+
+      s1 = -1;
+      s2 =  0;
+      c1 =  0;
+      c2 =  1;
+    }
+    else
+    {
+      T r = Hypotenuse(v[0], v[2]);
+      c1 =  v[0]/r;
+      s1 = -v[2]/r;
+
+      T w2 = c1 * v[0] - s1 * v[2];
+
+      r = Hypotenuse(w2, v[1]);
+      c2 = v[1]/r;
+      s2 =  -w2/r;
+    }
+  }
+
+  MTL_INLINE Rotation3D(double e00, double e01, double e02,
+                        double e10, double e11, double e12,
+                        double e20, double e21, double e22)
+  {
+    Data_[0][0] = e00;  Data_[0][1] = e01;  Data_[0][2] = e02;
+    Data_[1][0] = e10;  Data_[1][1] = e11;  Data_[1][2] = e12;
+    Data_[2][0] = e20;  Data_[2][1] = e21;  Data_[2][2] = e22;
+  }
 };
 
 }  // namespace MTL

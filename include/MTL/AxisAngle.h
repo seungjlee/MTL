@@ -52,8 +52,8 @@ public:
     T vz = R[1][0] - R[0][1];
 
     // Use slower version near singularities.
-    if (Abs(vx) + Abs(vy) + Abs(vz) < Epsilon<T>() ||
-        Pow<4>(vx) + Pow<4>(vy) + Pow<4>(vz) < Epsilon<T>())
+    if (Abs(vx) < Epsilon<T>() || Abs(vy) < Epsilon<T>() || Abs(vz) < Epsilon<T>() ||
+        Pow<4>(vx) < Epsilon<T>() || Pow<4>(vy) < Epsilon<T>() || Pow<4>(vz) < Epsilon<T>())
     {
       RotationVector_ = ComputeFromRotationMatrixPrecise(R);
     }

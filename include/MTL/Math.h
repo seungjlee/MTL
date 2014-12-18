@@ -201,6 +201,11 @@ template <class T> MTL_INLINE static T Epsilon();
 template <> MTL_INLINE static F32 Epsilon<F32>()  { return FLT_EPSILON; }
 template <> MTL_INLINE static F64 Epsilon<F64>()  { return DBL_EPSILON; }
 
+template <class T> MTL_INLINE static T EpsilonSquared()
+{
+  return Square(Epsilon<T>());
+}
+
 }  // namespace MTL
 
 #endif  // MTL_MATH_H

@@ -200,3 +200,61 @@ TEST(TestAxisAngle)
   printf("  GetRotationMatrix time:     %9.3f msecs (%d times)\n", timeR.Milliseconds(), N);
   printf("  Convert to axis angle time: %9.3f msecs (%d times)\n", timeV.Milliseconds(), N);
 }
+
+TEST(RotateToAxis)
+{
+  static const double kTol = 1e-14;
+
+  enum
+  {
+    N = 100000
+  };
+
+  Random random;
+
+  for (int i = 0; i < N; i++)
+  {
+    Vector3D<F64> v(random.GetNext(-10.0, 10.0),
+                    random.GetNext(-10.0, 10.0),
+                    random.GetNext(-10.0, 10.0));
+
+    Rotation3D<F64> Rx = Rotation3D<F64>::RotationToXAxis(v);
+    Rotation3D<F64> Ry = Rotation3D<F64>::RotationToYAxis(v);
+    Rotation3D<F64> Rz = Rotation3D<F64>::RotationToZAxis(v);
+
+    Point3D<F64> ptX = Rx * v;
+    MTL_EQUAL_FLOAT(ptX.y(), 0.0, kTol);
+    MTL_EQUAL_FLOAT(ptX.z(), 0.0, kTol);
+
+    Point3D<F64> ptY = Ry * v;
+    MTL_EQUAL_FLOAT(ptY.x(), 0.0, kTol);
+    MTL_EQUAL_FLOAT(ptY.z(), 0.0, kTol);
+
+    Point3D<F64> ptZ = Rz * v;
+    MTL_EQUAL_FLOAT(ptZ.x(), 0.0, kTol);
+    MTL_EQUAL_FLOAT(ptZ.y(), 0.0, kTol);
+
+    Rotation3D<F64> Ix = Rx * Rotation3D<F64>::RotationFromXAxis(v);
+    Rotation3D<F64> Iy = Ry * Rotation3D<F64>::RotationFromYAxis(v);
+    Rotation3D<F64> Iz = Rz * Rotation3D<F64>::RotationFromZAxis(v);
+
+    for (I32 row = 0; row < Ix.Rows(); row++)
+    {
+      for (I32 col = 0; col < Ix.Cols(); col++)
+      {
+        if (row == col)
+        {
+          MTL_EQUAL_FLOAT(Ix[row][col], 1.0, kTol);
+          MTL_EQUAL_FLOAT(Iy[row][col], 1.0, kTol);
+          MTL_EQUAL_FLOAT(Iz[row][col], 1.0, kTol);
+        }
+        else
+        {
+          MTL_EQUAL_FLOAT(Ix[row][col], 0.0, kTol);
+          MTL_EQUAL_FLOAT(Iy[row][col], 0.0, kTol);
+          MTL_EQUAL_FLOAT(Iz[row][col], 0.0, kTol);
+        }
+      }
+    }
+  }
+}
