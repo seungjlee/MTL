@@ -31,16 +31,16 @@
 #define MTL_ENABLE_AVX 0
 #endif
 
-#if MTL_ENABLE_AVX
+#if defined(MTL_ENABLE_AVX) && MTL_ENABLE_AVX
   #ifndef MTL_ENABLE_SSE
-    #define MTL_ENABLE_SSE 0
+    #define MTL_ENABLE_SSE 1
   #endif
 #endif
 
-#if MTL_ENABLE_SSE
-  #define MTL_STREAM_BITS 128
-#elif MTL_ENABLE_AVX
+#if MTL_ENABLE_AVX
   #define MTL_STREAM_BITS 256
+#elif MTL_ENABLE_SSE
+  #define MTL_STREAM_BITS 128
 #else
   #define MTL_STREAM_BITS 8
 #endif
@@ -56,16 +56,16 @@
 #define XX_SetPacked X_X_SetPacked(MTL_STREAM_BITS)
 
 
-#define MTL_STREAM_EXTRA_INTEGER_OPERATORS                               \
-MTL_INLINE XX& operator+=(const X128& y)  { return *this = *this + y; }  \
-MTL_INLINE XX& operator-=(const X128& y)  { return *this = *this - y; }  \
-MTL_INLINE XX& operator&=(const X128& y)  { return *this = *this & y; }  \
-MTL_INLINE XX& operator|=(const X128& y)  { return *this = *this | y; }  \
+#define MTL_STREAM_EXTRA_INTEGER_OPERATORS(Bits)                                       \
+MTL_INLINE X__X(Bits)& operator+=(const X__X(Bits)& y)  { return *this = *this + y; }  \
+MTL_INLINE X__X(Bits)& operator-=(const X__X(Bits)& y)  { return *this = *this - y; }  \
+MTL_INLINE X__X(Bits)& operator&=(const X__X(Bits)& y)  { return *this = *this & y; }  \
+MTL_INLINE X__X(Bits)& operator|=(const X__X(Bits)& y)  { return *this = *this | y; }  \
 
-#define MTL_STREAM_EXTRA_OPERATORS                                       \
-MTL_STREAM_EXTRA_INTEGER_OPERATORS                                       \
-MTL_INLINE XX& operator*=(const X128& y)  { return *this = *this * y; }  \
-MTL_INLINE XX& operator/=(const X128& y)  { return *this = *this / y; }  \
+#define MTL_STREAM_EXTRA_OPERATORS(Bits)                                               \
+MTL_STREAM_EXTRA_INTEGER_OPERATORS(Bits)                                               \
+MTL_INLINE X__X(Bits)& operator*=(const X__X(Bits)& y)  { return *this = *this * y; }  \
+MTL_INLINE X__X(Bits)& operator/=(const X__X(Bits)& y)  { return *this = *this / y; }  \
 
 
 #define FOR_STREAM(p, size)                                              \

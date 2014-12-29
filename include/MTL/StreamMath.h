@@ -27,7 +27,6 @@
 #define MTL_STREAM_MATH_H
 
 #include "SSE.h"
-#include "AVX.h"
 
 namespace MTL
 {
@@ -35,7 +34,7 @@ namespace MTL
 template <class T>
 MTL_INLINE static T Abs(const T& a)
 {
-  XX<T> X;
+  X128<T> X;
   X.LoadSingle(&a);
   return Abs(X)[0];
 }
@@ -43,7 +42,7 @@ MTL_INLINE static T Abs(const T& a)
 template <class T>
 MTL_INLINE static T Sqrt(const T& a)
 {
-  XX<T> X;
+  X128<T> X;
   X.LoadSingle(&a);
   return X.SqrtSingle()[0];
 }

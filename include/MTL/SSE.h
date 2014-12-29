@@ -245,7 +245,7 @@ public:
   MTL_INLINE X128 Sqrt()                  const   { return _mm_sqrt_ps(Data_);                 }
   MTL_INLINE X128 SqrtSingle()            const   { return _mm_sqrt_ss(Data_);                 }
 
-  MTL_STREAM_EXTRA_OPERATORS;
+  MTL_STREAM_EXTRA_OPERATORS(128);
 };
 
 template<> class X128<F64> : public X128_Base<F64>
@@ -284,7 +284,7 @@ public:
   MTL_INLINE X128 Sqrt()                  const   { return _mm_sqrt_pd(Data_);                 }
   MTL_INLINE X128 SqrtSingle()            const   { return _mm_sqrt_sd(kX128_ZerosF64, Data_); }
 
-  MTL_STREAM_EXTRA_OPERATORS;
+  MTL_STREAM_EXTRA_OPERATORS(128);
 };
 
 // Minimum and maximum.
