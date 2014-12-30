@@ -28,6 +28,9 @@
 
 #include "Math.h"
 #include "Stream.h"
+
+#if MTL_ENABLE_AVX
+
 #include <immintrin.h>
 
 namespace MTL
@@ -328,5 +331,7 @@ X256<F32> MultiplyAndAdd(const X256<F32>& a, const X256<F32>& b, const X256<F32>
 }
 
 }  // namespace MTL
+
+#endif  // MTL_ENABLE_AVX
 
 #endif  // MTL_AVX_H
