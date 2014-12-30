@@ -316,6 +316,17 @@ MTL_INLINE static X256<F32> Abs(const X256<F32>& a)
   return a & kX256_NoSignF32;
 }
 
+template <> MTL_INLINE static
+X256<F64> MultiplyAndAdd(const X256<F64>& a, const X256<F64>& b, const X256<F64>& c)
+{
+  return _mm256_fmadd_pd(a.Data(), b.Data(), c.Data());
+}
+template <> MTL_INLINE static
+X256<F32> MultiplyAndAdd(const X256<F32>& a, const X256<F32>& b, const X256<F32>& c)
+{
+  return _mm256_fmadd_ps(a.Data(), b.Data(), c.Data());
+}
+
 }  // namespace MTL
 
 #endif  // MTL_AVX_H

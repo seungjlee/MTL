@@ -40,9 +40,7 @@ public:
 
   OptimizerNonLinearLeastSquares(SizeType inputDataSize)
     : MaxIterations_(100), SquaredParametersDeltaTolerance_(N * Square(Epsilon<T>())),
-      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
-      currentResiduals_(inputDataSize), residualsPlusDelta_(inputDataSize),
-      newResiduals_(inputDataSize)
+      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())), NewResiduals_(inputDataSize)
   {
     FiniteDifferenceTwoDelta_ = FiniteDifferenceDelta_ * T(2);
   }
@@ -66,38 +64,84 @@ protected:
   void ComputeJacobianForwardFiniteDifference(DynamicMatrix<T>& Jt,
                                               const Parameters& parameters)
   {
-    Parameters forwardDifferenceParameters = parameters;
-
     for (I32 i = 0; i < N; i++)
     {
+      Parameters forwardDifferenceParameters = parameters;
+      DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
+
       forwardDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
-      CostFunction(residualsPlusDelta_, forwardDifferenceParameters);
+      CostFunction(residualsPlusDelta, forwardDifferenceParameters);
       forwardDifferenceParameters[i] = parameters[i];
 
-      residualsPlusDelta_ -= currentResiduals_;
-      residualsPlusDelta_ /= FiniteDifferenceDelta_;
+      residualsPlusDelta -= CurrentResiduals_;
+      residualsPlusDelta /= FiniteDifferenceDelta_;
 
-      OptimizedCopy(Jt[i], residualsPlusDelta_.Begin(), residualsPlusDelta_.Size());
+      OptimizedCopy(Jt[i], residualsPlusDelta.Begin(), residualsPlusDelta.Size());
     }
   }
 
   void ComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
                                               const Parameters& currentParameters)
   {
-    Params centralDifferenceParameters = parameters;
-
     for (I32 i = 0; i < N; i++)
     {
+      Params centralDifferenceParameters = parameters;
+      DynamicVector<T> residualsMinusDelta(CurrentResiduals_.Size());
+      DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
+
       centralDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
-      CostFunction(residualsPlusDelta_, centralDifferenceParameters);
+      CostFunction(residualsPlusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i] - FiniteDifferenceDelta_;
-      CostFunction(residualsMinusDelta_, centralDifferenceParameters, );
+      CostFunction(residualsMinusDelta, centralDifferenceParameters, );
       centralDifferenceParameters[i] = parameters[i];
 
-      residualsPlusDelta_ -= residualsMinusDelta_;
-      residualsPlusDelta_ /= FiniteDifferenceTwoDelta_;
+      residualsPlusDelta -= residualsMinusDelta;
+      residualsPlusDelta /= FiniteDifferenceTwoDelta_;
 
-      OptimizedCopy(Jt[i], residualsPlusDelta_.Begin(), residualsPlusDelta_.Size());
+      OptimizedCopy(Jt[i], residualsPlusDelta.Begin(), residualsPlusDelta.Size());
+    }
+  }
+
+  void ParallelComputeJacobianForwardFiniteDifference(DynamicMatrix<T>& Jt,
+                                                      const Parameters& parameters)
+  {
+    #pragma omp parallel for
+    for (I32 i = 0; i < N; i++)
+    {
+      Parameters forwardDifferenceParameters = parameters;
+      DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
+
+      forwardDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
+      CostFunction(residualsPlusDelta, forwardDifferenceParameters);
+      forwardDifferenceParameters[i] = parameters[i];
+
+      residualsPlusDelta -= CurrentResiduals_;
+      residualsPlusDelta /= FiniteDifferenceDelta_;
+
+      OptimizedCopy(Jt[i], residualsPlusDelta.Begin(), residualsPlusDelta.Size());
+    }
+  }
+
+  void  ParallelComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
+                                                       const Parameters& currentParameters)
+  {
+    #pragma omp parallel for
+    for (I32 i = 0; i < N; i++)
+    {
+      Params centralDifferenceParameters = parameters;
+      DynamicVector<T> residualsMinusDelta(CurrentResiduals_.Size());
+      DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
+
+      centralDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
+      CostFunction(residualsPlusDelta, centralDifferenceParameters);
+      centralDifferenceParameters[i] = parameters[i] - FiniteDifferenceDelta_;
+      CostFunction(residualsMinusDelta, centralDifferenceParameters, );
+      centralDifferenceParameters[i] = parameters[i];
+
+      residualsPlusDelta -= residualsMinusDelta;
+      residualsPlusDelta /= FiniteDifferenceTwoDelta_;
+
+      OptimizedCopy(Jt[i], residualsPlusDelta.Begin(), residualsPlusDelta.Size());
     }
   }
 
@@ -106,10 +150,8 @@ protected:
   T FiniteDifferenceDelta_;
   T FiniteDifferenceTwoDelta_;
 
-  DynamicVector<T> currentResiduals_;
-  DynamicVector<T> newResiduals_;
-  DynamicVector<T> residualsPlusDelta_;
-  DynamicVector<T> residualsMinusDelta_;
+  DynamicVector<T> CurrentResiduals_;
+  DynamicVector<T> NewResiduals_;
 };
 
 }  // namespace MTL

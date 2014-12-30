@@ -63,7 +63,7 @@ TEST(TestHouseholderQR)
 
   enum
   {
-    kSamples = 1024*1024+1
+    kSamples = 2*1024*1024+1
   };
 
   Timer t;
@@ -122,6 +122,16 @@ TEST(TestHouseholderQR)
     virtual void CostFunction(DynamicVector<F64>& residuals, const Parameters& p)
     {
       residuals = x_ * (x_ * p[0] + p[1]) + p[2] - y_;
+    }
+
+    virtual void ComputeJacobian(DynamicMatrix<F64>& Jt,
+                                 const Parameters& currentParameters)
+    {
+      // Need a more expensive cost function to truly test this. Besides the cost function for
+      // this class uses DynamicVector operations.
+
+      //ComputeJacobianForwardFiniteDifference(Jt, currentParameters);
+      ParallelComputeJacobianForwardFiniteDifference(Jt, currentParameters);
     }
 
   private:

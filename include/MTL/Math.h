@@ -206,6 +206,13 @@ template <class T> MTL_INLINE static T EpsilonSquared()
   return Square(Epsilon<T>());
 }
 
+// Returns a * b + c
+template <class T>
+MTL_INLINE static T MultiplyAndAdd(const T& a, const T& b, const T& c)
+{
+  return a * b + c;
+}
+
 }  // namespace MTL
 
 #endif  // MTL_MATH_H

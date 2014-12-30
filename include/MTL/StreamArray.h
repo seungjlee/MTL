@@ -110,7 +110,7 @@ template <class T> MTL_INLINE static T SumOfSquares_Sequential(const T* p, const
 {
   T sum(0);
   for (; p < pEnd; p++)
-    sum += Square(*p);
+    sum = MultiplyAndAdd(*p, *p, sum);
 
   return sum;
 }
@@ -173,7 +173,7 @@ T DotProduct_Sequential(const T* p1, const T* p2, const T* pEnd1)
 {
   T sum(0);
   for (; p1 < pEnd1; p1++, p2++)
-    sum += *p1 * *p2;
+    sum = MultiplyAndAdd(*p1, *p2, sum);
 
   return sum;
 }
@@ -182,7 +182,7 @@ template <class T> MTL_INLINE static
 void AdditionScaled_Sequential(T* pDst, const T* pSrc, const T& scalar, const T* pDstEnd)
 {
   for (; pDst < pDstEnd; pDst++, pSrc++)
-    *pDst += *pSrc * scalar;
+    *pDst = MultiplyAndAdd(*pSrc, scalar, *pDst);
 }
 
 //
@@ -541,7 +541,7 @@ SumOfSquares_StreamAligned_Sequential(const T* p, SizeType size)
   {
     XX<T> xx;
     xx.LoadPackedAligned(p);
-    xSum += Square(xx);
+    xSum = MultiplyAndAdd(xx, xx, xSum);
   }
   return Sum< XX<T>::Increment >(xSum.pData()) + SumOfSquares_Sequential(p, pEnd);
 }
@@ -555,7 +555,7 @@ SumOfSquares_StreamUnaligned_Sequential(const T* p, SizeType size)
   {
     XX<T> xx;
     xx.LoadPackedUnaligned(p);
-    xSum += Square(xx);
+    xSum = MultiplyAndAdd(xx, xx, xSum);
   }
   return Sum< XX<T>::Increment >(xSum.pData()) + SumOfSquares_Sequential(p, pEnd);
 }
@@ -770,7 +770,7 @@ DotProduct_StreamAligned_Sequential(const T* p1, const T* p2, SizeType size)
     {
       x1.LoadPackedAligned(p1);
       x2.LoadPackedAligned(p2);
-      xDot += x1 * x2;
+      xDot = MultiplyAndAdd(x1, x2, xDot);
     }
 
     return Sum< XX<T>::Increment >(xDot.pData()) + DotProduct_Sequential(p1, p2, pEnd1);
@@ -796,7 +796,7 @@ DotProduct_StreamUnaligned_Sequential(const T* p1, const T* p2, SizeType size)
     {
       x1.LoadPackedUnaligned(p1);
       x2.LoadPackedUnaligned(p2);
-      xDot += x1 * x2;
+      xDot = MultiplyAndAdd(x1, x2, xDot);
     }
 
     return Sum< XX<T>::Increment >(xDot.pData()) + DotProduct_Sequential(p1, p2, pEnd1);
@@ -818,7 +818,7 @@ void AdditionScaled_StreamAligned_Sequential(T* pDst, const T* pSrc, const T& sc
     XX<T> xSrc, xDst;
     xSrc.LoadPackedAligned(pSrc);
     xDst.LoadPackedAligned(pDst);
-    xDst += xSrc * xScalar;
+    xDst = MultiplyAndAdd(xSrc, xScalar, xDst);
     xDst.StorePackedAligned(pDst);
   }
   AdditionScaled_Sequential(pDst, pSrc, scalar, pDstEnd);
@@ -836,7 +836,7 @@ void AdditionScaled_StreamUnaligned_Sequential(T* pDst, const T* pSrc, const T& 
     XX<T> xSrc, xDst;
     xSrc.LoadPackedUnaligned(pSrc);
     xDst.LoadPackedUnaligned(pDst);
-    xDst += xSrc * xScalar;
+    xDst = MultiplyAndAdd(xSrc, xScalar, xDst);
     xDst.StorePackedUnaligned(pDst);
   }
   AdditionScaled_Sequential(pDst, pSrc, scalar, pDstEnd);

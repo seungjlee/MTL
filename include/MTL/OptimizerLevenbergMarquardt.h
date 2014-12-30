@@ -47,10 +47,10 @@ public:
     T v = T(2);
     SquareMatrix<N,T> A;
 
-    CostFunction(currentResiduals_, parameters);
-    BestSumOfSquaresOfResiduals_ = SumOfSquares(currentResiduals_);
+    CostFunction(CurrentResiduals_, parameters);
+    BestSumOfSquaresOfResiduals_ = SumOfSquares(CurrentResiduals_);
 
-    DynamicMatrix<T> Jt(N, (I32)currentResiduals_.Size());
+    DynamicMatrix<T> Jt(N, (I32)CurrentResiduals_.Size());
 
     ComputeJacobian(Jt, parameters);
     MultiplyByTranspose(A[0], Jt[0], N, Jt.Cols(), N, Jt.RowSize());
@@ -75,7 +75,7 @@ public:
       do
       {
         A.AddToDiagonals(mu);
-        G = Jt * currentResiduals_;
+        G = Jt * CurrentResiduals_;
         memcpy(&delta[0], G.Begin(), N*sizeof(T));
 
         I32 rank = SolveLDLt(delta, A, LDLtRankTolerance_);
@@ -87,14 +87,14 @@ public:
             Parameters newParameters = parameters;
             newParameters -= delta;
 
-            CostFunction(newResiduals_, newParameters);
+            CostFunction(NewResiduals_, newParameters);
 
-            double newSumOfSquaresOfResiduals = SumOfSquares(newResiduals_);
+            double newSumOfSquaresOfResiduals = SumOfSquares(NewResiduals_);
             if (newSumOfSquaresOfResiduals <= BestSumOfSquaresOfResiduals_)
             {
               BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
               parameters = newParameters;
-              currentResiduals_ = newResiduals_;
+              CurrentResiduals_ = NewResiduals_;
 
               ComputeJacobian(Jt, parameters);
               MultiplyByTranspose(A[0], Jt[0], N, Jt.Cols(), N, Jt.RowSize());
