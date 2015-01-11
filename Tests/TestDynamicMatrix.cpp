@@ -57,8 +57,8 @@ TEST(TestMatrixMultiplication)
 
 TEST(TestHouseholderQR)
 {
-  static const double kHouseholderTol = 1e-13;
-  static const double kSVDTol = 1e-13;
+  static const double kHouseholderTol = 1e-12;
+  static const double kSVDTol = 1e-12;
   static const double kLevenbergMarquardtTol = 1e-15;
 
   enum
