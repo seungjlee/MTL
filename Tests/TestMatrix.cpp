@@ -23,6 +23,7 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Test.h>
+#include <MTL/LinearAlgebra.h>
 #include <MTL/LDLt.h>
 #include <MTL/QR.h>
 #include <MTL/SVD.h>
@@ -52,6 +53,41 @@ TEST(TestMatrix)
 
   for (int i = 0; i < x.Size(); i++)
     MTL_EQUAL_FLOAT(y[i], solution[i], kTol);
+}
+
+TEST(TestMatrixConcatenation)
+{
+  double a[][2] = {{ 1, 2 },
+                   { 4, 5 }};
+
+  double col[] = { 3, 6 };
+  double row[] = { 7, 8, 9 };
+
+  SquareMatrix2x2 A(a);
+  ColumnVector2D C(col);
+  RowVector3D R(row);
+
+  SquareMatrix3x3 M = (A || C) && R;
+
+  for (int row = 0; row < M.Rows(); row++)
+    for (int col = 0; col < M.Cols(); col++)
+      MTL_EQUAL_FLOAT(M[row][col], row * 3.0 + col + 1.0, kTol);
+}
+
+TEST(TestNullSpace)
+{
+  double v[] = { 0, 0, 1, 1 };
+
+  RowVector4D V(v);
+  Matrix<4,3> Null = NullSpace(V);
+
+  for (int row = 0; row < 4; row++)
+    printf("  %18.15f %18.15f %18.15f\n", Null[row][0], Null[row][1], Null[row][2]);
+
+  RowVector3D zeros = V * Null;
+
+  for (int i = 0; i < zeros.Cols(); i++)
+    MTL_EQUAL_FLOAT(zeros[i], 0.0, kTol);
 }
 
 TEST(TestTranspose)

@@ -811,6 +811,74 @@ public:
   MTL_INLINE I32 Size() const  { return Rows();}
 };
 
+template<I32 N, class T = F64>
+class RowVector : public Matrix<1,N,T>
+{
+  typedef Matrix<1,N,T> Base;
+
+public:
+  MTL_MATRIX_COMMON_DEFINITIONS(RowVector, Base, 1, N, T);
+
+  MTL_INLINE RowVector() : Base() {}
+
+  MTL_INLINE explicit RowVector(const T data[N])
+  {
+    memcpy(Data_, data, DataSizeInBytes());
+  }
+
+  MTL_INLINE RowVector& operator*=(const RowVector& v)
+  {
+    Multiply<N>(Data()[0], v.Data()[0]);
+    return *this;
+  }
+  MTL_INLINE RowVector& operator*=(const Base& v)
+  {
+    return operator*=(RowVector(v));
+  }
+  MTL_INLINE RowVector operator*(const Base& v2) const
+  {
+    RowVector<N,T> v3 = *this;
+    v3 *= v2;
+    return v3;
+  }
+
+  MTL_INLINE RowVector& operator/=(const RowVector& v)
+  {
+    Divide<N>(Data()[0], v.Data()[0]);
+    return *this;
+  }
+  MTL_INLINE RowVector& operator/=(const Base& v)
+  {
+    return operator/=(RowVector(v));
+  }
+  MTL_INLINE RowVector<N,T> operator/(const Base& v2) const
+  {
+    RowVector<N,T> v3 = *this;
+    v3 /= v2;
+    return v3;
+  }
+
+  MTL_INLINE T Dot(const Base& v) const
+  {
+    return DotProduct<N>(Data()[0], v.Data()[0]);
+  }
+
+  MTL_INLINE T MaxNorm() const
+  {
+    return Max_Norm<N>(Data()[0]);
+  }
+
+  MTL_INLINE void Normalize()
+  {
+    *this /= Sqrt(SumOfSquares());
+  }
+
+  MTL_INLINE T& operator[](I32 i)               { assert(i >= 0 && i < N);  return Data_[0][i]; }
+  MTL_INLINE const T& operator[](I32 i) const   { assert(i >= 0 && i < N);  return Data_[0][i]; }
+
+  MTL_INLINE I32 Size() const  { return Cols();}
+};
+
 typedef ColumnVector<1,F64> ColumnVector1D;
 typedef ColumnVector<2,F64> ColumnVector2D;
 typedef ColumnVector<3,F64> ColumnVector3D;
@@ -818,10 +886,26 @@ typedef ColumnVector<4,F64> ColumnVector4D;
 typedef ColumnVector<5,F64> ColumnVector5D;
 typedef ColumnVector<6,F64> ColumnVector6D;
 
+typedef RowVector<1,F64> RowVector1D;
+typedef RowVector<2,F64> RowVector2D;
+typedef RowVector<3,F64> RowVector3D;
+typedef RowVector<4,F64> RowVector4D;
+typedef RowVector<5,F64> RowVector5D;
+typedef RowVector<6,F64> RowVector6D;
+
 template <class T>
 MTL_INLINE static ColumnVector<3,T> Cross(const ColumnVector<3,T>& u, const ColumnVector<3,T>& v)
 {
   ColumnVector<3,T> crossProduct;
+  crossProduct[0] = u[1] * v[2] - u[2] * v[1];
+  crossProduct[1] = u[2] * v[0] - u[0] * v[2];
+  crossProduct[2] = u[0] * v[1] - u[1] * v[0];
+  return crossProduct; 
+}
+template <class T>
+MTL_INLINE static RowVector<3,T> Cross(const RowVector<3,T>& u, const RowVector<3,T>& v)
+{
+  RowVector<3,T> crossProduct;
   crossProduct[0] = u[1] * v[2] - u[2] * v[1];
   crossProduct[1] = u[2] * v[0] - u[0] * v[2];
   crossProduct[2] = u[0] * v[1] - u[1] * v[0];
