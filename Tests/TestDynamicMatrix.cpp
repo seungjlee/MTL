@@ -28,6 +28,7 @@
 #include <MTL/OptimizerLevenbergMarquardt.h>
 #include <MTL/QR.h>
 #include <MTL/SVD.h>
+#include <MTL/LDLt.h>
 
 using namespace MTL;
 
@@ -178,7 +179,7 @@ TEST(TestHouseholderQR_Speed)
   for (I32 i = 0; i < kRepeats; i++)
   {
     At = random.DynamicMatrix<F64>(N,M, -1, 1);
-    b = random.DynamicVector(M, -1, 1);
+    b = random.DynamicVector<F64>(M, -1, 1);
 
     for (I32 row = 0; row < At.Rows(); row++)
       At[row][row] += 10.0;
@@ -213,4 +214,49 @@ TEST(TestHouseholderQR_Speed)
          t_SVD.Milliseconds(), kRepeats, maxRMS_SVD);
   MTL_LESS_THAN(maxRMS_QR,  1.001);
   MTL_LESS_THAN(maxRMS_SVD, 1.001);
+}
+
+TEST(TestLDLt)
+{
+  enum
+  {
+    N = 35,
+    kRepeats = 100
+  };
+
+  DynamicMatrix<F64> A;
+  DynamicVector<F64> b;
+
+  Timer t_SVD;
+  Timer t_LDLt;
+
+  Random random;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    A = random.DynamicMatrix<F64>(N,N, -1, 1);
+    A = A.MultiplyByTranspose();
+    b = random.DynamicVector<F64>(N, -1, 1);
+
+    for (I32 row = 0; row < A.Rows(); row++)
+      A[row][row] += 10.0;
+
+    DynamicVector<F64> svdX;
+    I32 rank;
+    F64 conditionNumber;
+    t_SVD.Start();
+    SolveJacobiSVDTransposed(svdX, rank, conditionNumber, A, b);
+    t_SVD.Stop();
+
+    DynamicVector<F64> ldlX = b;
+    t_LDLt.Start();
+    SolveLDLt(ldlX, A);
+    t_LDLt.Stop();
+ 
+    for (I32 k = 0; k < N; k++)
+      MTL_EQUAL_FLOAT(ldlX[k], svdX[k], kTol);
+  }
+
+  printf("  SVD  solver: %9.3f msecs (%d times)\n", t_SVD.Milliseconds(), kRepeats);
+  printf("  LDLt solver: %9.3f msecs (%d times)\n", t_LDLt.Milliseconds(), kRepeats);
 }
