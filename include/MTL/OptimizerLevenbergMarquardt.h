@@ -140,6 +140,117 @@ private:
   U32 Iterations_;
 };
 
+template <class T>
+class DynamicOptimizerLevenbergMarquardt : public DynamicOptimizerNonLinearLeastSquares<T>
+{
+public:
+  DynamicOptimizerLevenbergMarquardt(SizeType inputDataSize)
+    : DynamicOptimizerNonLinearLeastSquares<T>(inputDataSize)
+  {
+  }
+
+  virtual void Optimize(Parameters& parameters)
+  {
+    LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
+
+    I32 N = (I32)parameters.Size();
+
+    T v = T(2);
+    DynamicMatrix<T> A(N, N);
+
+    CostFunction(CurrentResiduals_, parameters);
+    BestSumOfSquaresOfResiduals_ = SumOfSquares(CurrentResiduals_);
+
+    DynamicMatrix<T> Jt(N, (I32)CurrentResiduals_.Size());
+
+    ComputeJacobian(Jt, parameters);
+    MultiplyByTranspose(A[0], Jt[0], Jt.Rows(), Jt.Cols(), A.RowSize(), Jt.RowSize());
+
+    T maxDiagonal = A[0][0];
+    for (I32 i = 1; i < N; i++)
+      maxDiagonal = Max(maxDiagonal, A[i][i]);
+
+    T mu = T(1e-4) * maxDiagonal;
+
+    Parameters G(N);
+    Parameters delta(N);
+
+    Iterations_ = 0;
+    bool done = false;
+
+    do
+    {
+      Iterations_++;
+
+      T p = 0;
+      do
+      {
+        A.AddToDiagonals(mu);
+        G = Jt * CurrentResiduals_;
+        OptimizedCopy(delta.Begin(), G.Begin(), delta.Size());
+
+        I32 rank = SolveLDLt(delta, A, LDLtRankTolerance_);
+
+        if (rank == parameters.Size())
+        {
+          if (SumOfSquares(delta) > SquaredParametersDeltaTolerance_)
+          {
+            Parameters newParameters = parameters;
+            newParameters -= delta;
+
+            CostFunction(NewResiduals_, newParameters);
+
+            double newSumOfSquaresOfResiduals = SumOfSquares(NewResiduals_);
+            if (newSumOfSquaresOfResiduals <= BestSumOfSquaresOfResiduals_)
+            {
+              BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
+              parameters = newParameters;
+              CurrentResiduals_ = NewResiduals_;
+
+              ComputeJacobian(Jt, parameters);
+              MultiplyByTranspose(A[0], Jt[0], Jt.Rows(), Jt.Cols(), A.RowSize(), Jt.RowSize());
+
+              p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
+              p /= DotProduct(delta, delta * mu + G);
+
+              mu = mu * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
+
+              if (Abs(mu) < Epsilon<T>())
+                done = true;
+
+              v = T(2);
+            }
+            else
+            {
+              mu *= v; 
+              v *= T(2);
+            }
+          }
+          else
+          {
+            done = true;
+          }
+        }
+        else
+        {
+          mu *= v; 
+          v *= T(2);
+        }
+      }
+      while(!done && p < 0);
+    }
+    while(!done && Iterations_ < MaxIterations_);
+  }
+
+  U32 Iterations() const             { return Iterations_;                  }
+  T SumOfSquaresOfResiduals() const  { return BestSumOfSquaresOfResiduals_; }
+
+private:
+  T LDLtRankTolerance_;
+  T BestSumOfSquaresOfResiduals_;
+  U32 Iterations_;
+};
+
 }  // namespace MTL
 
 #endif  // MTL_OPTIMIZER_LEVENBERG_MARQUARDT_H

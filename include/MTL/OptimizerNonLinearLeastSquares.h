@@ -159,7 +159,7 @@ template <class T>
 class DynamicOptimizerNonLinearLeastSquares
 {
 public:
-  typedef DynamicVector Parameters;
+  typedef DynamicVector<T> Parameters;
 
   DynamicOptimizerNonLinearLeastSquares(SizeType inputDataSize)
     : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(Epsilon<T>())),

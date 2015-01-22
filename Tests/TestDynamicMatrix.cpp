@@ -140,21 +140,73 @@ TEST(TestHouseholderQR)
     DynamicVector<F64> y_;
   };
 
-  QuadraticOptimizer optimizer(xs, ys);
-  QuadraticOptimizer::Parameters coeffs;
-  coeffs.Zeros();
+  class DynamicQuadraticOptimizer : public DynamicOptimizerLevenbergMarquardt<F64>
+  {
+  public:
+    DynamicQuadraticOptimizer(const DynamicVector<F64>& x, const DynamicVector<F64>& y)
+      : DynamicOptimizerLevenbergMarquardt(x.Size()), x_(x), y_(y)
+    {
+      assert(x.Size() == y.Size());
+    }
 
-  MTL_EQUAL(rank, 3);
-  t.ResetAndStart();
-  optimizer.Optimize(coeffs);
-  t.Stop();
-  printf("  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
-         optimizer.Iterations(), t.Milliseconds());
-  printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
+  protected:
+    virtual void CostFunction(DynamicVector<F64>& residuals, const Parameters& p)
+    {
+      residuals = x_ * (x_ * p[0] + p[1]) + p[2] - y_;
+    }
 
-  MTL_EQUAL_FLOAT(coeffs[0],  2.5, kLevenbergMarquardtTol);
-  MTL_EQUAL_FLOAT(coeffs[1],  0.3, kLevenbergMarquardtTol);
-  MTL_EQUAL_FLOAT(coeffs[2], -1.7, kLevenbergMarquardtTol);
+    virtual void ComputeJacobian(DynamicMatrix<F64>& Jt,
+                                 const Parameters& currentParameters)
+    {
+      // Need a more expensive cost function to truly test this. Besides the cost function for
+      // this class uses DynamicVector operations.
+
+      //ComputeJacobianForwardFiniteDifference(Jt, currentParameters);
+      ParallelComputeJacobianForwardFiniteDifference(Jt, currentParameters);
+    }
+
+  private:
+    DynamicVector<F64> x_;
+    DynamicVector<F64> y_;
+  };
+
+  {
+    QuadraticOptimizer optimizer(xs, ys);
+    QuadraticOptimizer::Parameters coeffs;
+    coeffs.Zeros();
+
+    MTL_EQUAL(rank, 3);
+    t.ResetAndStart();
+    optimizer.Optimize(coeffs);
+    t.Stop();
+    printf("\n  Fixed-size version:\n");
+    printf("  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
+           optimizer.Iterations(), t.Milliseconds());
+    printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
+
+    MTL_EQUAL_FLOAT(coeffs[0],  2.5, kLevenbergMarquardtTol);
+    MTL_EQUAL_FLOAT(coeffs[1],  0.3, kLevenbergMarquardtTol);
+    MTL_EQUAL_FLOAT(coeffs[2], -1.7, kLevenbergMarquardtTol);
+  }
+
+  {
+    DynamicQuadraticOptimizer optimizer(xs, ys);
+    DynamicQuadraticOptimizer::Parameters coeffs(3);
+    coeffs.Zeros();
+
+    MTL_EQUAL(rank, 3);
+    t.ResetAndStart();
+    optimizer.Optimize(coeffs);
+    t.Stop();
+    printf("\n  Dynamic version:\n");
+    printf("  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
+           optimizer.Iterations(), t.Milliseconds());
+    printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
+
+    MTL_EQUAL_FLOAT(coeffs[0],  2.5, kLevenbergMarquardtTol);
+    MTL_EQUAL_FLOAT(coeffs[1],  0.3, kLevenbergMarquardtTol);
+    MTL_EQUAL_FLOAT(coeffs[2], -1.7, kLevenbergMarquardtTol);
+  }
 }
 
 TEST(TestHouseholderQR_Speed)
@@ -187,7 +239,7 @@ TEST(TestHouseholderQR_Speed)
     DynamicVector<F64> x = b;
 
     t_QR.Start();
-    I32 rank = SolveHouseholderQRTransposed(x, At);
+    I32 rank = SolveHouseholderQRTransposed(x, DynamicMatrix<F64>(At));
     t_QR.Stop();
     MTL_EQUAL(rank, N);
 
@@ -220,7 +272,7 @@ TEST(TestLDLt)
 {
   enum
   {
-    N = 35,
+    N = 37,
     kRepeats = 100
   };
 
@@ -229,6 +281,7 @@ TEST(TestLDLt)
 
   Timer t_SVD;
   Timer t_LDLt;
+  Timer t_QR;
 
   Random random;
 
@@ -241,6 +294,16 @@ TEST(TestLDLt)
     for (I32 row = 0; row < A.Rows(); row++)
       A[row][row] += 10.0;
 
+    DynamicVector<F64> qrX = b;
+    t_QR.Start();
+    SolveHouseholderQRTransposed(qrX, DynamicMatrix<F64>(A));
+    t_QR.Stop();
+
+    DynamicVector<F64> ldlX = b;
+    t_LDLt.Start();
+    SolveLDLt(ldlX, DynamicMatrix<F64>(A));
+    t_LDLt.Stop();
+ 
     DynamicVector<F64> svdX;
     I32 rank;
     F64 conditionNumber;
@@ -248,15 +311,14 @@ TEST(TestLDLt)
     SolveJacobiSVDTransposed(svdX, rank, conditionNumber, A, b);
     t_SVD.Stop();
 
-    DynamicVector<F64> ldlX = b;
-    t_LDLt.Start();
-    SolveLDLt(ldlX, A);
-    t_LDLt.Stop();
- 
     for (I32 k = 0; k < N; k++)
-      MTL_EQUAL_FLOAT(ldlX[k], svdX[k], kTol);
+    {
+      MTL_EQUAL_FLOAT(ldlX[k], qrX[k], kTol);
+      MTL_EQUAL_FLOAT(svdX[k], qrX[k], kTol);
+    }
   }
 
-  printf("  SVD  solver: %9.3f msecs (%d times)\n", t_SVD.Milliseconds(), kRepeats);
+  printf("  QR   solver: %9.3f msecs (%d times)\n", t_QR.Milliseconds(), kRepeats);
   printf("  LDLt solver: %9.3f msecs (%d times)\n", t_LDLt.Milliseconds(), kRepeats);
+  printf("  SVD  solver: %9.3f msecs (%d times)\n", t_SVD.Milliseconds(), kRepeats);
 }

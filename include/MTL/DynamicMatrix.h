@@ -138,6 +138,12 @@ public:
       memset((*this)[i], 0, Cols() * sizeof(T));
   }
 
+  MTL_INLINE void AddToDiagonals(const T& value)
+  {
+    for (I32 i = 0; i < Min(Rows(), Cols()); i++)
+      (*this)[i][i] += value;
+  }
+
   MTL_INLINE void SetAll(const T& newVal)
   {
     for (I32 i = 0; i < Rows(); i++)

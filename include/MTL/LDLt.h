@@ -198,6 +198,9 @@ static I32 SolveLDLt(DynamicVector<T>& x, DynamicMatrix<T>& A,
                      const T& tolerance = Epsilon<T>())
 {
   I32 N = A.Rows();
+
+  // Maybe we want to also check here if A is symmetric.
+  assert(N == A.Cols());
   assert(N == (I32)x.Size());
 
   return SolveLDLt(x.Begin(), A[0], N, A.RowSize(), tolerance);
