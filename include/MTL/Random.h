@@ -61,7 +61,8 @@ public:
   MTL_INLINE MTL::DynamicMatrix<T> DynamicMatrix(I32 M, I32 N, T start, T end)
   {
     MTL::DynamicMatrix<T> m(M, N);
-    Array(m[0], M*N, start, end);
+    for (I32 i = 0; i < m.Rows(); i++)
+	  Array(m[i], N, start, end);
 
     return m;
   }
