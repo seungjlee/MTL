@@ -26,7 +26,7 @@
 #ifndef MTL_LINEAR_ALGEBRA_H
 #define MTL_LINEAR_ALGEBRA_H
 
-#include "Matrix.h"
+#include "SVD.h"
 
 namespace MTL
 {

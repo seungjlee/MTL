@@ -90,9 +90,8 @@ public:
             CostFunction(NewResiduals_, newParameters);
 
             double newSumOfSquaresOfResiduals = SumOfSquares(NewResiduals_);
-            if (newSumOfSquaresOfResiduals <= BestSumOfSquaresOfResiduals_)
+            if (newSumOfSquaresOfResiduals < BestSumOfSquaresOfResiduals_)
             {
-              BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
               parameters = newParameters;
               CurrentResiduals_ = NewResiduals_;
 
@@ -103,6 +102,8 @@ public:
               p /= delta.Dot(delta * mu + Parameters(G.Begin()));
 
               mu = mu * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
+
+              BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
               if (Abs(mu) < Epsilon<T>())
                 done = true;
@@ -201,9 +202,8 @@ public:
             CostFunction(NewResiduals_, newParameters);
 
             double newSumOfSquaresOfResiduals = SumOfSquares(NewResiduals_);
-            if (newSumOfSquaresOfResiduals <= BestSumOfSquaresOfResiduals_)
+            if (newSumOfSquaresOfResiduals < BestSumOfSquaresOfResiduals_)
             {
-              BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
               parameters = newParameters;
               CurrentResiduals_ = NewResiduals_;
 
@@ -214,6 +214,8 @@ public:
               p /= DotProduct(delta, delta * mu + G);
 
               mu = mu * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
+
+              BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
               if (Abs(mu) < Epsilon<T>())
                 done = true;
