@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
+// Copyright (c) 2014-2015: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -43,17 +43,13 @@ typedef unsigned long long U64;
 typedef float  F32;
 typedef double F64;
 
-  typedef size_t SizeType;
+typedef size_t SizeType;
 
 typedef std::wstring  String;
 typedef std::wostream OutputStream;
 
 #ifndef MTL_INLINE
-  #if defined(_WIN32) || defined(_WIN64)
-    #define MTL_INLINE __forceinline
-  #else
-    #define MTL_INLINE inline
-  #endif
+  #define MTL_INLINE inline
 #endif
 
 #define TOWCHAR(x)   L ## x
