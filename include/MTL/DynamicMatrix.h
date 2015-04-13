@@ -42,12 +42,21 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
     {
       if (i == j)
       {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         P[i*rowSizeP + j] = SumOfSquares_StreamAligned_Parallel(M + i*rowSizeM, cols);
+#else
+        P[i*rowSizeP + j] = SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
+#endif
       }
       else
       {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         P[i*rowSizeP + j] = DotProduct_StreamAligned_Parallel(M + i*rowSizeM,
                                                               M + j*rowSizeM, cols);
+#else
+        P[i*rowSizeP + j] = DotProduct_Sequential(M + i*rowSizeM,
+                                                  M + j*rowSizeM, M + i*rowSizeM + cols);
+#endif
         P[j*rowSizeP + i] = P[i*rowSizeP + j];
       }
     }
@@ -120,7 +129,7 @@ public:
     Cols_ = cols;
 
     RowSize_ =
-      ((Cols_ * sizeof(T) + byteAlignment - 1) / byteAlignment) * (byteAlignment / sizeof(T));
+      ((Cols_ * sizeof(T) + byteAlignment - 1) / byteAlignment) * byteAlignment / sizeof(T);
 
     Data_.Resize(Rows_ * RowSize_);
   }
@@ -147,7 +156,7 @@ public:
   MTL_INLINE void SetAll(const T& newVal)
   {
     for (I32 i = 0; i < Rows(); i++)
-      AssignAll_Stream((*this)[i], newVal, Cols());
+      OptimizedAssignAll((*this)[i], newVal, Cols());
   }
 
   MTL_INLINE DynamicMatrix operator*(const DynamicMatrix& B) const
@@ -167,7 +176,11 @@ public:
 
     DynamicVector<T> result(Rows());
     for (I32 i = 0; i < Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       result[i] = DotProduct_StreamAligned_Sequential((*this)[i], v.Begin(), Cols());
+#else
+      result[i] = DotProduct_Sequential((*this)[i], v.Begin(), (*this)[i] + Cols());
+#endif
 
     return result;
   }
@@ -188,7 +201,11 @@ public:
     assert(Rows() == B.Rows());
 
     for (I32 i = 0; i < Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       Addition_StreamAligned_Sequential((*this)[i], B[i], Cols());
+#else
+      Addition_Sequential((*this)[i], B[i], (*this)[i] + Cols());
+#endif
 
     return *this;
   }
@@ -208,7 +225,11 @@ public:
     assert(Rows() == B.Rows());
 
     for (I32 i = 0; i < Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       Subtraction_StreamAligned_Sequential((*this)[i], B[i], Cols());
+#else
+      Subtraction_Sequential((*this)[i], B[i], (*this)[i] + Cols());
+#endif
 
     return *this;
   }
@@ -226,7 +247,11 @@ public:
   {
     DynamicMatrix A = *this;
     for (I32 i = 0; i < A.Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       UnaryMinus_StreamAligned_Sequential(A[i], A.Cols());
+#else
+      UnaryMinus_Sequential(A[i], A[i] + A.Cols());
+#endif
 
     return A;
   }
@@ -234,7 +259,11 @@ public:
   MTL_INLINE DynamicMatrix& operator+=(const T& scalar)
   {
     for (I32 i = 0; i < Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarAddition_StreamAligned_Sequential(A[i], scalar, A.Cols())
+#else
+      ScalarAddition_Sequential(A[i], scalar, A[i] + A.Cols())
+#endif
 
     return *this;
   }
@@ -248,7 +277,11 @@ public:
   MTL_INLINE DynamicMatrix& operator-=(const T& scalar)
   {
     for (I32 i = 0; i < Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarSubtraction_StreamAligned_Sequential(A[i], scalar, A.Cols())
+#else
+      ScalarSubtraction_Sequential(A[i], scalar, A[i] + A.Cols())
+#endif
 
     return *this;
   }
@@ -262,7 +295,11 @@ public:
   MTL_INLINE DynamicMatrix& operator*=(const T& scalar)
   {
     for (I32 i = 0; i < Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarMultiplication_StreamAligned_Sequential(A[i], scalar, A.Cols())
+#else
+      ScalarMultiplication_Sequential(A[i], scalar, A[i] + A.Cols())
+#endif
 
     return *this;
   }
@@ -276,7 +313,11 @@ public:
   MTL_INLINE DynamicMatrix& operator/=(const T& scalar)
   {
     for (I32 i = 0; i < Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarDivision_StreamAligned_Sequential(A[i], scalar, A.Cols())
+#else
+      ScalarDivision_Sequential(A[i], scalar, A[i] + A.Cols())
+#endif
 
     return *this;
   }
@@ -293,7 +334,11 @@ public:
   {
     T sum = T(0);
     for (I32 i = 0; i < Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       sum += Sum_StreamAligned_Parallel((*this)[i], Cols());
+#else
+      sum += Sum_Sequential((*this)[i], (*this)[i] + Cols());
+#endif
 
     return sum;
   }
@@ -302,7 +347,11 @@ public:
   {
     T sum = T(0);
     for (I32 i = 0; i < Rows(); i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       sum += SumOfSquares_StreamAligned_Parallel((*this)[i], Cols());
+#else
+      sum += SumOfSquares_Sequential((*this)[i], (*this)[i] + Cols());
+#endif
 
     return sum;
   }
@@ -317,7 +366,11 @@ public:
     T max = T(0);
     for (I32 i = 0; i < Rows(); i++)
     {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       T sum = SumOfAbsolutes_StreamAligned_Parallel((*this)[i], Cols());
+#else
+      T sum = SumOfAbsolutes_Sequential((*this)[i], (*this)[i] + Cols());
+#endif
       if (sum > max)
         max = sum;
     }

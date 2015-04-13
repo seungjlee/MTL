@@ -37,6 +37,10 @@
   #endif
 #endif
 
+#if !defined(MTL_ENABLE_AVX)
+#define MTL_ENABLE_AVX 0
+#endif
+
 #if MTL_ENABLE_AVX
   #define MTL_STREAM_BITS 256
 #elif MTL_ENABLE_SSE

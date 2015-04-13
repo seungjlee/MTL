@@ -216,6 +216,7 @@ DynamicVector<T> operator/(const DynamicVector<T>& v, double s)
   return u;
 }
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 // Define stream optimizations.
 #define MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(T, CastT)                                  \
 template<> class MTL::DynamicVectorParallelOperations<T>                                         \
@@ -277,6 +278,9 @@ public:                                                                         
                                                 v.Size()*sizeof(T)/sizeof(CastT));               \
   }                                                                                              \
 };
+#else
+#define MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(T, CastT)
+#endif
 
 //
 // Reduction operations.
@@ -352,6 +356,7 @@ template <class T> MTL_INLINE static T FrobeniusNorm(const DynamicVector<T>& v)
 }
 
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM(T)                                                          \
 MTL_INLINE static T Sum(const MTL::DynamicVector<T>& v)                                           \
 {                                                                                                 \
@@ -406,6 +411,19 @@ MTL_INLINE static T DotProduct(const MTL::DynamicVector<T>& v1, const MTL::Dynam
   assert(v1.Size() == v2.Size());                                                                 \
   return MTL::DotProduct_StreamAligned_Parallel(v1.Begin(), v2.Begin(), v2.Size());               \
 }
+#else // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+
+#define MTL_DYNAMIC_VECTOR_STREAM_SUM(T)
+#define MTL_DYNAMIC_VECTOR_STREAM_SUM_OF_ABSOLUTES(T)
+#define MTL_DYNAMIC_VECTOR_STREAM_SUM_OF_SQUARES(T)
+#define MTL_DYNAMIC_VECTOR_STREAM_MIN(T)
+#define MTL_DYNAMIC_VECTOR_STREAM_MAX(T)
+#define MTL_DYNAMIC_VECTOR_STREAM_MIN_OF_ABSOLUTES(T)
+#define MTL_DYNAMIC_VECTOR_STREAM_MAX_OF_ABSOLUTES(T)
+#define MTL_DYNAMIC_VECTOR_STREAM_MAX_NORM(T)
+#define MTL_DYNAMIC_VECTOR_STREAM_DOT_PRODUCT(T)
+
+#endif // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 
 
 #define MTL_DYNAMIC_VECTOR_STREAM_REDUCTION_OPERATIONS(T)  \

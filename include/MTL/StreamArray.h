@@ -185,6 +185,8 @@ void AdditionScaled_Sequential(T* pDst, const T* pSrc, const T& scalar, const T*
     *pDst = MultiplyAndAdd(*pSrc, scalar, *pDst);
 }
 
+
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 //
 // Streamed single-threaded operations.
 //
@@ -1092,6 +1094,7 @@ AdditionScaled_StreamUnaligned_Parallel(T* pDst, const T* pSrc, const T& scalar,
   Parallel_1Dst_1Src_1Val< T, AdditionScaled_StreamUnaligned_Sequential<T> >(pDst, pSrc,
                                                                              scalar, size);
 }
+#endif  // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 
 }  // namespace MTL
 

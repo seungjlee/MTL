@@ -83,6 +83,7 @@ MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T
   }
 }
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 template<class T>
 MTL_INLINE static void GivensRotation_StreamAligned_Sequential(T* x, T* y, const T& c, const T& s,
                                                                SizeType N)
@@ -185,6 +186,7 @@ MTL_INLINE static void GivensRotation_StreamAligned_Parallel(T* x, T* y, const T
 #endif
     GivensRotation_StreamAligned_Sequential(x, y, c, s, N, a, b);
 }
+#endif  // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 
 }  // namespace MTL
 

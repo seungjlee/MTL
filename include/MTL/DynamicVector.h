@@ -361,7 +361,11 @@ template <class T> MTL_INLINE static void ComputeParallelSubSizes
 (DynamicVector<SizeType>& subSizes, DynamicVector<SizeType>& offsets,
  SizeType totalSize, U64 numberOfThreads)
 {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
   SizeType chunkSize = MTL::XX<T>::StreamSize(totalSize / numberOfThreads);
+#else
+  SizeType chunkSize = totalSize / numberOfThreads;
+#endif
 
   subSizes.Clear();
   subSizes.Resize(numberOfThreads, chunkSize);
@@ -427,6 +431,7 @@ template <class T> MTL_INLINE static void OptimizedCopy(T* pDst, const T* pSrc, 
   Parallel_1Dst_1Src< T, OptimizedCopy_Sequential >(pDst, pSrc, size);
 }
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 template <class T>
 MTL_INLINE static void AssignAll_Stream_Unaligned_Sequential(T* p, const T& val, SizeType size)
 {
@@ -469,13 +474,31 @@ MTL_INLINE static void AssignAll_Stream(T* p, const T& val, SizeType size)
     AssignAll_Stream_Unaligned_Sequential(p, val, size);
   }
 }
+#endif
 
 template <class T> MTL_INLINE static void OptimizedAssignAll(T* p, const T& val, SizeType size)
 {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
   if (MTL::CPU::Instance().NumberOfThreads() > 1)
     Parallel_1Dst_1Val< T, AssignAll_Stream<T> >(p, val, size);
   else
     AssignAll_Stream<T>(p, val, size);
+#else
+  #if MTL_ENABLE_OPENMP
+    if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
+    {
+      #pragma omp parallel for
+      for (long k = 0; k < (long)size; k++)
+        p[k] = val;
+    }
+    else
+  #endif
+    {
+      const T* pEnd = p + size;
+      for (; p < pEnd; p++)
+        *p = val;
+    }
+#endif
 }
 
 #define MTL_DYNAMIC_VECTOR_OPTIMIZED_ASSIGN_ALL(T)                                 \
@@ -486,6 +509,7 @@ MTL_INLINE void DynamicVector<T>::AssignAll(T* p, const T* pEnd, const T& val)  
   OptimizedAssignAll(p, val, size);                                                \
 }
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 #define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL(T)                       \
 template <> MTL_INLINE static void OptimizedZeros_Sequential(T* p, SizeType size)  \
 {                                                                                  \
@@ -495,6 +519,9 @@ template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)          
 {                                                                                  \
   Parallel_1Dst< T, OptimizedZeros_Sequential<T> >(p, size);                       \
 }
+#else
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL(T)
+#endif
 
 #define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL_CAST(T)                  \
 template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)             \

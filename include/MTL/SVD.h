@@ -281,7 +281,11 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
   for (I32 i = 0; i < N; i++)
   {
     Vt[i*rowSizeV + i] = T(1);
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     W[i] = SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M);
+#else
+    W[i] = SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M);
+#endif
   }
 
   I32 iteration;
@@ -297,8 +301,12 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
         T* Aj = At + j*rowSizeA;
         T a = W[i];
         T b = W[j];
-
+        
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         T p = DotProduct_StreamAligned_Parallel(Ai, Aj, M);
+#else
+        T p = DotProduct_Sequential(Ai, Aj, Ai + M);
+#endif
         T pp = p*p;
 
         if (pp <= epsilon2*a*b)
@@ -329,18 +337,30 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 
         if (iteration < 10)
         {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
           GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M);
+#else
+          GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
+#endif
           W[i] += delta;
           W[j] -= delta;
         }
         else
         {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
           GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M, W[i], W[j]);
+#else
+          GivensRotation_Sequential(Ai, Aj, c, s, Ai + M, W[i], W[j]);
+#endif
           W[i] += delta * T(0.5);
           W[j] -= delta * T(0.5);
         }
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         GivensRotation_StreamAligned_Parallel(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
+#else
+        GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
+#endif
       }
     }
 
@@ -349,7 +369,11 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
   }
 
   for (I32 i = 0; i < N; i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     W[i] = Sqrt(SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M));
+#else
+    W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M));
+#endif
 
   // Selection sort of singular values.
   for (I32 i = 0; i < N-1; i++)
@@ -372,7 +396,11 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
   for (I32 i = 0; i < N; i++)
   {
     if (W[i] > 0)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarMultiplication_StreamAligned_Parallel(At + i*rowSizeA, T(1)/W[i], M);
+#else
+      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
+#endif
   }
 
   return iteration < maxIterations;
