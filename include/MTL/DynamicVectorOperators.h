@@ -216,6 +216,22 @@ DynamicVector<T> operator/(const DynamicVector<T>& v, double s)
   return u;
 }
 
+//
+// Need optimize these.
+//
+template <class T> MTL_INLINE static
+void SquareAll(DynamicVector<T>& v)
+{
+  FOR_EACH_INDEX(v)
+    v[vIndex] = Square(v[vIndex]);
+}
+template <class T> MTL_INLINE static
+void SquareRootAll(DynamicVector<T>& v)
+{
+  FOR_EACH_INDEX(v)
+    v[vIndex] = Sqrt(v[vIndex]);
+}
+
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 // Define stream optimizations.
 #define MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(T, CastT)                                  \
@@ -335,7 +351,7 @@ template <class T> MTL_INLINE static T Mean(const DynamicVector<T>& v)
 template <class T> MTL_INLINE static T Variance(const DynamicVector<T>& v, const T& mean)
 {
   if (v.Size() < 2)
-    return T(0);
+    return T();
 
   DynamicVector<T> deltas = v;
   deltas -= mean;

@@ -288,3 +288,23 @@ TEST(TestSolversF64)
   TestSolvers< 9,F64>(kTol);
   //TestSolvers<11,F64>(kTol);
 }
+
+TEST(Test_SubColumn)
+{
+  static const double kTol = 1e-14;
+
+  ColumnVector<9> v;
+  
+  for (int i = 0; i < v.Size(); i++)
+    v[i] = i;
+
+  SquareMatrix3x3 M = v.SubColumn<0,3>() || v.SubColumn<3,3>() || v.SubColumn<6,3>();
+
+  double expected[3][3] = {{ 0, 3, 6 },
+                           { 1, 4, 7 },
+                           { 2, 5, 8 }};
+
+  for (int row = 0; row < M.Rows(); row++)
+    for (int col = 0; col < M.Cols(); col++)
+      MTL_EQUAL_FLOAT(M[row][col], expected[row][col], kTol); 
+}

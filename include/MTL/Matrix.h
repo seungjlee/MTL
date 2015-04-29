@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
+// Copyright (c) 2014-2015: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -804,6 +804,12 @@ public:
   {
     *this /= Sqrt(SumOfSquares());
   }
+
+  template <I32 OFFSET, I32 ROWS>
+  MTL_INLINE ColumnVector<ROWS,T> SubColumn() const
+  {
+    return SubMatrix<OFFSET,0,ROWS,1>();
+  }  
 
   MTL_INLINE T& operator[](I32 i)               { assert(i >= 0 && i < M);  return Data_[i][0]; }
   MTL_INLINE const T& operator[](I32 i) const   { assert(i >= 0 && i < M);  return Data_[i][0]; }

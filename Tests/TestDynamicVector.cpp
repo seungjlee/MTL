@@ -24,6 +24,7 @@
 
 #include <MTL/Test.h>
 #include <MTL/DynamicVectorOperators.h>
+#include <MTL/Random.h>
 
 using namespace MTL;
 
@@ -164,4 +165,34 @@ TEST(TestReductionsSmallVectorsF32)
   MTL_EQUAL_FLOAT(Variance(a1, Mean(a1)), 2.73, kTolF32);
   MTL_EQUAL_FLOAT(RMS(a1), Sqrt(30.69 /3), kTolF32);
   MTL_EQUAL_FLOAT(FrobeniusNorm(a1), Sqrt(30.69), kTolF32);
+}
+
+TEST(TestHouseholderQR_Speed)
+{
+  static const double kTol = 1e-14;
+
+  enum
+  {
+    N = 128*1024,
+    kRepeats = 100
+  };
+
+  Random random;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    DynamicVector<F64> v = random.DynamicVector<F64>(N, -10, 10);
+
+    DynamicVector<F64> v2 = v;
+    SquareAll(v2);
+
+    DynamicVector<F64> v1 = v2;
+    SquareRootAll(v1);
+
+    FOR_EACH_INDEX(v)
+    {
+      MTL_EQUAL_FLOAT(v2[vIndex], Square(v[vIndex]), kTol);
+      MTL_EQUAL_FLOAT(v1[vIndex], Abs(v[vIndex]), kTol);
+    }
+  }
 }

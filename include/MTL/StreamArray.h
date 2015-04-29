@@ -92,7 +92,10 @@ Division_Sequential(DstT* pDst, const SrcT* pSrc, const DstT* pDstEnd)
 
 template <class T> MTL_INLINE static T Sum_Sequential(const T* p, const T* pEnd)
 {
-  T sum(0);
+  if (p >= pEnd)
+    return T();
+
+  T sum = *p++;
   for (; p < pEnd; p++)
     sum += *p;
 
@@ -100,7 +103,10 @@ template <class T> MTL_INLINE static T Sum_Sequential(const T* p, const T* pEnd)
 }
 template <class T> MTL_INLINE static T SumOfAbsolutes_Sequential(const T* p, const T* pEnd)
 {
-  T sum(0);
+  if (p >= pEnd)
+    return T();
+
+  T sum = Abs(*p++);
   for (; p < pEnd; p++)
     sum += Abs(*p);
 
@@ -108,7 +114,10 @@ template <class T> MTL_INLINE static T SumOfAbsolutes_Sequential(const T* p, con
 }
 template <class T> MTL_INLINE static T SumOfSquares_Sequential(const T* p, const T* pEnd)
 {
-  T sum(0);
+  if (p >= pEnd)
+    return T();
+
+  T sum = Square(*p++);
   for (; p < pEnd; p++)
     sum = MultiplyAndAdd(*p, *p, sum);
 
@@ -171,7 +180,10 @@ template <class T> MTL_INLINE static T MaxOfAbsolutes_Sequential(const T* p, con
 template <class T> MTL_INLINE static
 T DotProduct_Sequential(const T* p1, const T* p2, const T* pEnd1)
 {
-  T sum(0);
+  if (p1 >= pEnd1)
+    return T();
+
+  T sum = *p1++ * *p2++;
   for (; p1 < pEnd1; p1++, p2++)
     sum = MultiplyAndAdd(*p1, *p2, sum);
 
