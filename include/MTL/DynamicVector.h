@@ -205,6 +205,42 @@ public:
     }
   }
 
+  MTL_INLINE void AddBack(const DynamicVector& newElements)
+  {
+    insert(End(), newElements.Begin(), newElements.Size());
+  }
+
+  MTL_INLINE void Insert(T* pDst, const T* pSrc, SizeType sourceSize)
+  {
+    assert(pDst >= pFirst_ && pDst <= End());
+    assert(pSrc >= End() || pSrc + sourceSize < pFirst_);
+
+    SizeType moveSize = End() - pDst;
+    SizeType insertOffset = pDst - pFirst_;
+    SizeType newTotalSize = size_ + sourceSize;
+    Reserve(newTotalSize);
+    T* pNewDst = pFirst_ + insertOffset;
+    CopyBackwards(pNewDst + sourceSize, pNewDst, moveSize);
+    OptimizedCopy(pNewDst, pSrc, sourceSize);
+    Size_ = newTotalSize;
+  }
+  MTL_INLINE void Insert(T* pDst, const T* pSrc, const T* pSrcEnd)
+  {
+    assert(pSrcEnd >= pSrc);
+    Insert(pDst, pSrc, pSrcEnd - pSrc);
+  }
+  MTL_INLINE void Insert(T* pDst, const T& element)
+  {
+    Insert(pDst, &element, 1);
+  }
+
+  MTL_INLINE static void CopyBackwards(T* pDst, const T* pSrc, SizeType size)
+  {
+    const T* pDstBegin = pDst;
+    for (pDst += size-1, pSrc += size-1; pDst >= pDstBegin; pDst--, pSrc--)
+      *pDst = *pSrc;
+  }
+
   MTL_INLINE SizeType Size() const      { return Size_;       }
   MTL_INLINE SizeType Capacity() const  { return BufferSize_; }
 

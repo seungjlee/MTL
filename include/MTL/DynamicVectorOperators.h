@@ -217,7 +217,7 @@ DynamicVector<T> operator/(const DynamicVector<T>& v, double s)
 }
 
 //
-// Need optimize these.
+// Need to optimize these.
 //
 template <class T> MTL_INLINE static
 void SquareAll(DynamicVector<T>& v)

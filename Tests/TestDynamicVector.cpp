@@ -163,7 +163,7 @@ TEST(TestReductionsSmallVectorsF32)
 
   MTL_EQUAL_FLOAT(Mean(a1), 2.9, kTolF32);
   MTL_EQUAL_FLOAT(Variance(a1, Mean(a1)), 2.73, kTolF32);
-  MTL_EQUAL_FLOAT(RMS(a1), Sqrt(30.69 /3), kTolF32);
+  MTL_EQUAL_FLOAT(RMS(a1), Sqrt(30.69 / 3), kTolF32);
   MTL_EQUAL_FLOAT(FrobeniusNorm(a1), Sqrt(30.69), kTolF32);
 }
 
