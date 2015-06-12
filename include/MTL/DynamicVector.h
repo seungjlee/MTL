@@ -207,7 +207,7 @@ public:
 
   MTL_INLINE void AddBack(const DynamicVector& newElements)
   {
-    insert(End(), newElements.Begin(), newElements.Size());
+    Insert(End(), newElements.Begin(), newElements.Size());
   }
 
   MTL_INLINE void Insert(T* pDst, const T* pSrc, SizeType sourceSize)
@@ -216,10 +216,10 @@ public:
     assert(pSrc >= End() || pSrc + sourceSize < pFirst_);
 
     SizeType moveSize = End() - pDst;
-    SizeType insertOffset = pDst - pFirst_;
-    SizeType newTotalSize = size_ + sourceSize;
+    SizeType insertOffset = pDst - First_;
+    SizeType newTotalSize = Size_ + sourceSize;
     Reserve(newTotalSize);
-    T* pNewDst = pFirst_ + insertOffset;
+    T* pNewDst = First_ + insertOffset;
     CopyBackwards(pNewDst + sourceSize, pNewDst, moveSize);
     OptimizedCopy(pNewDst, pSrc, sourceSize);
     Size_ = newTotalSize;
