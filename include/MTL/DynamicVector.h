@@ -109,18 +109,31 @@ public:
 
   // Constructor that casts types.
   template <class T2>
-  MTL_INLINE DynamicVector(const DynamicVector<T2>& rhs)
+  MTL_INLINE explicit DynamicVector(const DynamicVector<T2>& rhs)
     : Buffer_(0), First_(0), Size_(0), BufferSize_(0),
       AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
   {
     Resize(rhs.Size());
 
+    SizeType size = Size();
     T* pDst = First_;
-    const T* pDstEnd = pDst + Size();
     const T2* pSrc = rhs.Begin();
 
-    for (; pDst < pDstEnd; pDst++, pSrc++)
-      *pDst = T(*pSrc);
+#if MTL_ENABLE_OPENMP
+    if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
+    {
+      #pragma omp parallel for
+      for (long k = 0; k < (long)size; k++)
+        pDst[k] = T(pSrc[k]);
+    }
+    else
+#endif
+    {
+      const T* pDstEnd = pDst + size;
+
+      for (; pDst < pDstEnd; pDst++, pSrc++)
+        *pDst = T(*pSrc);
+    }
   }
 
   ~DynamicVector()  { DestroyAndDelete(); }
