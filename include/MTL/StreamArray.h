@@ -592,7 +592,10 @@ Min_StreamAligned_Sequential(const T* p, SizeType size)
       xMin = Min(xMin, xx);
     }
 
-    return Min(Minimum< XX<T>::Increment >(xMin.pData()), Min_Sequential(p, pEnd));
+    if (p == pEnd)
+      return Minimum< XX<T>::Increment >(xMin.pData());
+    else
+      return Min(Minimum< XX<T>::Increment >(xMin.pData()), Min_Sequential(p, pEnd));
   }
   else
     return Min_Sequential(p, pEnd);
@@ -615,7 +618,10 @@ Min_StreamUnaligned_Sequential(const T* p, SizeType size)
       xMin = Min(xMin, xx);
     }
 
-    return Min(Minimum< XX<T>::Increment >(xSum.pData()), Min_Sequential(p, pEnd));
+    if (p == pEnd)
+      return Minimum< XX<T>::Increment >(xMin.pData());
+    else
+      return Min(Minimum< XX<T>::Increment >(xMin.pData()), Min_Sequential(p, pEnd));
   }
   else
     return Min_Sequential(p, pEnd);
@@ -639,7 +645,10 @@ Max_StreamAligned_Sequential(const T* p, SizeType size)
       xMax = Max(xMax, xx);
     }
 
-    return Max(Maximum< XX<T>::Increment >(xMax.pData()), Max_Sequential(p, pEnd));
+    if (p == pEnd)
+      return Maximum< XX<T>::Increment >(xMax.pData());
+    else
+      return Max(Maximum< XX<T>::Increment >(xMax.pData()), Max_Sequential(p, pEnd));
   }
   else
     return Max_Sequential(p, pEnd);
@@ -662,7 +671,10 @@ Max_StreamUnaligned_Sequential(const T* p, SizeType size)
       xMax = Max(xMax, xx);
     }
 
-    return Max(Maximum< XX<T>::Increment >(xMax.pData()), Max_Sequential(p, pEnd));
+    if (p == pEnd)
+      return Maximum< XX<T>::Increment >(xMax.pData());
+    else
+      return Max(Maximum< XX<T>::Increment >(xMax.pData()), Max_Sequential(p, pEnd));
   }
   else
     return Max_Sequential(p, pEnd);
@@ -687,7 +699,10 @@ MinOfAbsolutes_StreamAligned_Sequential(const T* p, SizeType size)
       xMin = Min(xMin, Abs(xx));
     }
 
-    return Min(Minimum< XX<T>::Increment >(xMin.pData()), MinOfAbsolutes_Sequential(p, pEnd));
+    if (p == pEnd)
+      return Minimum< XX<T>::Increment >(xMin.pData());
+    else
+      return Min(Minimum< XX<T>::Increment >(xMin.pData()), MinOfAbsolutes_Sequential(p, pEnd));
   }
   else
     return MinOfAbsolutes_Sequential(p, pEnd);
@@ -711,7 +726,10 @@ MinOfAbsolutes_StreamUnaligned_Sequential(const T* p, SizeType size)
       xMin = Min(xMin, Abs(xx));
     }
 
-    return Min(Minimum< XX<T>::Increment >(xMin.pData()), MinOfAbsolutes_Sequential(p, pEnd));
+    if (p == pEnd)
+      return Minimum< XX<T>::Increment >(xMin.pData());
+    else
+      return Min(Minimum< XX<T>::Increment >(xMin.pData()), MinOfAbsolutes_Sequential(p, pEnd));
   }
   else
     return MinOfAbsolutes_Sequential(p, pEnd);
@@ -736,7 +754,10 @@ MaxOfAbsolutes_StreamAligned_Sequential(const T* p, SizeType size)
       xMax = Max(xMax, Abs(xx));
     }
 
-    return Max(Maximum< XX<T>::Increment >(xMax.pData()), MaxOfAbsolutes_Sequential(p, pEnd));
+    if (p == pEnd)
+      return Maximum< XX<T>::Increment >(xMax.pData());
+    else
+      return Max(Maximum< XX<T>::Increment >(xMax.pData()), MaxOfAbsolutes_Sequential(p, pEnd));
   }
   else
     return MaxOfAbsolutes_Sequential(p, pEnd);
@@ -760,7 +781,10 @@ MaxOfAbsolutes_StreamUnaligned_Sequential(const T* p, SizeType size)
       xMax = Max(xMax, Abs(xx));
     }
 
-    return Max(Maximum< XX<T>::Increment >(xMax.pData()), MaxOfAbsolutes_Sequential(p, pEnd));
+    if (p == pEnd)
+      return Maximum< XX<T>::Increment >(xMax.pData());
+    else
+      return Max(Maximum< XX<T>::Increment >(xMax.pData()), MaxOfAbsolutes_Sequential(p, pEnd));
   }
   else
     return MaxOfAbsolutes_Sequential(p, pEnd);
