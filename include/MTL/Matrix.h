@@ -135,11 +135,11 @@ public:
       {
         if (row == col)
         {
-          squareSymmetricMatrix[row][col] = SumOfSquares<N>((*this)[row]);
+          squareSymmetricMatrix[row][col] = MTL::SumOfSquares<N>((*this)[row]);
         }
         else
         {
-          squareSymmetricMatrix[row][col] = DotProduct<N>((*this)[row], (*this)[col]);
+          squareSymmetricMatrix[row][col] = MTL::Dot<N>((*this)[row], (*this)[col]);
           squareSymmetricMatrix[col][row] = squareSymmetricMatrix[row][col];
         }
       }
@@ -263,7 +263,7 @@ public:
   MTL_INLINE Matrix operator-() const
   {
     Matrix A;
-    UnaryMinus<M*N>(A.Data()[0], Data()[0]);
+    Array<M*N,T>::UnaryMinus(A.Data()[0], Data()[0]);
     return A;
   }
 
@@ -323,28 +323,28 @@ public:
   // Sum of the squares of all elements.
   MTL_INLINE T SumOfSquares() const
   {
-    return SumOfSquares<M*N>(Data()[0]);
+    return MTL::SumOfSquares<M*N>(Data()[0]);
   }
 
   // Returns maximum of all elements.
   MTL_INLINE T Max() const
   {
-    return Maximum<M*N>(Data()[0]);
+    return MTL::Maximum<M*N>(Data()[0]);
   }
 
   // Returns minimum of all elements.
   MTL_INLINE T Min() const
   {
-    return Minimum<M*N>(Data()[0]);
+    return MTL::Minimum<M*N>(Data()[0]);
   }
 
   MTL_INLINE T MaxOfAbsolutes() const
   {
-    return Maximum<M*N>(Data()[0]);
+    return MTL::MaximumOfAbsolutes<M*N>(Data()[0]);
   }
   MTL_INLINE T MinOfAbsolutes() const
   {
-    return Minimum<M*N>(Data()[0]);
+    return MTL::MinimumOfAbsolutes<M*N>(Data()[0]);
   }
 
   MTL_INLINE void RowMultiply(I32 row, const T& scalar)  { ScalarMultiply<N>(Data()[row], scalar); }
@@ -407,70 +407,6 @@ public:
   MTL_INLINE DataType& Data()              { return Data_;         }
 
   MTL_INLINE I32 DataSizeInBytes() const   { return sizeof(Data_); }
-
-  template<I32 N> static T Maximum(const T* a)
-  {
-    return MTL::Max(Maximum<N-1>(a), a[N-1]);
-  }
-  template<> T static Maximum<1>(const T* a)
-  {
-    return a[0];
-  }
-
-  template<I32 N> static T Minimum(const T* a)
-  {
-    return MTL::Min(Minimum<N-1>(a), a[N-1]);
-  }
-  template<> T static Minimum<1>(const T* a)
-  {
-    return a[0];
-  }
-
-  template<I32 N> static T MaximumOfAbsolutes(const T* a)
-  {
-    return MTL::Max(MaximumOfAbsolutes<N-1>(a), Abs(a[N-1]));
-  }
-  template<> T static MaximumOfAbsolutes<1>(const T* a)
-  {
-    return Abs(a[0]);
-  }
-
-  template<I32 N> static T MinimumOfAbsolutes(const T* a)
-  {
-    return MTL::Min(MinimumOfAbsolutes<N-1>(a), Abs(a[N-1]));
-  }
-  template<> T static MinimumOfAbsolutes<1>(const T* a)
-  {
-    return Abs(a[0]);
-  }
-
-  template<I32 Q> static T SumOfSquares(const T* ptr)
-  {
-    return SumOfSquares<Q-1>(ptr) + Pow<2>(ptr[Q-1]);
-  }
-  template<> static T SumOfSquares<1>(const T* ptr)
-  {
-    return Pow<2>(ptr[0]);
-  }
-
-  template<I32 Q> static T DotProduct(const T* a, const T* b)
-  {
-    return DotProduct<Q-1>(a, b) + a[Q-1] * b[Q-1];
-  }
-  template<> T static DotProduct<1>(const T* a, const T* b)
-  {
-    return a[0] * b[0];
-  }
-
-  template<I32 Q> static void UnaryMinus(T* a, const T* b)
-  {
-    UnaryMinus<Q-1>(a, b);
-    a[Q-1] = -b[Q-1];
-  }
-  template<> static void UnaryMinus<1>(T* a, const T* b)
-  {
-    a[0] = -b[0];
-  }
 
   template<I32 Q> static void Add(T* a, const T* b)
   {
@@ -792,7 +728,7 @@ public:
 
   MTL_INLINE T Dot(const Base& v) const
   {
-    return DotProduct<M>(Data()[0], v.Data()[0]);
+    return MTL::Dot<M>(Data()[0], v.Data()[0]);
   }
 
   MTL_INLINE T MaxNorm() const
