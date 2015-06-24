@@ -176,7 +176,7 @@ template <int N, class T> MTL_INLINE static T Minimum(const T* p)
 }
 template <int N, class T> MTL_INLINE static T Maximum(const T* p)
 {
-  return Array<N,T>::Min(p);
+  return Array<N,T>::Max(p);
 }
 template <int N, class T> MTL_INLINE static T MinimumOfAbsolutes(const T* p)
 {
@@ -184,7 +184,7 @@ template <int N, class T> MTL_INLINE static T MinimumOfAbsolutes(const T* p)
 }
 template <int N, class T> MTL_INLINE static T MaximumOfAbsolutes(const T* p)
 {
-  return Array<N,T>::MinOfAbsolutes(p);
+  return Array<N,T>::MaxOfAbsolutes(p);
 }
 
 template <int N, class T> MTL_INLINE static T SumOfSquares(const T* p)
