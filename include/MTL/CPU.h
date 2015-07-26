@@ -32,6 +32,11 @@
 #include <vector>
 #include <omp.h>
 
+#ifndef WIN32
+#include <cpuid.h>
+#include <string.h>
+#endif
+
 namespace MTL
 {
 
@@ -102,12 +107,21 @@ private:
 
       // Calling __cpuid with 0x0 as the function_id argument
       // gets the number of the highest valid function ID.
+#ifdef WIN32
       __cpuid(cpui.data(), 0);
       nIds_ = cpui[0];
+#else
+      nIds_ = __get_cpuid_max(0, 0);
+#endif
 
       for (int i = 0; i <= nIds_; ++i)
       {
+#ifdef WIN32
         __cpuidex(cpui.data(), i, 0);
+#else
+        __get_cpuid(i, (unsigned int*)&cpui[0], (unsigned int*)&cpui[1],
+                    (unsigned int*)&cpui[2], (unsigned int*)&cpui[3]);
+#endif
         data_.push_back(cpui);
       }
 
@@ -144,15 +158,24 @@ private:
 
       // Calling __cpuid with 0x80000000 as the function_id argument
       // gets the number of the highest valid extended ID.
+#ifdef WIN32
       __cpuid(cpui.data(), 0x80000000);
       nExIds_ = cpui[0];
+#else
+      nExIds_ = __get_cpuid_max(0x80000000, 0);
+#endif
 
       char brand[0x40];
       memset(brand, 0, sizeof(brand));
 
       for (int i = 0x80000000; i <= nExIds_; ++i)
       {
+#ifdef WIN32
         __cpuidex(cpui.data(), i, 0);
+#else
+        __get_cpuid(i, (unsigned int*)&cpui[0], (unsigned int*)&cpui[1],
+                    (unsigned int*)&cpui[2], (unsigned int*)&cpui[3]);
+#endif
         extdata_.push_back(cpui);
       }
 
@@ -174,7 +197,13 @@ private:
 
       // Check for multithreading feature like Hyperthreading.
       int info1[4];
+#ifdef WIN32
       __cpuid(info1, 1);
+#else
+      __get_cpuid(1, (unsigned int*)&info1[0], (unsigned int*)&info1[1],
+                  (unsigned int*)&info1[2], (unsigned int*)&info1[3]);
+#endif
+      extdata_.push_back(cpui);
       multithreading_ = (info1[3]& (1 << 28)) || false;
     };
 
