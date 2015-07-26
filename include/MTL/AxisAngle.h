@@ -71,7 +71,7 @@ public:
   MTL_INLINE static Vector3D<T> ComputeFromRotationMatrixPrecise(const Rotation3D<T>& R)
   {
     // From Multiple View Geometry (2nd Edition), R. Hartley and A. Zisserman (A4.10).
-    Rotation3D<T> A = R - Rotation3D<T>();
+    Rotation3D<T> A = R - Rotation3D<T>(Rotation3D<T>::eIdentity);
 
     long rank;
     T conditionNumber;

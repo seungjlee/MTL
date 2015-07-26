@@ -37,7 +37,7 @@ class RotationTranslation3D : public AffineTransform3D<T>
 {
 public:
 
-  RotationTranslation3D(const Rotation3D<T>& r = Rotation3D<T>(),
+  RotationTranslation3D(const Rotation3D<T>& r = Rotation3D<T>(Rotation3D<T>::eIdentity),
                         const Vector3D<T>& v = Vector3D<T>(0,0,0))
     : AffineTransform3D<T>(r, v)
   {
