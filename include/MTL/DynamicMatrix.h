@@ -36,6 +36,9 @@ template<class T>
 MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
                                            I32 rowSizeP, I32 rowSizeM)
 {
+#if MTL_ENABLE_OPENMP
+  #pragma omp parallel for
+#endif
   for (I32 i = 0; i < rows; i++)
   {
     for (I32 j = i; j < rows; j++)
@@ -43,7 +46,7 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
       if (i == j)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        P[i*rowSizeP + j] = SumOfSquares_StreamAligned_Parallel(M + i*rowSizeM, cols);
+        P[i*rowSizeP + j] = SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
 #else
         P[i*rowSizeP + j] = SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
 #endif
@@ -51,7 +54,7 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
       else
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        P[i*rowSizeP + j] = DotProduct_StreamAligned_Parallel(M + i*rowSizeM,
+        P[i*rowSizeP + j] = DotProduct_StreamAligned_Sequential(M + i*rowSizeM,
                                                               M + j*rowSizeM, cols);
 #else
         P[i*rowSizeP + j] = DotProduct_Sequential(M + i*rowSizeM,
