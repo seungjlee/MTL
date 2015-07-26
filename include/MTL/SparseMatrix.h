@@ -85,9 +85,6 @@ protected:
     Ai_.Clear();
     Ax_.Clear();
   }
-
-  // Data cached to optimize computation of At * A
-  DynamicVector<DynamicVector<DynamicVector<Point2D<I32>>>> MultiplyTransposeIndices_;
 };
 
 // Compressed sparse column matrix.
@@ -186,8 +183,12 @@ public:
     const I32* ai = Ai();
     const T* ax = Ax();
 
-    if (MultiplyTransposeIndices_.Size() == Cols_)
+    if (Mp_.Size() > 0)
     {
+      const I32* Mq = Mq_.Begin();
+      const I32* Mp = Mp_.Begin();
+      const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
+
       for (I32 i = 0; i < Cols_; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -195,20 +196,25 @@ public:
 #else
         P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
-
-        for (I32 j = i + 1; j < Cols_; j++)
+        if (i < Cols_ - 1)
         {
-          const DynamicVector<Point2D<I32>>& pairs = MultiplyTransposeIndices_[i][j - i - 1];
-          const Point2D<I32>* pPairs    = pairs.Begin();
-          const Point2D<I32>* pPairsEnd = pairs.End();
+          I32 index = Mq[i];
+          for (I32 j = i + 1; j < Cols_; j++, index++)
+          {
+            if (Mp[index] < Mp[index + 1])
+            {
+              const Point2D<I32>* p = pPairs + Mp[index];
+              const Point2D<I32>* pEnd = pPairs + Mp[index + 1];
 
-          T sum = 0;
+              T sum = 0;
 
-          for (; pPairs < pPairsEnd; pPairs++)
-            sum += ax[pPairs->x()] * ax[pPairs->y()];
+              for (; p < pEnd; p++)
+                sum += ax[p->x()] * ax[p->y()];
 
-          P[i][j] = sum;
-          P[j][i] = sum;
+              P[i][j] = sum;
+              P[j][i] = sum;
+            }
+          }
         }
       }
     }
@@ -253,6 +259,7 @@ public:
       }
     }
   }
+
   void MultiplyTransposeByThisParallel(DynamicMatrix<T>& P) const
   {
     P.Resize(Cols_, Cols_);
@@ -262,8 +269,12 @@ public:
     const I32* ai = Ai();
     const T* ax = Ax();
 
-    if (MultiplyTransposeIndices_.Size() == Cols_)
+    if (Mp_.Size() > 0)
     {
+      const I32* Mq = Mq_.Begin();
+      const I32* Mp = Mp_.Begin();
+      const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
+
       #pragma omp parallel for
       for (I32 i = 0; i < Cols_; i++)
       {
@@ -272,20 +283,25 @@ public:
 #else
         P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
-
-        for (I32 j = i + 1; j < Cols_; j++)
+        if (i < Cols_ - 1)
         {
-          const DynamicVector<Point2D<I32>>& pairs = MultiplyTransposeIndices_[i][j - i - 1];
-          const Point2D<I32>* pPairs    = pairs.Begin();
-          const Point2D<I32>* pPairsEnd = pairs.End();
+          I32 index = Mq[i];
+          for (I32 j = i + 1; j < Cols_; j++, index++)
+          {
+            if (Mp[index] < Mp[index + 1])
+            {
+              const Point2D<I32>* p = pPairs + Mp[index];
+              const Point2D<I32>* pEnd = pPairs + Mp[index + 1];
 
-          T sum = 0;
+              T sum = 0;
 
-          for (; pPairs < pPairsEnd; pPairs++)
-            sum += ax[pPairs->x()] * ax[pPairs->y()];
+              for (; p < pEnd; p++)
+                sum += ax[p->x()] * ax[p->y()];
 
-          P[i][j] = sum;
-          P[j][i] = sum;
+              P[i][j] = sum;
+              P[j][i] = sum;
+            }
+          }
         }
       }
     }
@@ -338,20 +354,16 @@ public:
     const I32* ai = Ai();
     const T* ax = Ax();
 
-    MultiplyTransposeIndices_.Resize(Cols_);
+    Mp_.Clear();
+    Mq_.Resize(Cols_ - 1);
+    MultiplyTransposeIndices_.Clear();
 
+    Mp_.PushBack(0);
     for (I32 i = 0; i < Cols_ - 1; i++)
     {
-      DynamicVector<DynamicVector<Point2D<I32>>>& colIndices = MultiplyTransposeIndices_[i];
-
-      I32 offset = i + 1;
-      colIndices.Resize(Cols_ - offset);
-
+      Mq_[i] = (I32)Mp_.Size() - 1; 
       for (I32 j = i + 1; j < Cols_; j++)
       {
-        DynamicVector<Point2D<I32>>& pairs = colIndices[j - offset];
-        pairs.Clear();
-
         I32 p = ap[i];
         I32 q = ap[j];
         I32 pEnd = ap[i+1];
@@ -368,14 +380,21 @@ public:
           }
           else
           {
-            pairs.PushBack(Point2D<I32>(p,q));
+            MultiplyTransposeIndices_.PushBack(Point2D<I32>(p,q));
             p++;
             q++;
           }
         }
+        Mp_.PushBack((I32)MultiplyTransposeIndices_.Size());
       }
     }
   }
+
+protected:
+  // Data cached to optimize computation of At * A
+  DynamicVector<I32> Mq_;
+  DynamicVector<I32> Mp_;
+  DynamicVector<Point2D<I32>> MultiplyTransposeIndices_;
 };
 
 
