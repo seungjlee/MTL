@@ -34,17 +34,20 @@
 namespace MTL
 {
 
+static const double kDefaultInitialDampingFactor = 1e-4;
+static const double kMaxDamping = 1e35;
+
 template <I32 N, class T>
 class OptimizerLevenbergMarquardt : public OptimizerNonLinearLeastSquares<N,T>
 {
 public:
   OptimizerLevenbergMarquardt()
-    : LDLtRankTolerance_(N * Epsilon<T>()), mu_(1e-4)
+    : LDLtRankTolerance_(N * Epsilon<T>()), InitialDampingFactor_(kDefaultInitialDampingFactor)
   {
   }
   OptimizerLevenbergMarquardt(SizeType residualsSize)
     : OptimizerNonLinearLeastSquares<N,T>(residualsSize),
-      LDLtRankTolerance_(N * Epsilon<T>()), mu_(1e-4)
+      LDLtRankTolerance_(N * Epsilon<T>()), InitialDampingFactor_(kDefaultInitialDampingFactor)
   {
   }
 
@@ -79,7 +82,7 @@ public:
     for (I32 i = 1; i < N; i++)
       maxDiagonal = Max(maxDiagonal, A_[i][i]);
 
-    mu_ *= maxDiagonal;
+    mu_ = maxDiagonal * InitialDampingFactor_;
 
     DynamicVector<T> G;
     Parameters delta;
@@ -124,7 +127,7 @@ public:
 
               BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
-              if (Abs(mu_) < Epsilon<T>())
+              if (mu_ < Epsilon<T>())
                 done = true;
 
               v = T(2);
@@ -145,6 +148,9 @@ public:
           mu_ *= v; 
           v *= T(2);
         }
+
+        if (mu_ > kMaxDamping)
+          done = true;
       }
       while(!done && p < 0);
     }
@@ -159,6 +165,7 @@ protected:
   SquareMatrix<N,T> A_;
   T LDLtRankTolerance_;
   T BestSumOfSquaresOfResiduals_;
+  T InitialDampingFactor_;
   T mu_;
   U32 Iterations_;
 };
@@ -168,12 +175,12 @@ class DynamicOptimizerLevenbergMarquardt : public DynamicOptimizerNonLinearLeast
 {
 public:
   DynamicOptimizerLevenbergMarquardt()
-    : LDLtRankTolerance_(-1.0), mu_(1e-4)
+    : LDLtRankTolerance_(-1.0), InitialDampingFactor_(kDefaultInitialDampingFactor)
   {
   }
   DynamicOptimizerLevenbergMarquardt(SizeType residualsSize)
     : DynamicOptimizerNonLinearLeastSquares<T>(residualsSize),
-      LDLtRankTolerance_(-1.0), mu_(1e-4)
+      LDLtRankTolerance_(-1.0), InitialDampingFactor_(kDefaultInitialDampingFactor)
   {
   }
 
@@ -215,7 +222,7 @@ public:
     for (I32 i = 1; i < N; i++)
       maxDiagonal = Max(maxDiagonal, A_[i][i]);
 
-    mu_ *= maxDiagonal;
+    mu_ = maxDiagonal * InitialDampingFactor_;
 
     Parameters G(N);
     Parameters delta(N);
@@ -260,7 +267,7 @@ public:
 
               BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
-              if (Abs(mu_) < Epsilon<T>())
+              if (mu_ < Epsilon<T>())
                 done = true;
 
               v = T(2);
@@ -281,6 +288,9 @@ public:
           mu_ *= v; 
           v *= T(2);
         }
+
+        if (mu_ > kMaxDamping)
+          done = true;
       }
       while(!done && p < 0);
     }
@@ -295,6 +305,7 @@ protected:
   DynamicMatrix<T> A_;
   T LDLtRankTolerance_;
   T BestSumOfSquaresOfResiduals_;
+  T InitialDampingFactor_;
   T mu_;
   U32 Iterations_;
 };
@@ -304,21 +315,13 @@ class SparseOptimizerLevenbergMarquardt : public DynamicOptimizerNonLinearLeastS
 {
 public:
   SparseOptimizerLevenbergMarquardt()
-    : LDLtRankTolerance_(-1.0), mu_(1e-4)
+    : LDLtRankTolerance_(-1.0), InitialDampingFactor_(kDefaultInitialDampingFactor)
   {
   }
   SparseOptimizerLevenbergMarquardt(SizeType residualsSize)
     : DynamicOptimizerNonLinearLeastSquares<T>(residualsSize),
-      LDLtRankTolerance_(-1.0), mu_(1e-4)
+      LDLtRankTolerance_(-1.0), InitialDampingFactor_(kDefaultInitialDampingFactor)
   {
-  }
-
-  virtual void Reset(SizeType residualsSize)
-  {
-    DynamicOptimizerNonLinearLeastSquares<T>::Reset(residualsSize);
-
-    // Initial damping.
-    mu_ = 1e-4;
   }
 
   // Compute A = Jt*J.
@@ -358,7 +361,7 @@ public:
     for (I32 i = 1; i < N; i++)
       maxDiagonal = Max(maxDiagonal, A_[i][i]);
 
-    mu_ *= maxDiagonal;
+    mu_ = maxDiagonal * InitialDampingFactor_;
 
     Parameters G(N);
     Parameters delta(N);
@@ -403,7 +406,7 @@ public:
 
               BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
-              if (Abs(mu_) < Epsilon<T>())
+              if (mu_ < Epsilon<T>())
                 done = true;
 
               v = T(2);
@@ -424,6 +427,9 @@ public:
           mu_ *= v; 
           v *= T(2);
         }
+
+        if (mu_ > kMaxDamping)
+          done = true;
       }
       while(!done && p < 0);
     }
@@ -438,6 +444,7 @@ protected:
   DynamicMatrix<T> A_;  // This should be sparse as well but for now...
   T LDLtRankTolerance_;
   T BestSumOfSquaresOfResiduals_;
+  T InitialDampingFactor_;
   T mu_;
   U32 Iterations_;
 
