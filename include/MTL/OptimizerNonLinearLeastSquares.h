@@ -36,11 +36,12 @@ template <I32 N, class T>
 class OptimizerNonLinearLeastSquares
 {
 public:
-  typedef ColumnVector<N> Parameters;
+  typedef ColumnVector<N,T> Parameters;
 
   OptimizerNonLinearLeastSquares(SizeType inputDataSize)
     : MaxIterations_(100), SquaredParametersDeltaTolerance_(N * Square(Epsilon<T>())),
-      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())), NewResiduals_(inputDataSize)
+      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
+      NewResiduals_(inputDataSize), CurrentResiduals_(inputDataSize)
   {
     FiniteDifferenceTwoDelta_ = FiniteDifferenceDelta_ * T(2);
   }
@@ -163,7 +164,8 @@ public:
 
   DynamicOptimizerNonLinearLeastSquares(SizeType inputDataSize)
     : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(Epsilon<T>())),
-      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())), NewResiduals_(inputDataSize)
+      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
+      NewResiduals_(inputDataSize), CurrentResiduals_(inputDataSize)
   {
     FiniteDifferenceTwoDelta_ = FiniteDifferenceDelta_ * T(2);
   }

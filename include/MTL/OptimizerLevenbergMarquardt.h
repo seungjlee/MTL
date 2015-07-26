@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
+// Copyright (c) 2014-2015: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -38,8 +38,21 @@ class OptimizerLevenbergMarquardt : public OptimizerNonLinearLeastSquares<N,T>
 public:
   OptimizerLevenbergMarquardt(SizeType inputDataSize)
     : OptimizerNonLinearLeastSquares<N,T>(inputDataSize),
-      LDLtRankTolerance_(N * Epsilon<T>())
+      LDLtRankTolerance_(N * Epsilon<T>()),
+      mu_(1e-4)
   {
+  }
+
+  // Compute A = Jt*J.
+  virtual void ComputeNormalMatrix(SquareMatrix<N,T>& A, const DynamicMatrix<T>& Jt)
+  {
+    MultiplyByTranspose(A[0], Jt[0], N, Jt.Cols(), N, Jt.RowSize());
+  }
+
+  // Solves A*x = b. b is input as x. Returns rank of A.
+  virtual I32 Solve(ColumnVector<N>& x, SquareMatrix<N,T>& A, T tolerance)
+  {
+    return SolveLDLt(x, A, tolerance);
   }
 
   virtual void Optimize(Parameters& parameters)
@@ -50,16 +63,16 @@ public:
     CostFunction(CurrentResiduals_, parameters);
     BestSumOfSquaresOfResiduals_ = SumOfSquares(CurrentResiduals_);
 
-    DynamicMatrix<T> Jt(N, (I32)CurrentResiduals_.Size());
+    Jt_.Resize(N, (I32)CurrentResiduals_.Size());
 
-    ComputeJacobian(Jt, parameters);
-    MultiplyByTranspose(A[0], Jt[0], N, Jt.Cols(), N, Jt.RowSize());
+    ComputeJacobian(Jt_, parameters);
+    ComputeNormalMatrix(A, Jt_);
 
     T maxDiagonal = A[0][0];
     for (I32 i = 1; i < N; i++)
       maxDiagonal = Max(maxDiagonal, A[i][i]);
 
-    T mu = T(1e-4) * maxDiagonal;
+    mu_ *= maxDiagonal;
 
     DynamicVector<T> G;
     Parameters delta;
@@ -74,11 +87,11 @@ public:
       T p = 0;
       do
       {
-        A.AddToDiagonals(mu);
-        G = Jt * CurrentResiduals_;
+        A.AddToDiagonals(mu_);
+        G = Jt_ * CurrentResiduals_;
         memcpy(&delta[0], G.Begin(), N*sizeof(T));
 
-        I32 rank = SolveLDLt(delta, A, LDLtRankTolerance_);
+        I32 rank = Solve(delta, A, LDLtRankTolerance_);
 
         if (rank == N)
         {
@@ -95,24 +108,24 @@ public:
               parameters = newParameters;
               CurrentResiduals_ = NewResiduals_;
 
-              ComputeJacobian(Jt, parameters);
-              MultiplyByTranspose(A[0], Jt[0], N, Jt.Cols(), N, Jt.RowSize());
+              ComputeJacobian(Jt_, parameters);
+              ComputeNormalMatrix(A, Jt_);
 
               p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
-              p /= delta.Dot(delta * mu + Parameters(G.Begin()));
+              p /= delta.Dot(delta * mu_ + Parameters(G.Begin()));
 
-              mu = mu * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
+              mu_ = mu_ * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
 
               BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
-              if (Abs(mu) < Epsilon<T>())
+              if (Abs(mu_) < Epsilon<T>())
                 done = true;
 
               v = T(2);
             }
             else
             {
-              mu *= v; 
+              mu_ *= v; 
               v *= T(2);
             }
           }
@@ -123,7 +136,7 @@ public:
         }
         else
         {
-          mu *= v; 
+          mu_ *= v; 
           v *= T(2);
         }
       }
@@ -135,9 +148,11 @@ public:
   U32 Iterations() const             { return Iterations_;                  }
   T SumOfSquaresOfResiduals() const  { return BestSumOfSquaresOfResiduals_; }
 
-private:
+protected:
+  DynamicMatrix<T> Jt_;  // Jacobian matrix transposed.
   T LDLtRankTolerance_;
   T BestSumOfSquaresOfResiduals_;
+  T mu_;
   U32 Iterations_;
 };
 
@@ -146,13 +161,28 @@ class DynamicOptimizerLevenbergMarquardt : public DynamicOptimizerNonLinearLeast
 {
 public:
   DynamicOptimizerLevenbergMarquardt(SizeType inputDataSize)
-    : DynamicOptimizerNonLinearLeastSquares<T>(inputDataSize)
+    : DynamicOptimizerNonLinearLeastSquares<T>(inputDataSize),
+      LDLtRankTolerance_(-1.0),
+      mu_(1e-4)
   {
+  }
+
+  // Compute A = Jt*J.
+  virtual void ComputeNormalMatrix(DynamicMatrix<T>& A, const DynamicMatrix<T>& Jt)
+  {
+    MultiplyByTranspose(A[0], Jt[0], Jt.Rows(), Jt.Cols(), A.RowSize(), Jt.RowSize());
+  }
+
+  // Solves A*x = b. b is input as x. Returns rank of A.
+  virtual I32 Solve(DynamicVector<T>& x, DynamicMatrix<T>& A, T tolerance)
+  {
+    return SolveLDLt(x, A, tolerance);
   }
 
   virtual void Optimize(Parameters& parameters)
   {
-    LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
+    if (LDLtRankTolerance_ < 0)
+      LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
 
     I32 N = (I32)parameters.Size();
 
@@ -162,16 +192,16 @@ public:
     CostFunction(CurrentResiduals_, parameters);
     BestSumOfSquaresOfResiduals_ = SumOfSquares(CurrentResiduals_);
 
-    DynamicMatrix<T> Jt(N, (I32)CurrentResiduals_.Size());
+    Jt_.Resize(N, (I32)CurrentResiduals_.Size());
 
-    ComputeJacobian(Jt, parameters);
-    MultiplyByTranspose(A[0], Jt[0], Jt.Rows(), Jt.Cols(), A.RowSize(), Jt.RowSize());
+    ComputeJacobian(Jt_, parameters);
+    ComputeNormalMatrix(A, Jt_);
 
     T maxDiagonal = A[0][0];
     for (I32 i = 1; i < N; i++)
       maxDiagonal = Max(maxDiagonal, A[i][i]);
 
-    T mu = T(1e-4) * maxDiagonal;
+    mu_ *= maxDiagonal;
 
     Parameters G(N);
     Parameters delta(N);
@@ -186,11 +216,11 @@ public:
       T p = 0;
       do
       {
-        A.AddToDiagonals(mu);
-        G = Jt * CurrentResiduals_;
+        A.AddToDiagonals(mu_);
+        G = Jt_ * CurrentResiduals_;
         OptimizedCopy(delta.Begin(), G.Begin(), delta.Size());
 
-        I32 rank = SolveLDLt(delta, A, LDLtRankTolerance_);
+        I32 rank = Solve(delta, A, LDLtRankTolerance_);
 
         if (rank == parameters.Size())
         {
@@ -207,24 +237,24 @@ public:
               parameters = newParameters;
               CurrentResiduals_ = NewResiduals_;
 
-              ComputeJacobian(Jt, parameters);
-              MultiplyByTranspose(A[0], Jt[0], Jt.Rows(), Jt.Cols(), A.RowSize(), Jt.RowSize());
+              ComputeJacobian(Jt_, parameters);
+              ComputeNormalMatrix(A, Jt_);
 
               p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
-              p /= DotProduct(delta, delta * mu + G);
+              p /= DotProduct(delta, delta * mu_ + G);
 
-              mu = mu * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
+              mu_ = mu_ * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
 
               BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
-              if (Abs(mu) < Epsilon<T>())
+              if (Abs(mu_) < Epsilon<T>())
                 done = true;
 
               v = T(2);
             }
             else
             {
-              mu *= v; 
+              mu_ *= v; 
               v *= T(2);
             }
           }
@@ -235,7 +265,7 @@ public:
         }
         else
         {
-          mu *= v; 
+          mu_ *= v; 
           v *= T(2);
         }
       }
@@ -247,9 +277,11 @@ public:
   U32 Iterations() const             { return Iterations_;                  }
   T SumOfSquaresOfResiduals() const  { return BestSumOfSquaresOfResiduals_; }
 
-private:
+protected:
+  DynamicMatrix<T> Jt_;  // Jacobian matrix transposed.
   T LDLtRankTolerance_;
   T BestSumOfSquaresOfResiduals_;
+  T mu_;
   U32 Iterations_;
 };
 
