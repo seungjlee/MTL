@@ -482,10 +482,10 @@ MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
   if (tolerance < 0)
     tolerance = At.Cols() * Epsilon<T>() * D[0];
 
-  rank = (I32)D.size();
+  rank = (I32)D.Size();
   for(; rank > 0 && D[rank-1] < tolerance; rank--);
 
-  x = Vt.Row(Vt.Rows()-1);
+  x.Assign(Vt[Vt.Rows()-1], Vt.Cols());
 
   conditionNumber = D[0] / D[rank-1];
 
