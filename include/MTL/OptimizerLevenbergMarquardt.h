@@ -38,10 +38,13 @@ template <I32 N, class T>
 class OptimizerLevenbergMarquardt : public OptimizerNonLinearLeastSquares<N,T>
 {
 public:
-  OptimizerLevenbergMarquardt(SizeType inputDataSize)
-    : OptimizerNonLinearLeastSquares<N,T>(inputDataSize),
-      LDLtRankTolerance_(N * Epsilon<T>()),
-      mu_(1e-4)
+  OptimizerLevenbergMarquardt()
+    : LDLtRankTolerance_(N * Epsilon<T>()), mu_(1e-4)
+  {
+  }
+  OptimizerLevenbergMarquardt(SizeType residualsSize)
+    : OptimizerNonLinearLeastSquares<N,T>(residualsSize),
+      LDLtRankTolerance_(N * Epsilon<T>()), mu_(1e-4)
   {
   }
 
@@ -164,10 +167,13 @@ template <class T>
 class DynamicOptimizerLevenbergMarquardt : public DynamicOptimizerNonLinearLeastSquares<T>
 {
 public:
-  DynamicOptimizerLevenbergMarquardt(SizeType inputDataSize)
-    : DynamicOptimizerNonLinearLeastSquares<T>(inputDataSize),
-      LDLtRankTolerance_(-1.0),
-      mu_(1e-4)
+  DynamicOptimizerLevenbergMarquardt()
+    : LDLtRankTolerance_(-1.0), mu_(1e-4)
+  {
+  }
+  DynamicOptimizerLevenbergMarquardt(SizeType residualsSize)
+    : DynamicOptimizerNonLinearLeastSquares<T>(residualsSize),
+      LDLtRankTolerance_(-1.0), mu_(1e-4)
   {
   }
 
@@ -297,11 +303,22 @@ template <class T>
 class SparseOptimizerLevenbergMarquardt : public DynamicOptimizerNonLinearLeastSquares<T>
 {
 public:
-  SparseOptimizerLevenbergMarquardt(SizeType inputDataSize)
-    : DynamicOptimizerNonLinearLeastSquares<T>(inputDataSize),
-      LDLtRankTolerance_(-1.0),
-      mu_(1e-4)
+  SparseOptimizerLevenbergMarquardt()
+    : LDLtRankTolerance_(-1.0), mu_(1e-4)
   {
+  }
+  SparseOptimizerLevenbergMarquardt(SizeType residualsSize)
+    : DynamicOptimizerNonLinearLeastSquares<T>(residualsSize),
+      LDLtRankTolerance_(-1.0), mu_(1e-4)
+  {
+  }
+
+  virtual void Reset(SizeType residualsSize)
+  {
+    DynamicOptimizerNonLinearLeastSquares<T>::Reset(residualsSize);
+
+    // Initial damping.
+    mu_ = 1e-4;
   }
 
   // Compute A = Jt*J.
@@ -322,6 +339,7 @@ public:
       LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
 
     I32 N = (I32)parameters.Size();
+    ComputeSparsityMatrix(N);
 
     T v = T(2);
     Iterations_ = 0;
@@ -423,6 +441,7 @@ protected:
   T mu_;
   U32 Iterations_;
 
+  virtual void ComputeSparsityMatrix(I32 numberOfParams) = 0;
   virtual void ComputeJacobian(CompressedSparseMatrix<T>& J,
                                const Parameters& currentParameters) = 0;
 };

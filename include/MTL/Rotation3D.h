@@ -41,7 +41,7 @@ class Rotation3D : public SquareMatrix<3,T>
 public:
   MTL_SQUARE_MATRIX_COMMON_DEFINITIONS(Rotation3D, Base, 3, T);
 
-  Rotation3D() : SquareMatrix<3,T>(Base::eIdentity) {}
+  Rotation3D() {}
 
   MTL_INLINE Rotation3D(T roll, T pitch, T yaw) 
   {
@@ -272,5 +272,10 @@ private:
 };
 
 }  // namespace MTL
+
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(MTL::Rotation3D<MTL::F32>);
+MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(MTL::Rotation3D<MTL::F64>);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(MTL::Rotation3D<MTL::F32>,MTL::F32);
+MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(MTL::Rotation3D<MTL::F64>,MTL::F64);
 
 #endif // MTL_ROTATION_3D_H

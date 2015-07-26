@@ -26,7 +26,8 @@
 #ifndef MTL_SPARSE_MATRIX_H
 #define MTL_SPARSE_MATRIX_H
 
-#include "DynamicMatrix.h"
+#include <MTL/DynamicMatrix.h>
+#include <MTL/Point2D.h>
 
 namespace MTL
 {
@@ -77,6 +78,16 @@ protected:
   DynamicVector<I32> Ap_;
   DynamicVector<I32> Ai_;
   DynamicVector<T>   Ax_;
+
+  void Clear()
+  {
+    Ap_.Clear();
+    Ai_.Clear();
+    Ax_.Clear();
+  }
+
+  // Data cached to optimize computation of At * A
+  DynamicVector<DynamicVector<DynamicVector<Point2D<I32>>>> MultiplyTransposeIndices_;
 };
 
 // Compressed sparse column matrix.
@@ -92,20 +103,14 @@ public:
                          const DynamicVector<T>& Ax)
     : SparseMatrix<T>(rows, cols, Ap, Ai, Ax)
   {
+    OptimizeMultiplyTransposeByThis();
   }
 
   // Assumes all row indices in each column are ordered.
   CompressedSparseMatrix(I32 rows, I32 cols,
                          const DynamicVector<DynamicVector<I32>>& sparseColumns)
-    : SparseMatrix<T>(rows, cols)
   {
-    Ap_.PushBack(0);
-    for (I32 col = 0; col < Cols_; col++)
-    {
-      Ai_.AddBack(sparseColumns[col]);
-      Ap_.PushBack(I32(Ap_[Ap_.Size()-1] + sparseColumns[col].Size()));
-    }
-    Ax_.Resize(Ai_.Size());
+    Create(rows, cols, sparseColumns);
   }
 
   CompressedSparseMatrix(const DynamicMatrix<T>& full)
@@ -130,6 +135,24 @@ public:
     }
 
     Ap_.PushBack((I32)Ai_.Size());
+  }
+
+  void Create(I32 rows, I32 cols,
+              const DynamicVector<DynamicVector<I32>>& sparseColumns)
+  {
+    Rows_ = rows;
+    Cols_ = cols;
+    Clear();
+
+    Ap_.PushBack(0);
+    for (I32 col = 0; col < Cols_; col++)
+    {
+      Ai_.AddBack(sparseColumns[col]);
+      Ap_.PushBack(I32(Ap_[Ap_.Size()-1] + sparseColumns[col].Size()));
+    }
+    Ax_.Resize(Ai_.Size());
+
+    OptimizeMultiplyTransposeByThis();
   }
 
   // x = At * b where At is the transpose of this matrix.
@@ -163,43 +186,70 @@ public:
     const I32* ai = Ai();
     const T* ax = Ax();
 
-    for (I32 i = 0; i < Cols_; i++)
+    if (MultiplyTransposeIndices_.Size() == Cols_)
     {
+      for (I32 i = 0; i < Cols_; i++)
       {
-        T sum = 0;
-        for (I32 p = ap[i] ; p < ap[i+1] ; p++)
-          sum += Pow<2>(ax[p]);
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+        P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+#else
+        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+#endif
 
-        P[i][i] = sum;
-      }
-
-      for ( I32 j = i; j < Cols_; j++)
-      {
-        T sum = 0;
-        I32 p = ap[i];
-        I32 q = ap[j];
-        I32 pEnd = ap[i+1];
-        I32 qEnd = ap[j+1];
-        while (p < pEnd && q < qEnd)
+        for (I32 j = i + 1; j < Cols_; j++)
         {
-          if (ai[p] < ai[q])
-          {
-            p++;
-          }
-          else if (ai[p] > ai[q])
-          {
-            q++;
-          }
-          else
-          {
-            sum += ax[p] * ax[q];
-            p++;
-            q++;
-          }
-        }
+          const DynamicVector<Point2D<I32>>& pairs = MultiplyTransposeIndices_[i][j - i - 1];
+          const Point2D<I32>* pPairs    = pairs.Begin();
+          const Point2D<I32>* pPairsEnd = pairs.End();
 
-        P[i][j] = sum;
-        P[j][i] = sum;
+          T sum = 0;
+
+          for (; pPairs < pPairsEnd; pPairs++)
+            sum += ax[pPairs->x()] * ax[pPairs->y()];
+
+          P[i][j] = sum;
+          P[j][i] = sum;
+        }
+      }
+    }
+    else
+    {
+      for (I32 i = 0; i < Cols_; i++)
+      {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+        P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+#else
+        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+#endif
+
+        for (I32 j = i + 1; j < Cols_; j++)
+        {
+          T sum = 0;
+          I32 p = ap[i];
+          I32 q = ap[j];
+          I32 pEnd = ap[i+1];
+          I32 qEnd = ap[j+1];
+          while (p < pEnd && q < qEnd)
+          {
+            if (ai[p] < ai[q])
+            {
+              p++;
+            }
+            else if (ai[p] > ai[q])
+            {
+              q++;
+            }
+            else
+            {
+              sum += ax[p] * ax[q];
+              p++;
+              q++;
+            }
+          }
+
+          P[i][j] = sum;
+          P[j][i] = sum;
+        }
       }
     }
   }
@@ -212,20 +262,96 @@ public:
     const I32* ai = Ai();
     const T* ax = Ax();
 
-    #pragma omp parallel for
-    for (I32 i = 0; i < Cols_; i++)
+    if (MultiplyTransposeIndices_.Size() == Cols_)
     {
+      #pragma omp parallel for
+      for (I32 i = 0; i < Cols_; i++)
       {
-        T sum = 0;
-        for (I32 p = ap[i] ; p < ap[i+1] ; p++)
-          sum += Pow<2>(ax[p]);
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+        P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+#else
+        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+#endif
 
-        P[i][i] = sum;
+        for (I32 j = i + 1; j < Cols_; j++)
+        {
+          const DynamicVector<Point2D<I32>>& pairs = MultiplyTransposeIndices_[i][j - i - 1];
+          const Point2D<I32>* pPairs    = pairs.Begin();
+          const Point2D<I32>* pPairsEnd = pairs.End();
+
+          T sum = 0;
+
+          for (; pPairs < pPairsEnd; pPairs++)
+            sum += ax[pPairs->x()] * ax[pPairs->y()];
+
+          P[i][j] = sum;
+          P[j][i] = sum;
+        }
       }
-
-      for ( I32 j = i; j < Cols_; j++)
+    }
+    else
+    {
+      #pragma omp parallel for
+      for (I32 i = 0; i < Cols_; i++)
       {
-        T sum = 0;
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+        P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+#else
+        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+#endif
+
+        for (I32 j = i + 1; j < Cols_; j++)
+        {
+          T sum = 0;
+          I32 p = ap[i];
+          I32 q = ap[j];
+          I32 pEnd = ap[i+1];
+          I32 qEnd = ap[j+1];
+          while (p < pEnd && q < qEnd)
+          {
+            if (ai[p] < ai[q])
+            {
+              p++;
+            }
+            else if (ai[p] > ai[q])
+            {
+              q++;
+            }
+            else
+            {
+              sum += ax[p] * ax[q];
+              p++;
+              q++;
+            }
+          }
+
+          P[i][j] = sum;
+          P[j][i] = sum;
+        }
+      }
+    }
+  }
+
+  void OptimizeMultiplyTransposeByThis()
+  {
+    const I32* ap = Ap();
+    const I32* ai = Ai();
+    const T* ax = Ax();
+
+    MultiplyTransposeIndices_.Resize(Cols_);
+
+    for (I32 i = 0; i < Cols_ - 1; i++)
+    {
+      DynamicVector<DynamicVector<Point2D<I32>>>& colIndices = MultiplyTransposeIndices_[i];
+
+      I32 offset = i + 1;
+      colIndices.Resize(Cols_ - offset);
+
+      for (I32 j = i + 1; j < Cols_; j++)
+      {
+        DynamicVector<Point2D<I32>>& pairs = colIndices[j - offset];
+        pairs.Clear();
+
         I32 p = ap[i];
         I32 q = ap[j];
         I32 pEnd = ap[i+1];
@@ -242,14 +368,11 @@ public:
           }
           else
           {
-            sum += ax[p] * ax[q];
+            pairs.PushBack(Point2D<I32>(p,q));
             p++;
             q++;
           }
         }
-
-        P[i][j] = sum;
-        P[j][i] = sum;
       }
     }
   }

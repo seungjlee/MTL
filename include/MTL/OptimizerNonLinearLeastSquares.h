@@ -38,18 +38,29 @@ class OptimizerNonLinearLeastSquares
 public:
   typedef ColumnVector<N,T> Parameters;
 
-  OptimizerNonLinearLeastSquares(SizeType inputDataSize)
+  OptimizerNonLinearLeastSquares()
     : MaxIterations_(100), SquaredParametersDeltaTolerance_(N * Square(Epsilon<T>())),
       FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
-      NewResiduals_(inputDataSize), CurrentResiduals_(inputDataSize)
+      FiniteDifferenceTwoDelta_(FiniteDifferenceDelta_ * T(2))
   {
-    FiniteDifferenceTwoDelta_ = FiniteDifferenceDelta_ * T(2);
+  }
+  OptimizerNonLinearLeastSquares(SizeType residualsSize)
+    : MaxIterations_(100), SquaredParametersDeltaTolerance_(N * Square(Epsilon<T>())),
+      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
+      FiniteDifferenceTwoDelta_(FiniteDifferenceDelta_ * T(2))
+  {
+    Reset(residualsSize);
   }
 
   void MaxIterations(U32 i)             { MaxIterations_ = i;                             }
   void ParametersDeltaTolerance(T tol)  { SquaredParametersDeltaTolerance_ = Square(tol); }
 
   virtual void Optimize(Parameters& parameters) = 0;
+  virtual void Reset(SizeType residualsSize)
+  {
+    NewResiduals_.Resize(residualsSize);
+    CurrentResiduals_.Resize(residualsSize);
+  }
 
 protected:
   virtual void CostFunction(DynamicVector<T>& residuals, const Parameters& parameters) = 0;
@@ -162,18 +173,30 @@ class DynamicOptimizerNonLinearLeastSquares
 public:
   typedef DynamicVector<T> Parameters;
 
-  DynamicOptimizerNonLinearLeastSquares(SizeType inputDataSize)
+  DynamicOptimizerNonLinearLeastSquares()
     : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(Epsilon<T>())),
       FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
-      NewResiduals_(inputDataSize), CurrentResiduals_(inputDataSize)
+      FiniteDifferenceTwoDelta_(FiniteDifferenceDelta_ * T(2))
   {
-    FiniteDifferenceTwoDelta_ = FiniteDifferenceDelta_ * T(2);
+  }
+  DynamicOptimizerNonLinearLeastSquares(SizeType residualsSize)
+    : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(Epsilon<T>())),
+      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
+      FiniteDifferenceTwoDelta_(FiniteDifferenceDelta_ * T(2))
+  {
+    Reset(residualsSize);
   }
 
   void MaxIterations(U32 i)             { MaxIterations_ = i;                             }
   void ParametersDeltaTolerance(T tol)  { SquaredParametersDeltaTolerance_ = Square(tol); }
 
   virtual void Optimize(Parameters& parameters) = 0;
+
+  virtual void Reset(SizeType residualsSize)
+  {
+    NewResiduals_.Resize(residualsSize);
+    CurrentResiduals_.Resize(residualsSize);
+  }
 
 protected:
   virtual void CostFunction(DynamicVector<T>& residuals, const Parameters& parameters) = 0;

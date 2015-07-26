@@ -562,34 +562,34 @@ template <class T> MTL_INLINE static void OptimizedAssignAll(T* p, const T& val,
 #endif
 }
 
-#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ASSIGN_ALL(T)                                            \
-template <> MTL_INLINE void DynamicVector<T>::AssignAll(T* p, const T* pEnd, const T& val)    \
-{                                                                                             \
-  assert(p <= pEnd);                                                                          \
-  SizeType size = SizeType(pEnd - p);                                                         \
-  OptimizedAssignAll(p, val, size);                                                           \
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ASSIGN_ALL(T)                                                \
+template <> MTL_INLINE void MTL::DynamicVector<T>::AssignAll(T* p, const T* pEnd, const T& val)   \
+{                                                                                                 \
+  assert(p <= pEnd);                                                                              \
+  MTL::SizeType size = MTL::SizeType(pEnd - p);                                                   \
+  MTL::OptimizedAssignAll(p, val, size);                                                          \
 }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 #ifdef WIN32
-#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL(T)                                  \
-template <> MTL_INLINE static void OptimizedZeros_Sequential(T* p, SizeType size)             \
-{                                                                                             \
-  AssignAll_Stream<T>(p, T(0), size);                                                         \
-}                                                                                             \
-template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)                        \
-{                                                                                             \
-  Parallel_1Dst< T, OptimizedZeros_Sequential<T> >(p, size);                                  \
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL(T)                                      \
+template <> MTL_INLINE static void MTL::OptimizedZeros_Sequential(T* p, MTL::SizeType size)       \
+{                                                                                                 \
+  MTL::AssignAll_Stream<T>(p, T(0), size);                                                        \
+}                                                                                                 \
+template <> MTL_INLINE static void MTL::OptimizedZeros(T* p, MTL::SizeType size)                  \
+{                                                                                                 \
+  MTL::Parallel_1Dst< T, MTL::OptimizedZeros_Sequential<T> >(p, size);                            \
 }
 #else
-#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL(T)                                  \
-template <> inline void OptimizedZeros_Sequential(T* p, SizeType size)                        \
-{                                                                                             \
-  AssignAll_Stream<T>(p, T(0), size);                                                         \
-}                                                                                             \
-template <> inline void OptimizedZeros(T* p, SizeType size)                                   \
-{                                                                                             \
-  Parallel_1Dst< T, OptimizedZeros_Sequential<T> >(p, size);                                  \
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL(T)                                      \
+template <> inline void MTL::OptimizedZeros_Sequential(T* p, MTL::SizeType size)                  \
+{                                                                                                 \
+  MTL::AssignAll_Stream<T>(p, T(0), size);                                                        \
+}                                                                                                 \
+template <> inline void MTL::OptimizedZeros(T* p, MTL::SizeType size)                             \
+{                                                                                                 \
+  MTL::Parallel_1Dst< T, MTL::OptimizedZeros_Sequential<T> >(p, size);                            \
 }
 #endif
 #else
@@ -597,44 +597,44 @@ template <> inline void OptimizedZeros(T* p, SizeType size)                     
 #endif
 
 #ifdef WIN32
-#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL_CAST(T)                             \
-template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)                        \
-{                                                                                             \
-  Parallel_1Dst< I8, OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T));               \
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL_CAST(T)                                 \
+template <> MTL_INLINE static void MTL::OptimizedZeros(T* p, MTL::SizeType size)                  \
+{                                                                                                 \
+  MTL::Parallel_1Dst< I8, MTL::OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T));         \
 }
 #else
-#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL_CAST(T)                             \
-template <> inline void OptimizedZeros(T* p, SizeType size)                                   \
-{                                                                                             \
-  Parallel_1Dst< I8, OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T));               \
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL_CAST(T)                                 \
+template <> inline void MTL::OptimizedZeros(T* p, MTL::SizeType size)                             \
+{                                                                                                 \
+  MTL::Parallel_1Dst< I8, MTL::OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T));         \
 }
 #endif
 
 // Initializes all elements in the vector buffer to zero if this is defined for the element.
-#define MTL_DYNAMIC_VECTOR_ZERO_INIT(T)                                                       \
-MTL_INLINE void MTL::FastDynamicVector<T>::FastZeroInit(T *p, SizeType size)                  \
-{                                                                                             \
-  OptimizedZeros((I8*)p, size * sizeof(T));                                                   \
+#define MTL_DYNAMIC_VECTOR_ZERO_INIT(T)                                                           \
+MTL_INLINE void MTL::FastDynamicVector<T>::FastZeroInit(T *p, MTL::SizeType size)                 \
+{                                                                                                 \
+  MTL::OptimizedZeros((I8*)p, size * sizeof(T));                                                  \
 }
 
 // Faster copy using intrinsic memcpy.
-#define MTL_DYNAMIC_VECTOR_OPTIMIZED_COPY(T)                                                  \
-template <>                                                                                   \
-MTL_INLINE void MTL::DynamicVector<T>::OptimizedCopy(T* pDst, const T* pSrc, SizeType size)   \
-{                                                                                             \
-  MTL::OptimizedCopy(pDst, pSrc, size);                                                       \
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_COPY(T)                                                      \
+template <>                                                                                       \
+MTL_INLINE void MTL::DynamicVector<T>::OptimizedCopy(T* pDst, const T* pSrc, MTL::SizeType size)  \
+{                                                                                                 \
+  MTL::OptimizedCopy(pDst, pSrc, size);                                                           \
 }
 
-#define MTL_DYNAMIC_VECTOR_OPTIMIZED_COPY_CAST(T)                                             \
-template <>                                                                                   \
-MTL_INLINE void MTL::DynamicVector<T>::OptimizedCopy(T* pDst, const T* pSrc, SizeType size)   \
-{                                                                                             \
-  MTL::OptimizedCopy((I8*)pDst, (I8*)pSrc, size * sizeof(T));                                 \
+#define MTL_DYNAMIC_VECTOR_OPTIMIZED_COPY_CAST(T)                                                 \
+template <>                                                                                       \
+MTL_INLINE void MTL::DynamicVector<T>::OptimizedCopy(T* pDst, const T* pSrc, MTL::SizeType size)  \
+{                                                                                                 \
+  MTL::OptimizedCopy((I8*)pDst, (I8*)pSrc, size * sizeof(T));                                     \
 }
 
 // No initialization required for some cases.
-#define MTL_DYNAMIC_VECTOR_NO_CONSTRUCTOR_DESTRUCTOR(T)                                       \
-template <> MTL_INLINE void MTL::DynamicVector<T>::ConstructElements(T*, const T*) {}         \
+#define MTL_DYNAMIC_VECTOR_NO_CONSTRUCTOR_DESTRUCTOR(T)                                           \
+template <> MTL_INLINE void MTL::DynamicVector<T>::ConstructElements(T*, const T*) {}             \
 template <> MTL_INLINE void MTL::DynamicVector<T>::DestroyElements  (T*, const T*) {}
 
 
