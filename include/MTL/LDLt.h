@@ -80,7 +80,7 @@ static void SolveLDLt(ColumnVector<N,T>& x, const SquareMatrix<N,T>& L, const T 
   }
 
   // Compute Inv(D) * x.
-  ColumnVector<N,T>::Divide<N>(&x[0], D);
+  Array<N,T>::Divide(&x[0], D);
 
   // Finally, compute Inv(Lt) * x using back substitution.
   for (I32 row = N-2; row >= 0; row--)

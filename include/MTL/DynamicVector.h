@@ -225,8 +225,8 @@ public:
 
   MTL_INLINE void Insert(T* pDst, const T* pSrc, SizeType sourceSize)
   {
-    assert(pDst >= pFirst_ && pDst <= End());
-    assert(pSrc >= End() || pSrc + sourceSize < pFirst_);
+    assert(pDst >= First_ && pDst <= End());
+    assert(pSrc >= End() || pSrc + sourceSize < First_);
 
     SizeType moveSize = End() - pDst;
     SizeType insertOffset = pDst - First_;

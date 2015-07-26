@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
+// Copyright (c) 2014-2015: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -26,6 +26,7 @@
 #define MTL_MATH_H
 
 #include "Definitions.h"
+#include "Array.h"
 #include <float.h>
 
 namespace MTL
@@ -113,89 +114,6 @@ template <class T> MTL_INLINE static T Square(const T& x)
 template <class T> MTL_INLINE static T Cube(const T& x)
 {
   return Pow<3>(x);
-}
-
-template <int N, class T> class Array
-{
-public:
-  MTL_INLINE static T Sum(const T* p)  { return Array<N-1,T>::Sum(p) + p[N-1];          }
-  MTL_INLINE static T Min(const T* p)  { return MTL::Min(Array<N-1,T>::Min(p), p[N-1]); }
-  MTL_INLINE static T Max(const T* p)  { return MTL::Max(Array<N-1,T>::Max(p), p[N-1]); }
-
-  MTL_INLINE static T MinOfAbsolutes(const T* p)
-  {
-    return MTL::Min(Array<N-1,T>::MinOfAbsolutes(p), Abs(p[N-1]));
-  }
-  MTL_INLINE static T MaxOfAbsolutes(const T* p)
-  {
-    return MTL::Max(Array<N-1,T>::MaxOfAbsolutes(p), Abs(p[N-1]));
-  }
-
-  MTL_INLINE static T SumOfSquares(const T* p)
-  {
-    return Array<N-1,T>::SumOfSquares(p) + Square(p[N-1]);
-  }
-  MTL_INLINE static T Dot(const T* p1, const T* p2)
-  {
-    return Array<N-1,T>::Dot(p1, p2) + p1[N-1] * p2[N-1];
-  }
-
-  MTL_INLINE static void UnaryMinus(T* a, const T* b)
-  {
-    Array<N-1,T>::UnaryMinus(a, b);
-    a[N-1] = -b[N-1];
-  }
-};
-template <class T> class Array<1,T>
-{
-public:
-  MTL_INLINE static T Sum(const T* p)                   { return p[0];          }
-  MTL_INLINE static T Min(const T* p)                   { return p[0];          }
-  MTL_INLINE static T Max(const T* p)                   { return p[0];          }
-  MTL_INLINE static T MinOfAbsolutes(const T* p)        { return Abs(p[0]);     }
-  MTL_INLINE static T MaxOfAbsolutes(const T* p)        { return Abs(p[0]);     }
-  MTL_INLINE static T SumOfSquares(const T* p)          { return Square(p[0]);  }
-  MTL_INLINE static T Dot(const T* p1, const T* p2)     { return p1[0] * p2[0]; }
-  MTL_INLINE static void UnaryMinus(T* a, const T* b)   { a[0] = -b[0];         }
-};
-
-// Sum & mean of fixed sized array.
-template <int N, class T> MTL_INLINE static T Sum(const T* p)
-{
-  return Array<N,T>::Sum(p);
-}
-template <int N, class T> MTL_INLINE static T Mean(const T* p)
-{
-  return Sum<N>(p) / T(N);
-}
-
-// Minimum and maximum.
-template <int N, class T> MTL_INLINE static T Minimum(const T* p)
-{
-  return Array<N,T>::Min(p);
-}
-template <int N, class T> MTL_INLINE static T Maximum(const T* p)
-{
-  return Array<N,T>::Max(p);
-}
-template <int N, class T> MTL_INLINE static T MinimumOfAbsolutes(const T* p)
-{
-  return Array<N,T>::MinOfAbsolutes(p);
-}
-template <int N, class T> MTL_INLINE static T MaximumOfAbsolutes(const T* p)
-{
-  return Array<N,T>::MaxOfAbsolutes(p);
-}
-
-template <int N, class T> MTL_INLINE static T SumOfSquares(const T* p)
-{
-  return Array<N,T>::SumOfSquares(p);
-}
-
-// Dot product.
-template <int N, class T> MTL_INLINE static T Dot(const T* p1, const T* p2)
-{
-  return Array<N,T>::Dot(p1, p2);
 }
 
 // Simple swap.

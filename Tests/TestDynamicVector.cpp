@@ -218,3 +218,42 @@ TEST(TestCastConstructor)
   for (I32 i = 0; i < N; i++)
     MTL_EQUAL_FLOAT(vI32[i], vF64[i], Epsilon<F64>());
 }
+
+TEST(Test_AddBack_Insert)
+{
+  enum
+  {
+    kSize = 1000,
+    kStep = 10
+  };
+
+  DynamicVector<I32> v;
+
+  U32 oldSize = 0;
+  U32 newSize = kStep;
+
+  while (v.Size() <= kSize)
+  {
+    v.Resize(newSize);
+    for (U32 i = oldSize; i < newSize; i++)
+      v[i] = i;
+
+    oldSize = newSize;
+    newSize += kStep;
+  }
+
+  FOR_EACH_INDEX(v)
+    MTL_EQUAL(v[vIndex], vIndex);
+
+  v.Insert(&v[11], 777);
+
+  FOR_EACH_INDEX(v)
+  {
+    if (vIndex < 11)
+      MTL_EQUAL(v[vIndex], vIndex);
+    else if(vIndex > 11)
+      MTL_EQUAL(v[vIndex], vIndex-1);
+    else
+      MTL_EQUAL(v[vIndex], 777);
+  }
+}

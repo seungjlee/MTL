@@ -306,5 +306,79 @@ TEST(Test_SubColumn)
 
   for (int row = 0; row < M.Rows(); row++)
     for (int col = 0; col < M.Cols(); col++)
-      MTL_EQUAL_FLOAT(M[row][col], expected[row][col], kTol); 
+      MTL_EQUAL_FLOAT(M[row][col], expected[row][col], kTol);
+}
+
+TEST(Test_ColumnVector_MaxNorm)
+{
+  double v1[] = { -1, 5, 3, -2 };
+  double v2[] = { -7, 5, 3, -2 };
+  double v3[] = { -7, 5, 8, -2 };
+  double v4[] = { -7, 5, 8, -9 };
+  ColumnVector4D V1(v1);
+  ColumnVector4D V2(v2);
+  ColumnVector4D V3(v3);
+  ColumnVector4D V4(v4);
+  MTL_EQUAL(V1.MaxNorm(), 5);
+  MTL_EQUAL(V2.MaxNorm(), 7);
+  MTL_EQUAL(V3.MaxNorm(), 8);
+  MTL_EQUAL(V4.MaxNorm(), 9);
+}
+
+TEST(Test_SetAll)
+{
+  static const double kTol = 1e-14;
+
+  enum
+  {
+    kRepeats = 10000
+  };
+
+  SquareMatrix3x3 M;
+  Random random;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    double val = random.GetNext(-11.0, 11.0);
+    M.SetAll(val);
+
+    for (int row = 0; row < M.Rows(); row++)
+      for (int col = 0; col < M.Cols(); col++)
+        MTL_EQUAL_FLOAT(M[row][col], val, kTol);
+  }
+}
+
+TEST(Test_SetAll_SetColumn)
+{
+  static const double kTol = 1e-14;
+
+  enum
+  {
+    kRepeats = 10000
+  };
+
+  SquareMatrix3x3 M;
+  Random random;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    double val = random.GetNext(-11.0, 11.0);
+    M.SetAll(val);
+
+    for (int row = 0; row < M.Rows(); row++)
+      for (int col = 0; col < M.Cols(); col++)
+        MTL_EQUAL_FLOAT(M[row][col], val, kTol);
+
+    ColumnVector3D cols[3];
+    cols[0] = ColumnVector3D(random.Matrix<3,1,F64>(-11.0, 11.0));
+    cols[1] = ColumnVector3D(random.Matrix<3,1,F64>(-11.0, 11.0));
+    cols[2] = ColumnVector3D(random.Matrix<3,1,F64>(-11.0, 11.0));
+
+    for (int col = 0; col < M.Cols(); col++)
+      M.SetColumn(col, cols[col]);
+
+    for (int row = 0; row < M.Rows(); row++)
+      for (int col = 0; col < M.Cols(); col++)
+        MTL_EQUAL_FLOAT(M[row][col], cols[col][row], kTol);
+  }
 }
