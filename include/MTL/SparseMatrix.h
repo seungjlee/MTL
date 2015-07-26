@@ -67,7 +67,9 @@ public:
 
   MTL_INLINE const I32* Ap() const  { return Ap_.Begin(); }
   MTL_INLINE const I32* Ai() const  { return Ai_.Begin(); }
-  MTL_INLINE const T*   Ax() const  { return Ax_.Begin(); }
+  MTL_INLINE const T* Ax() const    { return Ax_.Begin(); }
+
+  MTL_INLINE T* Ax()  { return Ax_.Begin(); }
 
 protected:
   I32 Rows_;
@@ -90,6 +92,20 @@ public:
                          const DynamicVector<T>& Ax)
     : SparseMatrix<T>(rows, cols, Ap, Ai, Ax)
   {
+  }
+
+  // Assumes all row indices in each column are ordered.
+  CompressedSparseMatrix(I32 rows, I32 cols,
+                         const DynamicVector<DynamicVector<I32>>& sparseColumns)
+    : SparseMatrix<T>(rows, cols)
+  {
+    Ap_.PushBack(0);
+    for (I32 col = 0; col < Cols_; col++)
+    {
+      Ai_.AddBack(sparseColumns[col]);
+      Ap_.PushBack(I32(Ap_[Ap_.Size()-1] + sparseColumns[col].Size()));
+    }
+    Ax_.Resize(Ai_.Size());
   }
 
   CompressedSparseMatrix(const DynamicMatrix<T>& full)
@@ -128,11 +144,11 @@ public:
     const I32* ai = Ai();
     const T* ax = Ax();
 
-    for (U32 j = 0 ; j < Ap_.Size() ; j++)
+    for (I32 col = 0 ; col < Cols_; col++)
     {
-      for (int k = ap[j] ; k < ap[j+1] ; k++)
+      for (I32 k = ap[col]; k < ap[col+1]; k++)
       {
-        x[j] += b[ai[k]] * ax[k];
+        x[col] += b[ai[k]] * ax[k];
       }
     }
   }
@@ -149,44 +165,91 @@ public:
 
     for (I32 i = 0; i < Cols_; i++)
     {
+      {
+        T sum = 0;
+        for (I32 p = ap[i] ; p < ap[i+1] ; p++)
+          sum += Pow<2>(ax[p]);
+
+        P[i][i] = sum;
+      }
+
       for ( I32 j = i; j < Cols_; j++)
       {
-        if (i == j)
+        T sum = 0;
+        I32 p = ap[i];
+        I32 q = ap[j];
+        I32 pEnd = ap[i+1];
+        I32 qEnd = ap[j+1];
+        while (p < pEnd && q < qEnd)
         {
-          T sum = 0;
-          for (I32 p = ap[i] ; p < ap[i+1] ; p++)
-            sum += Pow<2>(ax[p]);
-
-          P[i][i] = sum;
-        }
-        else
-        {
-          T sum = 0;
-          I32 p = ap[i];
-          I32 q = ap[j];
-          I32 pEnd = ap[i+1];
-          I32 qEnd = ap[j+1];
-          while (p < pEnd && q < qEnd)
+          if (ai[p] < ai[q])
           {
-            if (ai[p] < ai[q])
-            {
-              p++;
-            }
-            else if (ai[p] > ai[q])
-            {
-              q++;
-            }
-            else
-            {
-              sum += ax[p] * ax[q];
-              p++;
-              q++;
-            }
+            p++;
           }
-
-          P[i][j] = sum;
-          P[j][i] = sum;
+          else if (ai[p] > ai[q])
+          {
+            q++;
+          }
+          else
+          {
+            sum += ax[p] * ax[q];
+            p++;
+            q++;
+          }
         }
+
+        P[i][j] = sum;
+        P[j][i] = sum;
+      }
+    }
+  }
+  void MultiplyTransposeByThisParallel(DynamicMatrix<T>& P) const
+  {
+    P.Resize(Cols_, Cols_);
+    P.Zeros();
+
+    const I32* ap = Ap();
+    const I32* ai = Ai();
+    const T* ax = Ax();
+
+    #pragma omp parallel for
+    for (I32 i = 0; i < Cols_; i++)
+    {
+      {
+        T sum = 0;
+        for (I32 p = ap[i] ; p < ap[i+1] ; p++)
+          sum += Pow<2>(ax[p]);
+
+        P[i][i] = sum;
+      }
+
+      for ( I32 j = i; j < Cols_; j++)
+      {
+        T sum = 0;
+        I32 p = ap[i];
+        I32 q = ap[j];
+        I32 pEnd = ap[i+1];
+        I32 qEnd = ap[j+1];
+        while (p < pEnd && q < qEnd)
+        {
+          if (ai[p] < ai[q])
+          {
+            p++;
+          }
+          else if (ai[p] > ai[q])
+          {
+            q++;
+          }
+          else
+          {
+            sum += ax[p] * ax[q];
+            p++;
+            q++;
+          }
+        }
+
+        P[i][j] = sum;
+        P[j][i] = sum;
       }
     }
   }

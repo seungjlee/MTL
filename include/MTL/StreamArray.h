@@ -26,8 +26,10 @@
 #ifndef MTL_STREAM_ARRAY_H
 #define MTL_STREAM_ARRAY_H
 
-#include "SSE.h"
-#include "AVX.h"
+#include <MTL/SSE.h>
+#include <MTL/AVX.h>
+#include <MTL/Array.h>
+#include <MTL/OpenMP.h>
 
 namespace MTL
 {
@@ -765,10 +767,10 @@ MaxOfAbsolutes_StreamAligned_Sequential(const T* p, SizeType size)
 template <class T> MTL_INLINE static T
 MaxOfAbsolutes_StreamUnaligned_Sequential(const T* p, SizeType size)
 {
+  const T* pEnd = p + size;
+
   if (size >= XX<T>::Increment)
   {
-    const T* pEnd = p + size;
-
     XX<T> xMax;
     xMax.LoadPackedUnaligned(p);
     xMax = Abs(xMax);

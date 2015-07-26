@@ -27,7 +27,7 @@
 #define MTL_MATRIX_H
 
 #include <assert.h>
-#include "StreamMath.h"
+#include <MTL/Array.h>
 
 namespace MTL
 {
@@ -38,14 +38,14 @@ class Matrix
   typedef T DataType[M][N];
 
 public:
-  MTL_INLINE Matrix() {}
-
   enum Initialize
   {
     eNothing,
     eIdentity,
     eZeros
   };
+
+  MTL_INLINE Matrix() {}
 
   MTL_INLINE Matrix(Initialize i)
   {
@@ -347,8 +347,10 @@ public:
     return MTL::MinimumOfAbsolutes<M*N>(Data()[0]);
   }
 
-  MTL_INLINE void RowMultiply(I32 row, const T& scalar)  { ScalarMultiply<N>(Data()[row], scalar); }
-  MTL_INLINE void RowDivide  (I32 row, const T& scalar)  { ScalarDivide<N>  (Data()[row], scalar); }
+  MTL_INLINE void RowMultiply(I32 row, const T& scalar)
+  { Array<N,T>::MultiplyScalar(Data()[row], scalar); }
+  MTL_INLINE void RowDivide  (I32 row, const T& scalar)
+  { Array<N,T>::DivideScalar(Data()[row], scalar); }
 
   MTL_INLINE void ColumnMultiply(I32 col, const T& scalar)
   { Array_2D<N,T,M>::ColumnScalarMultiply(Data()[0] + col, scalar); }
@@ -420,7 +422,7 @@ private:
 #define MTL_MATRIX_COMMON_DEFINITIONS(Class, Base, M, N, T)                                   \
   MTL_INLINE Class(const Base& v) : Base(v) {}                                                \
   MTL_INLINE Class& operator=(const Base& v)  { Base::operator=(v); return *this; }           \
-  MTL_INLINE Class(Initialize i) : Base(i) {}                                                 \
+  MTL_INLINE Class(enum Base::Initialize i) : Base(i) {}                                      \
   MTL_INLINE explicit Class(const T& initialVal) : Base(initialVal) {}                        \
   MTL_INLINE explicit Class(const T data[M][N]) : Base(data) {}                               \
   MTL_INLINE Class& operator+=(const Base& b)  { Base::operator+=(b); return *this; }         \
@@ -479,12 +481,12 @@ public:
 
   MTL_INLINE explicit ColumnVector(const T data[M])
   {
-    memcpy(Data_, data, DataSizeInBytes());
+    memcpy(Base::Data_, data, Base::DataSizeInBytes());
   }
 
   MTL_INLINE ColumnVector& operator*=(const ColumnVector& v)
   {
-    Multiply<M>(Data()[0], v.Data()[0]);
+    Array<M,T>::Multiply(Base::Data()[0], v.Data()[0]);
     return *this;
   }
   MTL_INLINE ColumnVector& operator*=(const Base& v)
@@ -500,7 +502,7 @@ public:
 
   MTL_INLINE ColumnVector& operator/=(const ColumnVector& v)
   {
-    Divide<M>(Data()[0], v.Data()[0]);
+    Array<M,T>::Divide(Base::Data()[0], v.Data()[0]);
     return *this;
   }
   MTL_INLINE ColumnVector& operator/=(const Base& v)
@@ -516,29 +518,36 @@ public:
 
   MTL_INLINE T Dot(const Base& v) const
   {
-    return MTL::Dot<M>(Data()[0], v.Data()[0]);
+    return Array<M,T>::Dot(Base::Data()[0], v.Data()[0]);
   }
 
   MTL_INLINE T MaxNorm() const
   {
-    return Array<M,T>::MaxNorm(Data()[0]);
+    return Array<M,T>::MaxNorm(Base::Data()[0]);
   }
 
   MTL_INLINE void Normalize()
   {
-    *this /= Sqrt(SumOfSquares());
+    *this /= Sqrt(Base::SumOfSquares());
   }
 
   template <I32 OFFSET, I32 ROWS>
   MTL_INLINE ColumnVector<ROWS,T> SubColumn() const
   {
-    return SubMatrix<OFFSET,0,ROWS,1>();
+    assert(OFFSET >= 0 && OFFSET < M);
+    assert(OFFSET + ROWS <= M);
+
+    ColumnVector<ROWS,T> v;
+    memcpy(v.Data()[0], this->Data()[OFFSET], ROWS*sizeof(T));
+    return v;
   }  
 
-  MTL_INLINE T& operator[](I32 i)               { assert(i >= 0 && i < M);  return Data_[i][0]; }
-  MTL_INLINE const T& operator[](I32 i) const   { assert(i >= 0 && i < M);  return Data_[i][0]; }
+  MTL_INLINE T& operator[](I32 i)
+  { assert(i >= 0 && i < M);  return Base::Data_[i][0]; }
+  MTL_INLINE const T& operator[](I32 i) const
+  { assert(i >= 0 && i < M);  return Base::Data_[i][0]; }
 
-  MTL_INLINE I32 Size() const  { return Rows();}
+  MTL_INLINE I32 Size() const  { return Base::Rows();}
 };
 
 template<I32 N, class T = F64>
@@ -553,12 +562,12 @@ public:
 
   MTL_INLINE explicit RowVector(const T data[N])
   {
-    memcpy(Data_, data, DataSizeInBytes());
+    memcpy(Base::Data_, data, Base::DataSizeInBytes());
   }
 
   MTL_INLINE RowVector& operator*=(const RowVector& v)
   {
-    Multiply<N>(Data()[0], v.Data()[0]);
+    Array<N,T>::Multiply(Base::Data()[0], v.Data()[0]);
     return *this;
   }
   MTL_INLINE RowVector& operator*=(const Base& v)
@@ -574,7 +583,7 @@ public:
 
   MTL_INLINE RowVector& operator/=(const RowVector& v)
   {
-    Divide<N>(Data()[0], v.Data()[0]);
+    Array<N,T>::Divide(Base::Data()[0], v.Data()[0]);
     return *this;
   }
   MTL_INLINE RowVector& operator/=(const Base& v)
@@ -590,23 +599,25 @@ public:
 
   MTL_INLINE T Dot(const Base& v) const
   {
-    return DotProduct<N>(Data()[0], v.Data()[0]);
+    return Array<N,T>::DotProduct(Base::Data()[0], v.Data()[0]);
   }
 
   MTL_INLINE T MaxNorm() const
   {
-    return Max_Norm<N>(Data()[0]);
+    return Array<N,T>::MaxNorm(Base::Data()[0]);
   }
 
   MTL_INLINE void Normalize()
   {
-    *this /= Sqrt(SumOfSquares());
+    *this /= Sqrt(Base::SumOfSquares());
   }
 
-  MTL_INLINE T& operator[](I32 i)               { assert(i >= 0 && i < N);  return Data_[0][i]; }
-  MTL_INLINE const T& operator[](I32 i) const   { assert(i >= 0 && i < N);  return Data_[0][i]; }
+  MTL_INLINE T& operator[](I32 i)
+  { assert(i >= 0 && i < N);  return Base::Data_[0][i]; }
+  MTL_INLINE const T& operator[](I32 i) const
+  { assert(i >= 0 && i < N);  return Base::Data_[0][i]; }
 
-  MTL_INLINE I32 Size() const  { return Cols();}
+  MTL_INLINE I32 Size() const  { return Base::Cols();}
 };
 
 typedef ColumnVector<1,F64> ColumnVector1D;
@@ -688,7 +699,7 @@ public:
   MTL_INLINE SquareMatrix() : Base() {}
   MTL_INLINE explicit SquareMatrix(const T diagonalValues[N]) : Base()
   {
-    Zeros();
+    Base::Zeros();
     setDiagonals(diagonalValues);
   }
 
@@ -700,10 +711,10 @@ public:
   {
     for (I32 i = 0; i < N; i++)
       for (I32 j = i + 1; j < N; j++)
-        Swap(Data_[i][j], Data_[j][i]);
+        Swap(Base::Data_[i][j], Base::Data_[j][i]);
   }
 
-  MTL_INLINE bool IsSingular() const  { return determinant() == 0; }
+  MTL_INLINE bool IsSingular() const  { return Base::determinant() == 0; }
 
   // Returns determinant of the matrix. Computes determinant using LUP factorization.
   MTL_INLINE T Determinant() const
@@ -856,20 +867,20 @@ typedef SquareMatrix<4,F64> SquareMatrix4x4;
 typedef SquareMatrix<5,F64> SquareMatrix5x5;
 typedef SquareMatrix<6,F64> SquareMatrix6x6;
 
-MTL_INLINE void SquareMatrix1x1::Transpose()
+template<> MTL_INLINE void SquareMatrix1x1::Transpose()
 {
 }
-MTL_INLINE void SquareMatrix2x2::Transpose()
+template<> MTL_INLINE void SquareMatrix2x2::Transpose()
 {
   Swap(Data_[0][1], Data_[1][0]);
 }
-MTL_INLINE void SquareMatrix3x3::Transpose()
+template<> MTL_INLINE void SquareMatrix3x3::Transpose()
 {
   Swap(Data_[0][1], Data_[1][0]);
   Swap(Data_[0][2], Data_[2][0]);
   Swap(Data_[1][2], Data_[2][1]);
 }
-MTL_INLINE void SquareMatrix4x4::Transpose()
+template<> MTL_INLINE void SquareMatrix4x4::Transpose()
 {
   Swap(Data_[0][1], Data_[1][0]);
   Swap(Data_[0][2], Data_[2][0]);
@@ -879,26 +890,26 @@ MTL_INLINE void SquareMatrix4x4::Transpose()
   Swap(Data_[2][3], Data_[3][2]);
 }
 
-MTL_INLINE F64 SquareMatrix1x1::Determinant() const
+template<> MTL_INLINE F64 SquareMatrix1x1::Determinant() const
 {
   return Data_[0][0];
 }
-MTL_INLINE F64 SquareMatrix2x2::Determinant() const
+template<> MTL_INLINE F64 SquareMatrix2x2::Determinant() const
 {
   return Data_[0][0] * Data_[1][1] - Data_[0][1] * Data_[1][0];
 }
-MTL_INLINE F64 SquareMatrix3x3::Determinant() const
+template<> MTL_INLINE F64 SquareMatrix3x3::Determinant() const
 {
   return (Data_[0][0] * (Data_[1][1] * Data_[2][2] - Data_[1][2] * Data_[2][1]) +
           Data_[0][1] * (Data_[1][2] * Data_[2][0] - Data_[1][0] * Data_[2][2]) +
           Data_[0][2] * (Data_[1][0] * Data_[2][1] - Data_[1][1] * Data_[2][0]));
 }
 
-MTL_INLINE SquareMatrix1x1 SquareMatrix1x1::ComputeTranspose() const
+template<> MTL_INLINE SquareMatrix1x1 SquareMatrix1x1::ComputeTranspose() const
 {
   return *this;
 }
-MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::ComputeTranspose() const
+template<> MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::ComputeTranspose() const
 {
   SquareMatrix2x2 t;
   t[0][0] = Data_[0][0];
@@ -907,7 +918,7 @@ MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::ComputeTranspose() const
   t[1][1] = Data_[1][1];
   return t;
 }
-MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::ComputeTranspose() const
+template<> MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::ComputeTranspose() const
 {
   SquareMatrix3x3 t;
   t[0][0] = Data_[0][0];
@@ -922,7 +933,7 @@ MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::ComputeTranspose() const
   return t;
 }
 
-MTL_INLINE SquareMatrix4x4 SquareMatrix4x4::ComputeTranspose() const
+template<> MTL_INLINE SquareMatrix4x4 SquareMatrix4x4::ComputeTranspose() const
 {
   SquareMatrix4x4 t;
   t[0][0] = Data_[0][0];
@@ -945,18 +956,31 @@ MTL_INLINE SquareMatrix4x4 SquareMatrix4x4::ComputeTranspose() const
 }
 
 template <I32 N>
+#ifdef WIN32
 MTL_INLINE static SquareMatrix<N,F64> Inverse(const SquareMatrix<N,F64>& M, F64)
+#else
+inline SquareMatrix<N,F64> Inverse(const SquareMatrix<N,F64>& M, F64)
+#endif
 {
   return M.inverse();
 }
 
 template<>
+#ifdef WIN32
 MTL_INLINE static SquareMatrix1x1 Inverse(const SquareMatrix1x1& M, F64 determinant)
+#else
+inline SquareMatrix1x1 Inverse(const SquareMatrix1x1& M, F64 determinant)
+#endif
 {
   return SquareMatrix1x1(1. / determinant);
 }
 
+template<>
+#ifdef WIN32
 MTL_INLINE static SquareMatrix2x2 Inverse(const SquareMatrix2x2& M, F64 determinant)
+#else
+inline SquareMatrix2x2 Inverse(const SquareMatrix2x2& M, F64 determinant)
+#endif
 {
   F64 reciprocalDet = 1. / determinant;
   SquareMatrix2x2 inv;
@@ -967,7 +991,12 @@ MTL_INLINE static SquareMatrix2x2 Inverse(const SquareMatrix2x2& M, F64 determin
   return inv;
 }
 
+template<>
+#ifdef WIN32
 MTL_INLINE static SquareMatrix3x3 Inverse(const SquareMatrix3x3& M, F64 determinant)
+#else
+inline SquareMatrix3x3 Inverse(const SquareMatrix3x3& M, F64 determinant)
+#endif
 {
   F64 reciprocalDet = 1. / determinant;
   SquareMatrix3x3 inv;
@@ -987,20 +1016,20 @@ MTL_INLINE static SquareMatrix3x3 Inverse(const SquareMatrix3x3& M, F64 determin
   return inv;
 }
 
-MTL_INLINE SquareMatrix1x1 SquareMatrix1x1::Inverse() const
+template<> MTL_INLINE SquareMatrix1x1 SquareMatrix1x1::Inverse() const
 {
   return SquareMatrix1x1(1./Data_[0][0]);
 }
-MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::Inverse() const
+template<> MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::Inverse() const
 {
   return MTL::Inverse(*this, Determinant());
 }
-MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::Inverse() const
+template<> MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::Inverse() const
 {
   return MTL::Inverse(*this, Determinant());
 }
 
-MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::operator*(const SquareMatrix3x3& B) const
+template<> MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::operator*(const SquareMatrix3x3& B) const
 {
   SquareMatrix3x3 product;
   Array2D<3,3,F64,3>::MultiplyRowByMatrix(product[0], Data_[0], B.Data());
@@ -1010,7 +1039,7 @@ MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::operator*(const SquareMatrix3x3& B) 
   return product;
 }
 
-MTL_INLINE ColumnVector3D SquareMatrix3x3::operator*(const ColumnVector3D& B) const
+template<> MTL_INLINE ColumnVector3D SquareMatrix3x3::operator*(const ColumnVector3D& B) const
 {
   ColumnVector3D product;
   product[0] = Array_2D<1,F64,3>::MultiplyRowByCol(Data_[0], B.Data(), 0);
@@ -1020,7 +1049,7 @@ MTL_INLINE ColumnVector3D SquareMatrix3x3::operator*(const ColumnVector3D& B) co
   return product;
 }
 
-MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::operator*(const SquareMatrix2x2& B) const
+template<> MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::operator*(const SquareMatrix2x2& B) const
 {
   SquareMatrix2x2 product;
   Array2D<2,2,F64,2>::MultiplyRowByMatrix(product[0], Data_[0], B.Data());
@@ -1029,7 +1058,7 @@ MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::operator*(const SquareMatrix2x2& B) 
   return product;
 }
 
-MTL_INLINE ColumnVector2D SquareMatrix2x2::operator*(const ColumnVector2D& B) const
+template<> MTL_INLINE ColumnVector2D SquareMatrix2x2::operator*(const ColumnVector2D& B) const
 {
   ColumnVector2D product;
   product[0] = Array_2D<1,F64,2>::MultiplyRowByCol(Data_[0], B.Data(), 0);
@@ -1050,9 +1079,9 @@ MTL_INLINE SquareMatrix3x3 ComputeCrossProductMatrix(const ColumnVector3D& v)
 
 // Solves A * x = b by computing the inverse of A. Returns true if the inverse can be computed,
 // false otherwise. The inverse is computed using the determinant of the matrix.
-template<I32 N>
-MTL_INLINE static bool SolveWithInverse(ColumnVector<N>& x,
-                                        const SquareMatrix<N> A, const ColumnVector<N>& b)
+template<I32 N, class T>
+MTL_INLINE static bool SolveWithInverse(ColumnVector<N,T>& x,
+                                        const SquareMatrix<N,T> A, const ColumnVector<N,T>& b)
 {
   T determinant = A.determinant();
   if (determinant == 0)

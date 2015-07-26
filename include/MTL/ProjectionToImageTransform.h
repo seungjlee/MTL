@@ -36,7 +36,8 @@ template <class T>
 class ProjectionToImageTransform : public AffineTransform3D<T>
 {
 public:
-  ProjectionToImageTransform(const MatrixType& m = MatrixType::eIdentity,
+  ProjectionToImageTransform(const typename AffineTransform3D<T>::MatrixType& m =
+                             AffineTransform3D<T>::MatrixType::eIdentity,
                              const Vector3D<T>& v = Vector3D<T>(0,0,0))
     : AffineTransform3D<T>(m, v)
   {

@@ -235,7 +235,7 @@ void SquareRootAll(DynamicVector<T>& v)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 // Define stream optimizations.
 #define MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(T, CastT)                                  \
-template<> class MTL::DynamicVectorParallelOperations<T>                                         \
+template<> class DynamicVectorParallelOperations<T>                                              \
 {                                                                                                \
 public:                                                                                          \
   MTL_INLINE static MTL::DynamicVector<T> UnaryMinus(const MTL::DynamicVector<T>& v)             \

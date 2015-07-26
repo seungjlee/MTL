@@ -39,9 +39,9 @@ class Rotation3D : public SquareMatrix<3,T>
   typedef SquareMatrix<3,T> Base;
 
 public:
-  MTL_SQUARE_MATRIX_COMMON_DEFINITIONS(Rotation3D, SquareMatrix, 3, T);
+  MTL_SQUARE_MATRIX_COMMON_DEFINITIONS(Rotation3D, Base, 3, T);
 
-  Rotation3D() : SquareMatrix<3,T>(eIdentity) {}
+  Rotation3D() : SquareMatrix<3,T>(Base::eIdentity) {}
 
   MTL_INLINE Rotation3D(T roll, T pitch, T yaw) 
   {
@@ -92,8 +92,8 @@ public:
     return Rotation3D(rotZ);
   }
 
-  MTL_INLINE Rotation3D Inverse() const  { return ComputeTranspose(); }
-  MTL_INLINE void Invert()               { Transpose();               }
+  MTL_INLINE Rotation3D Inverse() const  { return Base::ComputeTranspose(); }
+  MTL_INLINE void Invert()               { Base::Transpose();               }
 
   MTL_INLINE Point3D<T> operator*(const Point3D<T>& pt) const
   { return Base::operator*(pt); }
@@ -265,9 +265,9 @@ private:
                         double e10, double e11, double e12,
                         double e20, double e21, double e22)
   {
-    Data_[0][0] = e00;  Data_[0][1] = e01;  Data_[0][2] = e02;
-    Data_[1][0] = e10;  Data_[1][1] = e11;  Data_[1][2] = e12;
-    Data_[2][0] = e20;  Data_[2][1] = e21;  Data_[2][2] = e22;
+    Base::Data_[0][0] = e00;  Base::Data_[0][1] = e01;  Base::Data_[0][2] = e02;
+    Base::Data_[1][0] = e10;  Base::Data_[1][1] = e11;  Base::Data_[1][2] = e12;
+    Base::Data_[2][0] = e20;  Base::Data_[2][1] = e21;  Base::Data_[2][2] = e22;
   }
 };
 

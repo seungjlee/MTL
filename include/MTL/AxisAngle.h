@@ -118,7 +118,7 @@ public:
     qv = UnitRotationVector_ * SinHalfAngle_;
   }
 
-  MTL_INLINE bool IsIdentity() const  { return RotationVector_ == vector3D<T>(0,0,0); }
+  MTL_INLINE bool IsIdentity() const  { return RotationVector_ == Vector3D<T>(0,0,0); }
 
   MTL_INLINE Rotation3D<T> GetRotationMatrix() const
   {

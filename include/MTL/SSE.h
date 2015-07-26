@@ -42,8 +42,16 @@ MTL_INLINE static __m128i X128_SetPacked(I32 val)    { return _mm_set1_epi32(val
 MTL_INLINE static __m128i X128_SetPacked(U8  val)    { return _mm_set1_epi8(val);                  }
 MTL_INLINE static __m128i X128_SetPacked(U16 val)    { return _mm_set1_epi16(val);                 }
 MTL_INLINE static __m128i X128_SetPacked(U32 val)    { return _mm_set1_epi32(val);                 }
-MTL_INLINE static __m128i X128_SetPacked(I64 val)    { return (__m128i&)X128_SetPacked((F64&)val); }
-MTL_INLINE static __m128i X128_SetPacked(U64 val)    { return (__m128i&)X128_SetPacked((F64&)val); }
+MTL_INLINE static __m128i X128_SetPacked(I64 val)
+{
+  __m128d xx = X128_SetPacked((F64&)val);
+  return (__m128i&)xx;
+}
+MTL_INLINE static __m128i X128_SetPacked(U64 val)
+{
+  __m128d xx = X128_SetPacked((F64&)val);
+  return (__m128i&)xx;
+}
 
 // Common constants.
 static const __m128  kX128_OnesF32    = X128_SetPacked(1.0f);
@@ -85,7 +93,7 @@ public:
 
   enum
   {
-    Increment = sizeof(Type) / sizeof(T)
+    Increment = sizeof(DataType) / sizeof(T)
   };
 
   MTL_INLINE static SizeType StreamSize(SizeType size)  { return size & ~(Increment-1); }
@@ -288,6 +296,7 @@ public:
 };
 
 // Minimum and maximum.
+#ifdef WIN32
 template <> MTL_INLINE static X128<F32> Min(const X128<F32>& a, const X128<F32>& b)
 {
   return _mm_min_ps(a.Data(), b.Data());
@@ -304,6 +313,24 @@ template <> MTL_INLINE static X128<F64> Max(const X128<F64>& a, const X128<F64>&
 {
   return _mm_max_pd(a.Data(), b.Data());
 }
+#else
+template <> inline X128<F32> Min(const X128<F32>& a, const X128<F32>& b)
+{
+  return _mm_min_ps(a.Data(), b.Data());
+}
+template <> inline X128<F64> Min(const X128<F64>& a, const X128<F64>& b)
+{
+  return _mm_min_pd(a.Data(), b.Data());
+}
+template <> inline X128<F32> Max(const X128<F32>& a, const X128<F32>& b)
+{
+  return _mm_max_ps(a.Data(), b.Data());
+}
+template <> inline X128<F64> Max(const X128<F64>& a, const X128<F64>& b)
+{
+  return _mm_max_pd(a.Data(), b.Data());
+}
+#endif
 
 // Absolute value.
 MTL_INLINE static X128<F64> Abs(const X128<F64>& a)

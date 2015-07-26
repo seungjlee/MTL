@@ -45,8 +45,10 @@ public:
 
   virtual AffineTransform3D<T> Inverse() const
   {
-    MatrixType inv = Matrix_.ComputeTranspose();
-    return AffineTransform3D<T>(inv, inv * -Vector_);
+    typename AffineTransform3D<T>::MatrixType
+      inv = AffineTransform3D<T>::Matrix_.ComputeTranspose();
+
+    return AffineTransform3D<T>(inv, inv * -AffineTransform3D<T>::Vector_);
   }
 };
 

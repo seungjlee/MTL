@@ -35,8 +35,10 @@ namespace MTL
 template<class T>
 class Vector3D : public ColumnVector<3,T>
 {
+  typedef ColumnVector<3,T> Base;
+
 public:
-  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Vector3D, ColumnVector, 3, T);
+  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Vector3D, Base, 3, T);
 
   MTL_INLINE Vector3D() : ColumnVector<3,T>() {}
   MTL_INLINE Vector3D(T xx, T yy, T zz)
@@ -46,7 +48,7 @@ public:
     z(zz);
   }
 
-  T Length() const  { return FrobeniusNorm(); }
+  T Length() const  { return Base::FrobeniusNorm(); }
 
   // Returns unit vector.
   Vector3D unit() const  { return *this / Length(); }

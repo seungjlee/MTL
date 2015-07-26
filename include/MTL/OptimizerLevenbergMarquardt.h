@@ -307,7 +307,7 @@ public:
   // Compute A = Jt*J.
   virtual void ComputeNormalMatrix(DynamicMatrix<T>& A, const CompressedSparseMatrix<T>& J)
   {
-    J.MultiplyTransposeByThis(A);
+    J.MultiplyTransposeByThisParallel(A);
   }
 
   // Solves A*x = b. b is input as x. Returns rank of A.

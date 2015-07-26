@@ -26,7 +26,6 @@
 #define MTL_MATH_H
 
 #include "Definitions.h"
-#include "Array.h"
 #include <float.h>
 
 namespace MTL
@@ -124,6 +123,8 @@ template <class T> MTL_INLINE static void Swap(T& a, T& b)
   b = temp;
 }
 
+template <class T> MTL_INLINE static T Abs(const T& a);
+
 // A more numerically stable version of sqrt(a*a + b*b).
 template <class T>
 MTL_INLINE static T Hypotenuse(const T& a, const T& b)
@@ -137,9 +138,16 @@ MTL_INLINE static T Hypotenuse(const T& a, const T& b)
     return (bb == T(0.0) ? T(0.0) : bb * Sqrt(T(1.0) + Square(aa/bb)));
 }
 
+
+#ifdef WIN32
 template <class T> MTL_INLINE static T Epsilon();
 template <> MTL_INLINE static F32 Epsilon<F32>()  { return FLT_EPSILON; }
 template <> MTL_INLINE static F64 Epsilon<F64>()  { return DBL_EPSILON; }
+#else
+template <class T> inline T Epsilon();
+template <> inline F32 Epsilon<F32>()  { return FLT_EPSILON; }
+template <> inline F64 Epsilon<F64>()  { return DBL_EPSILON; }
+#endif
 
 template <class T> MTL_INLINE static T EpsilonSquared()
 {

@@ -192,8 +192,8 @@ public:
   MTL_INLINE DynamicMatrix MultiplyByTranspose() const
   {
     DynamicMatrix squareSymmetricMatrix(Rows(), Rows());
-    ::MultiplyByTranspose(squareSymmetricMatrix[0], (*this)[0], Rows(), Cols(),
-                          squareSymmetricMatrix.RowSize(), RowSize());
+    MTL::MultiplyByTranspose(squareSymmetricMatrix[0], (*this)[0], Rows(), Cols(),
+                             squareSymmetricMatrix.RowSize(), RowSize());
 
     return squareSymmetricMatrix;
   }
@@ -217,7 +217,7 @@ public:
     assert(Cols() == B.Cols());
     assert(Rows() == B.Rows());
 
-    Matrix C = *this;
+    DynamicMatrix C = *this;
     C += B;
     return C;
   }
@@ -261,11 +261,12 @@ public:
 
   MTL_INLINE DynamicMatrix& operator+=(const T& scalar)
   {
+    DynamicMatrix& A = *this;
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      ScalarAddition_StreamAligned_Sequential(A[i], scalar, A.Cols())
+      ScalarAddition_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
-      ScalarAddition_Sequential(A[i], scalar, A[i] + A.Cols())
+    ScalarAddition_Sequential(A[i], scalar, A[i] + A.Cols());
 #endif
 
     return *this;
@@ -279,11 +280,12 @@ public:
 
   MTL_INLINE DynamicMatrix& operator-=(const T& scalar)
   {
+    DynamicMatrix& A = *this;
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      ScalarSubtraction_StreamAligned_Sequential(A[i], scalar, A.Cols())
+      ScalarSubtraction_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
-      ScalarSubtraction_Sequential(A[i], scalar, A[i] + A.Cols())
+      ScalarSubtraction_Sequential(A[i], scalar, A[i] + A.Cols());
 #endif
 
     return *this;
@@ -297,11 +299,12 @@ public:
 
   MTL_INLINE DynamicMatrix& operator*=(const T& scalar)
   {
+    DynamicMatrix& A = *this;
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      ScalarMultiplication_StreamAligned_Sequential(A[i], scalar, A.Cols())
+      ScalarMultiplication_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
-      ScalarMultiplication_Sequential(A[i], scalar, A[i] + A.Cols())
+      ScalarMultiplication_Sequential(A[i], scalar, A[i] + A.Cols());
 #endif
 
     return *this;
@@ -315,11 +318,12 @@ public:
 
   MTL_INLINE DynamicMatrix& operator/=(const T& scalar)
   {
+    DynamicMatrix& A = *this;
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      ScalarDivision_StreamAligned_Sequential(A[i], scalar, A.Cols())
+      ScalarDivision_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
-      ScalarDivision_Sequential(A[i], scalar, A[i] + A.Cols())
+      ScalarDivision_Sequential(A[i], scalar, A[i] + A.Cols());
 #endif
 
     return *this;

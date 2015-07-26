@@ -53,6 +53,9 @@ namespace MTL
 {
 
 template <class T> class DynamicVector;
+template <class T> MTL_INLINE static void ComputeParallelSubSizes
+(DynamicVector<SizeType>& subSizes, DynamicVector<SizeType>& offsets,
+ SizeType totalSize, U64 numberOfThreads);
 
 // Returns true if OpenMP should be used for the data size and number of threads.
 template <class T>
@@ -76,7 +79,10 @@ MTL_INLINE static void Parallel_1Dst(T* p, SizeType size)
 
     #pragma omp parallel for
     for (I32 i = 0; i < numberOfThreads; i++)
-      Func(p + offsets[i], subSizes[i]);
+    {
+      SizeType index = i;
+      Func(p + offsets[index], subSizes[index]);
+    }
   }
   else
 #endif

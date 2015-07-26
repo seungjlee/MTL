@@ -25,7 +25,7 @@
 #ifndef MTL_ARRAY_H
 #define MTL_ARRAY_H
 
-#include "Definitions.h"
+#include <MTL/Math.h>
 
 namespace MTL
 {
@@ -33,9 +33,9 @@ namespace MTL
 template <int N, class T> class Array
 {
 public:
-  MTL_INLINE static T Sum(const T* p)  { return Array<N-1,T>::Sum(p) + p[N-1];          }
-  MTL_INLINE static T Min(const T* p)  { return MTL::Min(Array<N-1,T>::Min(p), p[N-1]); }
-  MTL_INLINE static T Max(const T* p)  { return MTL::Max(Array<N-1,T>::Max(p), p[N-1]); }
+  MTL_INLINE static T Sum(const T* p)  { return Array<N-1,T>::Sum(p) + p[N-1];             }
+  MTL_INLINE static T Min(const T* p)  { return MTL::Min<T>(Array<N-1,T>::Min(p), p[N-1]); }
+  MTL_INLINE static T Max(const T* p)  { return MTL::Max<T>(Array<N-1,T>::Max(p), p[N-1]); }
 
   MTL_INLINE static T MinOfAbsolutes(const T* p)
   {

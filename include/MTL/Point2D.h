@@ -35,8 +35,10 @@ namespace MTL
 template<class T>
 class Point2D : public ColumnVector<2,T>
 {
+  typedef ColumnVector<2,T> Base;
+
 public:
-  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Point2D, ColumnVector, 2, T);
+  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Point2D, Base, 2, T);
 
   MTL_INLINE Point2D() : ColumnVector<2,T>() {}
   MTL_INLINE Point2D(T xx, T yy)
@@ -45,7 +47,7 @@ public:
     y(yy);
   }
 
-  T Length() const  { return FrobeniusNorm(); }
+  T Length() const  { return Base::FrobeniusNorm(); }
 
   const T& x() const   { return (*this)[0]; }
   const T& y() const   { return (*this)[1]; }

@@ -480,7 +480,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = At.Cols() * Tolerance<T>() * D[0];
+    tolerance = At.Cols() * Epsilon<T>() * D[0];
 
   rank = (I32)D.size();
   for(; rank > 0 && D[rank-1] < tolerance; rank--);
@@ -506,7 +506,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = At.Cols() * Tolerance<T>() * D[0];
+    tolerance = At.Cols() * Epsilon<T>() * D[0];
 
   rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 

@@ -26,7 +26,7 @@
 #ifndef MTL_STREAM_MATH_H
 #define MTL_STREAM_MATH_H
 
-#include "SSE.h"
+#include <MTL/SSE.h>
 
 namespace MTL
 {
