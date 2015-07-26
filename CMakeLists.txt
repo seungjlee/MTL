@@ -53,7 +53,8 @@ if(MSVC11)
   if(CMAKE_CL_64)
     ADD_DEFINITIONS(-DWIN64)
   endif(CMAKE_CL_64)
-
+else(MSVC11)
+  SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11")
 endif(MSVC11)
 
 SET(WINVER 0x0501)
