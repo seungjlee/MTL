@@ -115,6 +115,17 @@ public:
 
   static const DynamicVector<String>& Arguments()  { return Arguments_; }
 
+  static I32 FindArgument(const String& str)
+  {
+    for (U32 i = 0; i < Arguments_.Size(); i++)
+    {
+      if (str == Arguments_[i])
+        return i;
+    }
+
+    return -1;
+  }
+
   static U64 TotalNumberOfFailures()  { return TotalNumberOfFailures_; }
 
   static const String& TestFilePathName() throw()
@@ -211,6 +222,8 @@ double Test::TotalTimeElapsed_;
 }  // namespace MTL
 
 
+#ifndef MTL_TEST_NO_MAIN
+
 #if defined(WIN32) || defined(WIN64)
   // For debugging memory leaks with Visual C++.
   #define _CRTDBG_MAP_ALLOC
@@ -271,5 +284,6 @@ int wmain(int argc, wchar_t* argv[])
 
   return (int)MTL::Test::TotalNumberOfFailures();
 }
+#endif  // #ifndef MTL_TEST_NO_MAIN
 
 #endif  // MTL_TEST_H

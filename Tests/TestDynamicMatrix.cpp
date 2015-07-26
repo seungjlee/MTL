@@ -23,7 +23,6 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Test.h>
-#include <MTL/DynamicVectorOperators.h>
 #include <MTL/Random.h>
 #include <MTL/OptimizerLevenbergMarquardt.h>
 #include <MTL/QR.h>

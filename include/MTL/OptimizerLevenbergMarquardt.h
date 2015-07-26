@@ -26,7 +26,9 @@
 #ifndef MTL_OPTIMIZER_LEVENBERG_MARQUARDT_H
 #define MTL_OPTIMIZER_LEVENBERG_MARQUARDT_H
 
+#include "DynamicVectorOperators.h"
 #include "OptimizerNonLinearLeastSquares.h"
+#include "SparseMatrix.h"
 #include "LDLt.h"
 
 namespace MTL
@@ -289,6 +291,140 @@ protected:
   T BestSumOfSquaresOfResiduals_;
   T mu_;
   U32 Iterations_;
+};
+
+template <class T>
+class SparseOptimizerLevenbergMarquardt : public DynamicOptimizerNonLinearLeastSquares<T>
+{
+public:
+  SparseOptimizerLevenbergMarquardt(SizeType inputDataSize)
+    : DynamicOptimizerNonLinearLeastSquares<T>(inputDataSize),
+      LDLtRankTolerance_(-1.0),
+      mu_(1e-4)
+  {
+  }
+
+  // Compute A = Jt*J.
+  virtual void ComputeNormalMatrix(DynamicMatrix<T>& A, const CompressedSparseMatrix<T>& J)
+  {
+    J.MultiplyTransposeByThis(A);
+  }
+
+  // Solves A*x = b. b is input as x. Returns rank of A.
+  virtual I32 Solve(DynamicVector<T>& x, DynamicMatrix<T>& A, T tolerance)
+  {
+    return SolveLDLt(x, A, tolerance);
+  }
+
+  virtual void Optimize(Parameters& parameters)
+  {
+    if (LDLtRankTolerance_ < 0)
+      LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
+
+    I32 N = (I32)parameters.Size();
+
+    T v = T(2);
+    Iterations_ = 0;
+
+    CostFunction(CurrentResiduals_, parameters);
+    BestSumOfSquaresOfResiduals_ = SumOfSquares(CurrentResiduals_);
+
+    A_.Resize(N, N);
+
+    A_.Zeros();
+
+    ComputeJacobian(J_, parameters);
+    ComputeNormalMatrix(A_, J_);
+
+    T maxDiagonal = A_[0][0];
+    for (I32 i = 1; i < N; i++)
+      maxDiagonal = Max(maxDiagonal, A_[i][i]);
+
+    mu_ *= maxDiagonal;
+
+    Parameters G(N);
+    Parameters delta(N);
+
+    bool done = false;
+
+    do
+    {
+      Iterations_++;
+
+      T p = 0;
+      do
+      {
+        A_.AddToDiagonals(mu_);
+        J_.MultiplyTransposed(G, CurrentResiduals_);
+        OptimizedCopy(delta.Begin(), G.Begin(), delta.Size());
+
+        I32 rank = Solve(delta, A_, LDLtRankTolerance_);
+
+        if (rank == parameters.Size())
+        {
+          if (SumOfSquares(delta) > SquaredParametersDeltaTolerance_)
+          {
+            Parameters newParameters = parameters;
+            newParameters -= delta;
+
+            CostFunction(NewResiduals_, newParameters);
+
+            double newSumOfSquaresOfResiduals = SumOfSquares(NewResiduals_);
+            if (newSumOfSquaresOfResiduals < BestSumOfSquaresOfResiduals_)
+            {
+              parameters = newParameters;
+              CurrentResiduals_ = NewResiduals_;
+
+              ComputeJacobian(J_, parameters);
+              ComputeNormalMatrix(A_, J_);
+
+              p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
+              p /= DotProduct(delta, delta * mu_ + G);
+
+              mu_ = mu_ * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
+
+              BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
+
+              if (Abs(mu_) < Epsilon<T>())
+                done = true;
+
+              v = T(2);
+            }
+            else
+            {
+              mu_ *= v; 
+              v *= T(2);
+            }
+          }
+          else
+          {
+            done = true;
+          }
+        }
+        else
+        {
+          mu_ *= v; 
+          v *= T(2);
+        }
+      }
+      while(!done && p < 0);
+    }
+    while(!done && Iterations_ < MaxIterations_);
+  }
+
+  U32 Iterations() const             { return Iterations_;                  }
+  T SumOfSquaresOfResiduals() const  { return BestSumOfSquaresOfResiduals_; }
+
+protected:
+  CompressedSparseMatrix<T> J_;  // Jacobian matrix.
+  DynamicMatrix<T> A_;  // This should be sparse as well but for now...
+  T LDLtRankTolerance_;
+  T BestSumOfSquaresOfResiduals_;
+  T mu_;
+  U32 Iterations_;
+
+  virtual void ComputeJacobian(CompressedSparseMatrix<T>& J,
+                               const Parameters& currentParameters) = 0;
 };
 
 }  // namespace MTL
