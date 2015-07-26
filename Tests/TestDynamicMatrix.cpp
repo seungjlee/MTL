@@ -322,3 +322,25 @@ TEST(TestLDLt)
   printf("  LDLt solver: %9.3f msecs (%d times)\n", t_LDLt.Milliseconds(), kRepeats);
   printf("  SVD  solver: %9.3f msecs (%d times)\n", t_SVD.Milliseconds(), kRepeats);
 }
+
+TEST(TestMultiplyByTranspose)
+{
+  enum
+  {
+    M =  200,
+    N = 2000
+  };
+
+  Timer t;
+  Random random;
+
+  t.ResetAndStart();
+  DynamicMatrix<F64> A = random.DynamicMatrix<F64>(N,N, -1, 1);
+  t.Stop();
+  printf("  Random matrix creation time: %.3f msecs\n", t.Milliseconds());
+
+  t.ResetAndStart();
+  A = A.MultiplyByTranspose();
+  t.Stop();
+  printf("  Multiply by transpose time: %.3f msecs\n", t.Milliseconds());
+}
