@@ -175,7 +175,7 @@ TEST(TestAxisAngle)
     Rotation3D<F64> RR = V.GetRotationMatrix();
     timeR.Stop();
 
-    Rotation3D<F64> I = RR.MultiplyByTranspose();
+    Rotation3D<F64> I(RR.MultiplyByTranspose());
 
     for (I32 row = 0; row < I.Rows(); row++)
     {

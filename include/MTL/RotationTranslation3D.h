@@ -37,7 +37,7 @@ class RotationTranslation3D : public AffineTransform3D<T>
 {
 public:
 
-  RotationTranslation3D(const Rotation3D<T>& r = Rotation3D<T>::eIdentity,
+  RotationTranslation3D(const Rotation3D<T>& r = Rotation3D<T>(Rotation3D<T>::eIdentity),
                         const Vector3D<T>& v = Vector3D<T>(0,0,0))
     : AffineTransform3D<T>(r, v)
   {
@@ -52,11 +52,11 @@ public:
   }
 };
 
+}  // namespace MTL
+
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(RotationTranslation3D<F32>);
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(RotationTranslation3D<F64>);
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(RotationTranslation3D<F32>,F32);
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(RotationTranslation3D<F64>,F64);
-
-}  // namespace MTL
 
 #endif // MTL_ROTATION_TRANSLATION_3D_H

@@ -93,18 +93,18 @@ protected:
   }
 
   void ComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
-                                              const Parameters& currentParameters)
+                                              const Parameters& parameters)
   {
     for (I32 i = 0; i < N; i++)
     {
-      Params centralDifferenceParameters = parameters;
+      Parameters centralDifferenceParameters = parameters;
       DynamicVector<T> residualsMinusDelta(CurrentResiduals_.Size());
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
 
       centralDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
       CostFunction(residualsPlusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i] - FiniteDifferenceDelta_;
-      CostFunction(residualsMinusDelta, centralDifferenceParameters, );
+      CostFunction(residualsMinusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i];
 
       residualsPlusDelta -= residualsMinusDelta;
@@ -135,19 +135,19 @@ protected:
   }
 
   void  ParallelComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
-                                                       const Parameters& currentParameters)
+                                                       const Parameters& parameters)
   {
     #pragma omp parallel for
     for (I32 i = 0; i < N; i++)
     {
-      Params centralDifferenceParameters = parameters;
+      Parameters centralDifferenceParameters = parameters;
       DynamicVector<T> residualsMinusDelta(CurrentResiduals_.Size());
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
 
       centralDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
       CostFunction(residualsPlusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i] - FiniteDifferenceDelta_;
-      CostFunction(residualsMinusDelta, centralDifferenceParameters, );
+      CostFunction(residualsMinusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i];
 
       residualsPlusDelta -= residualsMinusDelta;
@@ -229,18 +229,18 @@ protected:
   }
 
   void ComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
-                                              const Parameters& currentParameters)
+                                              const Parameters& parameters)
   {
     for (I32 i = 0; i < parameters.Size(); i++)
     {
-      Params centralDifferenceParameters = parameters;
+      Parameters centralDifferenceParameters = parameters;
       DynamicVector<T> residualsMinusDelta(CurrentResiduals_.Size());
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
 
       centralDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
       CostFunction(residualsPlusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i] - FiniteDifferenceDelta_;
-      CostFunction(residualsMinusDelta, centralDifferenceParameters, );
+      CostFunction(residualsMinusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i];
 
       residualsPlusDelta -= residualsMinusDelta;
@@ -271,19 +271,19 @@ protected:
   }
 
   void  ParallelComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
-                                                       const Parameters& currentParameters)
+                                                       const Parameters& parameters)
   {
     #pragma omp parallel for
     for (I32 i = 0; i < parameters.Size(); i++)
     {
-      Params centralDifferenceParameters = parameters;
+      Parameters centralDifferenceParameters = parameters;
       DynamicVector<T> residualsMinusDelta(CurrentResiduals_.Size());
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
 
       centralDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
       CostFunction(residualsPlusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i] - FiniteDifferenceDelta_;
-      CostFunction(residualsMinusDelta, centralDifferenceParameters, );
+      CostFunction(residualsMinusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i];
 
       residualsPlusDelta -= residualsMinusDelta;

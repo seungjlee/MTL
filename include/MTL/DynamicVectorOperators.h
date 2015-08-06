@@ -232,13 +232,17 @@ void SquareRootAll(DynamicVector<T>& v)
     v[vIndex] = Sqrt(v[vIndex]);
 }
 
+}  // namespace MTL
+
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 // Define stream optimizations.
 #define MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(T, CastT)                                  \
-template<> class MTL::DynamicVectorParallelOperations<T>                                         \
+namespace MTL                                                                                    \
+{                                                                                                \
+template<> class DynamicVectorParallelOperations<T>                                              \
 {                                                                                                \
 public:                                                                                          \
-  MTL_INLINE static MTL::DynamicVector<T> UnaryMinus(const MTL::DynamicVector<T>& v)             \
+  MTL_INLINE static DynamicVector<T> UnaryMinus(const MTL::DynamicVector<T>& v)                  \
   {                                                                                              \
     MTL::DynamicVector<T> negated = v;                                                           \
     MTL::UnaryMinus_StreamAligned_Parallel((CastT*)negated.Begin(),                              \
@@ -293,11 +297,14 @@ public:                                                                         
     MTL::ScalarDivision_StreamAligned_Parallel((CastT*)v.Begin(), (CastT)s,                      \
                                                 v.Size()*sizeof(T)/sizeof(CastT));               \
   }                                                                                              \
-};
+};                                                                                               \
+}
 #else
 #define MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(T, CastT)
 #endif
 
+namespace MTL
+{
 //
 // Reduction operations.
 //
@@ -371,61 +378,90 @@ template <class T> MTL_INLINE static T FrobeniusNorm(const DynamicVector<T>& v)
   return Sqrt(SumOfSquares(v));
 }
 
+}  // namespace MTL
+
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM(T)                                                          \
+namespace MTL                                                                                     \
+{                                                                                                 \
 MTL_INLINE static T Sum(const MTL::DynamicVector<T>& v)                                           \
 {                                                                                                 \
   return MTL::Sum_StreamAligned_Parallel(v.Begin(), v.Size());                                    \
+}                                                                                                 \
 }
 
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM_OF_ABSOLUTES(T)                                             \
+namespace MTL                                                                                     \
+{                                                                                                 \
 MTL_INLINE static T SumOfAbsolutes(const MTL::DynamicVector<T>& v)                                \
 {                                                                                                 \
   return MTL::SumOfAbsolutes_StreamAligned_Parallel(v.Begin(), v.Size());                         \
+}                                                                                                 \
 }
 
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM_OF_SQUARES(T)                                               \
+namespace MTL                                                                                     \
+{                                                                                                 \
 MTL_INLINE static T SumOfSquares(const MTL::DynamicVector<T>& v)                                  \
 {                                                                                                 \
   return MTL::SumOfSquares_StreamAligned_Parallel(v.Begin(), v.Size());                           \
+}                                                                                                 \
 }
 
 #define MTL_DYNAMIC_VECTOR_STREAM_MIN(T)                                                          \
+namespace MTL                                                                                     \
+{                                                                                                 \
 MTL_INLINE static T Min(const MTL::DynamicVector<T>& v)                                           \
 {                                                                                                 \
   return MTL::Min_StreamAligned_Parallel(v.Begin(), v.Size());                                    \
+}                                                                                                 \
 }
 
 #define MTL_DYNAMIC_VECTOR_STREAM_MAX(T)                                                          \
+namespace MTL                                                                                     \
+{                                                                                                 \
 MTL_INLINE static T Max(const MTL::DynamicVector<T>& v)                                           \
 {                                                                                                 \
   return MTL::Max_StreamAligned_Parallel(v.Begin(), v.Size());                                    \
+}                                                                                                 \
 }
 
 #define MTL_DYNAMIC_VECTOR_STREAM_MIN_OF_ABSOLUTES(T)                                             \
+namespace MTL                                                                                     \
+{                                                                                                 \
 MTL_INLINE static T MinOfAbsolutes(const MTL::DynamicVector<T>& v)                                \
 {                                                                                                 \
   return MTL::MinOfAbsolutes_StreamAligned_Parallel(v.Begin(), v.Size());                         \
+}                                                                                                 \
 }
 
 #define MTL_DYNAMIC_VECTOR_STREAM_MAX_OF_ABSOLUTES(T)                                             \
+namespace MTL                                                                                     \
+{                                                                                                 \
 MTL_INLINE static T MaxOfAbsolutes(const MTL::DynamicVector<T>& v)                                \
 {                                                                                                 \
   return MTL::MaxOfAbsolutes_StreamAligned_Parallel(v.Begin(), v.Size());                         \
+}                                                                                                 \
 }
 
 #define MTL_DYNAMIC_VECTOR_STREAM_MAX_NORM(T)                                                     \
+namespace MTL                                                                                     \
+{                                                                                                 \
 MTL_INLINE static T MaxNorm(const MTL::DynamicVector<T>& v)                                       \
 {                                                                                                 \
   return MTL::MaxOfAbsolutes(v);                                                                  \
+}                                                                                                 \
 }
 
 #define MTL_DYNAMIC_VECTOR_STREAM_DOT_PRODUCT(T)                                                  \
+namespace MTL                                                                                     \
+{                                                                                                 \
 MTL_INLINE static T DotProduct(const MTL::DynamicVector<T>& v1, const MTL::DynamicVector<T>& v2)  \
 {                                                                                                 \
   assert(v1.Size() == v2.Size());                                                                 \
   return MTL::DotProduct_StreamAligned_Parallel(v1.Begin(), v2.Begin(), v2.Size());               \
+}                                                                                                 \
 }
 #else // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 
@@ -471,8 +507,6 @@ MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(SquareMatrix3x3,F64);
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(SquareMatrix4x4,F64);
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(SquareMatrix5x5,F64);
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(SquareMatrix6x6,F64);
-
-}  // namespace MTL
 
 
 #endif // MTL_DYNAMIC_VECTOR_OPERATORS_H

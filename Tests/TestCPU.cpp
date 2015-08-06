@@ -63,7 +63,7 @@ TEST(TestMemoryBandwitdh)
     double* p1 = testV1.Begin();
     double* p2 = testV2.Begin();
 
-    printf("Number of Threads: %d\n", numberOfThreads);
+    printf("Number of Threads: %ld\n", numberOfThreads);
     CPU::Instance().NumberOfThreads(numberOfThreads);
 
     bestTime = kINF;
@@ -213,7 +213,7 @@ TEST(TestStreamPerformance)
     double* p1 = testV1.Begin();
     double* p2 = testV2.Begin();
 
-    printf("Number of Threads: %d\n", numberOfThreads);
+    printf("Number of Threads: %ld\n", numberOfThreads);
     CPU::Instance().NumberOfThreads(numberOfThreads);
 
     double dotProduct;

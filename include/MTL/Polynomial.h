@@ -46,6 +46,8 @@ enum PolynomialOrder
   kDecic     = 11
 };
 
+template<I32 N, class T> class PolynomialHelper;
+
 template<class T>
 class Polynomial
 {
@@ -53,11 +55,7 @@ public:
   template <I32 N> MTL_INLINE static T Evaluate(const T& x, const T* coefficients)
   {
     assert(N >= 3);
-    return Evaluate<N-1>(x, coefficients) * x + coefficients[N-1];
-  }
-  template <> MTL_INLINE static T Evaluate<2>(const T& x, const T* coefficients)
-  {
-    return coefficients[0] * x + coefficients[1];
+    return PolynomialHelper<N-1,T>::Evaluate(x, coefficients);
   }
 
   template <I32 N>
@@ -66,36 +64,23 @@ public:
     return Evaluate<N>(x, &coefficients[0]);
   }
 
-  template <I32 N> MTL_INLINE static void ComputeDerivative(T* derivative,
-                                                                 const T* coefficients)
+  template <I32 N> MTL_INLINE static void ComputeDerivative(T* derivative, const T* coefficients)
   {
-    derivative[0] = coefficients[0] * N;
-    ComputeDerivative<N-1>(derivative + 1, coefficients + 1);
-  }
-  template <> MTL_INLINE static void ComputeDerivative<1>(T* derivative,
-                                                               const T* coefficients)
-  {
-    derivative[0] = coefficients[0];
+    PolynomialHelper<N,T>::ComputeDerivative(derivative, coefficients);
   }
 
-  template <I32 N> MTL_INLINE static ColumnVector<N-1,T>
-  ComputeDerivative(const ColumnVector<N,T>& coefficients)
+  template <I32 N>
+  MTL_INLINE static ColumnVector<N-1,T> ComputeDerivative(const ColumnVector<N,T>& coefficients)
   {
     ColumnVector<N-1,T> derivative;
     ComputeDerivative<N-1>(&derivative[0], &coefficients[0]);
     return derivative;
   }
 
-  template <I32 N> MTL_INLINE static void ComputeSecondDerivative(T* derivative,
-                                                                  const T* coefficients)
+  template <I32 N>
+  MTL_INLINE static void ComputeSecondDerivative(T* derivative, const T* coefficients)
   {
-    derivative[0] = coefficients[0] * (N * (N + 1));
-    ComputeSecondDerivative<N-1>(derivative + 1, coefficients + 1);
-  }
-  template <> MTL_INLINE static void ComputeSecondDerivative<1>(T* derivative,
-                                                                const T* coefficients)
-  {
-    derivative[0] = coefficients[0] * 2;
+    PolynomialHelper<N,T>::ComputeSecondDerivative(derivative, coefficients);
   }
 
   template <I32 N> MTL_INLINE static ColumnVector<N-2,T>
@@ -109,16 +94,16 @@ public:
   // Solves f(x) = 0 where f(x) is a polynomial.
   template <I32 N, I32 MAX_ITERATIONS>
   MTL_INLINE static T Solve(const ColumnVector<N,T>& coefficients, double initial = 0,
-                            const T& tolerance = M * Epsilon<T>())
+                            const T& tolerance = N * Epsilon<T>())
   {
-    ColumnVector<N-1> derivative = FastPolynomial<T>::ComputeDerivative(coefficients);
+    ColumnVector<N-1> derivative = Polynomial<T>::ComputeDerivative(coefficients);
     T solution = initial;
     T delta;
 
     for (long i = 0; i < MAX_ITERATIONS; i++)
     {
-      delta = FastPolynomial<T>::evaluate(solution, coefficients) /
-              FastPolynomial<T>::evaluate(solution, derivative);
+      delta = Polynomial<T>::Evaluate(solution, coefficients) /
+              Polynomial<T>::Evaluate(solution, derivative);
       if (Abs(delta) < tolerance)
         break;
 
@@ -126,6 +111,43 @@ public:
     }
 
     return solution;
+  }
+};
+
+template<I32 N, class T> class PolynomialHelper
+{
+public:
+  MTL_INLINE static T Evaluate(const T& x, const T* coefficients)
+  {
+    return PolynomialHelper<N-1,T>::Evaluate(x, coefficients) * x + coefficients[N];
+  }
+  MTL_INLINE static void ComputeDerivative(T* derivative, const T* coefficients)
+  {
+    derivative[0] = coefficients[0] * N;
+    PolynomialHelper<N-1,T>::ComputeDerivative(derivative + 1, coefficients + 1);
+  }
+
+  MTL_INLINE static void ComputeSecondDerivative(T* derivative, const T* coefficients)
+  {
+    derivative[0] = coefficients[0] * (N * (N + 1));
+    PolynomialHelper<N-1,T>::ComputeSecondDerivative(derivative + 1, coefficients + 1);
+  }
+};
+
+template<class T> class PolynomialHelper<1,T>
+{
+public:
+  MTL_INLINE static T Evaluate(const T& x, const T* coefficients)
+  {
+    return coefficients[0] * x + coefficients[1];
+  }
+  MTL_INLINE static void ComputeDerivative(T* derivative, const T* coefficients)
+  {
+    derivative[0] = coefficients[0];
+  }
+  MTL_INLINE static void ComputeSecondDerivative(T* derivative, const T* coefficients)
+  {
+    derivative[0] = coefficients[0] * 2;
   }
 };
 

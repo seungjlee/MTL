@@ -79,11 +79,11 @@ protected:
   VectorType Vector_;  // Translation vector.
 };
 
+}  // namespace MTL
+
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(AffineTransform3D<F32>);
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(AffineTransform3D<F64>);
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(AffineTransform3D<F32>,F32);
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(AffineTransform3D<F64>,F64);
-
-}  // namespace MTL
 
 #endif  // MTL_AFFINE_TRANSFORM_3D_H

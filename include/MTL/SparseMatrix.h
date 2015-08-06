@@ -112,42 +112,43 @@ public:
 
   CompressedSparseMatrix(const DynamicMatrix<T>& full)
   {
-    Rows_ = full.Rows();
-    Cols_ = full.Cols();
+    SparseMatrix<T>::Rows_ = full.Rows();
+    SparseMatrix<T>::Cols_ = full.Cols();
 
-    for (I32 col = 0; col < Cols_; col++)
+    for (I32 col = 0; col < SparseMatrix<T>::Cols_; col++)
     {
-      I32 lastSize = (I32)Ai_.Size();
+      I32 lastSize = (I32)SparseMatrix<T>::Ai_.Size();
 
-      for (I32 row = 0; row < Rows_; row++)
+      for (I32 row = 0; row < SparseMatrix<T>::Rows_; row++)
       {
         if (full[row][col] != 0)
         {
-          Ai_.PushBack(row);
-          Ax_.PushBack(full[row][col]);
+          SparseMatrix<T>::Ai_.PushBack(row);
+          SparseMatrix<T>::Ax_.PushBack(full[row][col]);
         }
       }
 
-      Ap_.PushBack(lastSize);
+      SparseMatrix<T>::Ap_.PushBack(lastSize);
     }
 
-    Ap_.PushBack((I32)Ai_.Size());
+    SparseMatrix<T>::Ap_.PushBack((I32)SparseMatrix<T>::Ai_.Size());
   }
 
   void Create(I32 rows, I32 cols,
               const DynamicVector<DynamicVector<I32>>& sparseColumns)
   {
-    Rows_ = rows;
-    Cols_ = cols;
-    Clear();
+    SparseMatrix<T>::Rows_ = rows;
+    SparseMatrix<T>::Cols_ = cols;
+    SparseMatrix<T>::Clear();
 
-    Ap_.PushBack(0);
-    for (I32 col = 0; col < Cols_; col++)
+    SparseMatrix<T>::Ap_.PushBack(0);
+    for (I32 col = 0; col < SparseMatrix<T>::Cols_; col++)
     {
-      Ai_.AddBack(sparseColumns[col]);
-      Ap_.PushBack(I32(Ap_[Ap_.Size()-1] + sparseColumns[col].Size()));
+      SparseMatrix<T>::Ai_.AddBack(sparseColumns[col]);
+      SparseMatrix<T>::Ap_.PushBack
+        (I32(SparseMatrix<T>::Ap_[SparseMatrix<T>::Ap_.Size()-1] + sparseColumns[col].Size()));
     }
-    Ax_.Resize(Ai_.Size());
+    SparseMatrix<T>::Ax_.Resize(SparseMatrix<T>::Ai_.Size());
 
     OptimizeMultiplyTransposeByThis();
   }
@@ -155,16 +156,16 @@ public:
   // x = At * b where At is the transpose of this matrix.
   void MultiplyTransposed(DynamicVector<T>& x, const DynamicVector<T>& b) const
   {
-    assert(Rows_ == b.Size());
+    assert(SparseMatrix<T>::Rows_ == b.Size());
 
-    x.Resize(Cols_);
+    x.Resize(SparseMatrix<T>::Cols_);
     x.Zeros();
 
-    const I32* ap = Ap();
-    const I32* ai = Ai();
-    const T* ax = Ax();
+    const I32* ap = SparseMatrix<T>::Ap();
+    const I32* ai = SparseMatrix<T>::Ai();
+    const T* ax = SparseMatrix<T>::Ax();
 
-    for (I32 col = 0 ; col < Cols_; col++)
+    for (I32 col = 0 ; col < SparseMatrix<T>::Cols_; col++)
     {
       for (I32 k = ap[col]; k < ap[col+1]; k++)
       {
@@ -176,12 +177,12 @@ public:
   // Returns P = At * A as a dense matrix where A is this matrix.
   void MultiplyTransposeByThis(DynamicMatrix<T>& P) const
   {
-    P.Resize(Cols_, Cols_);
+    P.Resize(SparseMatrix<T>::Cols_, SparseMatrix<T>::Cols_);
     P.Zeros();
 
-    const I32* ap = Ap();
-    const I32* ai = Ai();
-    const T* ax = Ax();
+    const I32* ap = SparseMatrix<T>::Ap();
+    const I32* ai = SparseMatrix<T>::Ai();
+    const T* ax = SparseMatrix<T>::Ax();
 
     if (Mp_.Size() > 0)
     {
@@ -189,17 +190,17 @@ public:
       const I32* Mp = Mp_.Begin();
       const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
 
-      for (I32 i = 0; i < Cols_; i++)
+      for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #else
         P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
-        if (i < Cols_ - 1)
+        if (i < SparseMatrix<T>::Cols_ - 1)
         {
           I32 index = Mq[i];
-          for (I32 j = i + 1; j < Cols_; j++, index++)
+          for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++, index++)
           {
             if (Mp[index] < Mp[index + 1])
             {
@@ -220,7 +221,7 @@ public:
     }
     else
     {
-      for (I32 i = 0; i < Cols_; i++)
+      for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
@@ -228,7 +229,7 @@ public:
         P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
 
-        for (I32 j = i + 1; j < Cols_; j++)
+        for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++)
         {
           T sum = 0;
           I32 p = ap[i];
@@ -262,12 +263,12 @@ public:
 
   void MultiplyTransposeByThisParallel(DynamicMatrix<T>& P) const
   {
-    P.Resize(Cols_, Cols_);
+    P.Resize(SparseMatrix<T>::Cols_, SparseMatrix<T>::Cols_);
     P.Zeros();
 
-    const I32* ap = Ap();
-    const I32* ai = Ai();
-    const T* ax = Ax();
+    const I32* ap = SparseMatrix<T>::Ap();
+    const I32* ai = SparseMatrix<T>::Ai();
+    const T* ax = SparseMatrix<T>::Ax();
 
     if (Mp_.Size() > 0)
     {
@@ -276,17 +277,17 @@ public:
       const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
 
       #pragma omp parallel for
-      for (I32 i = 0; i < Cols_; i++)
+      for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #else
         P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
-        if (i < Cols_ - 1)
+        if (i < SparseMatrix<T>::Cols_ - 1)
         {
           I32 index = Mq[i];
-          for (I32 j = i + 1; j < Cols_; j++, index++)
+          for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++, index++)
           {
             if (Mp[index] < Mp[index + 1])
             {
@@ -308,7 +309,7 @@ public:
     else
     {
       #pragma omp parallel for
-      for (I32 i = 0; i < Cols_; i++)
+      for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
@@ -316,7 +317,7 @@ public:
         P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
 
-        for (I32 j = i + 1; j < Cols_; j++)
+        for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++)
         {
           T sum = 0;
           I32 p = ap[i];
@@ -350,19 +351,19 @@ public:
 
   void OptimizeMultiplyTransposeByThis()
   {
-    const I32* ap = Ap();
-    const I32* ai = Ai();
-    const T* ax = Ax();
+    const I32* ap = SparseMatrix<T>::Ap();
+    const I32* ai = SparseMatrix<T>::Ai();
+    const T* ax = SparseMatrix<T>::Ax();
 
     Mp_.Clear();
-    Mq_.Resize(Cols_ - 1);
+    Mq_.Resize(SparseMatrix<T>::Cols_ - 1);
     MultiplyTransposeIndices_.Clear();
 
     Mp_.PushBack(0);
-    for (I32 i = 0; i < Cols_ - 1; i++)
+    for (I32 i = 0; i < SparseMatrix<T>::Cols_ - 1; i++)
     {
       Mq_[i] = (I32)Mp_.Size() - 1; 
-      for (I32 j = i + 1; j < Cols_; j++)
+      for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++)
       {
         I32 p = ap[i];
         I32 q = ap[j];

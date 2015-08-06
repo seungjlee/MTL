@@ -36,9 +36,10 @@ template<I32 N, class T> static Matrix<N,N-1,T> NullSpace(const RowVector<N,T>& 
 {
   T S[N];
   SquareMatrix<N,T> V;
-  JacobiSVD<1,N>(RowVector<N,T>(v), S, V);
+  RowVector<N,T> temp(v);
+  JacobiSVD<1,N>(temp, S, V);
 
-  return V.SubMatrix<0,1,N,N-1>();
+  return V.template SubMatrix<0,1,N,(N-1)>();
 }
 
 }  // namespace MTL

@@ -25,69 +25,13 @@
 #ifndef MTL_MATH_H
 #define MTL_MATH_H
 
-#include "Definitions.h"
+#include <MTL/Constants.h>
+#include <MTL/SSE.h>
 #include <float.h>
+
 
 namespace MTL
 {
-
-// Commonly used constants.
-static const double kPi          = 3.141592653589793238460;
-static const double kPiOverTwo   = 1.570796326794896619230;
-static const double kPiOverFour  = 0.785398163397448309616;
-static const double kTwoPi       = 2.0 * kPi;
-static const double kOneOverPi   = 1./kPi;
-static const double kTwoOverPi   = 2./kPi;
-static const double kHalf        = 0.500000000000000000000;
-static const double kOneThird    = 0.333333333333333333333;
-static const double kTwoThirds   = 0.666666666666666666667;
-
-// Angle conversion constants.
-static const double kDegreesToRadians = kPi / 180.0;
-static const double kRadiansToDegrees = 180.0 / kPi;
-
-// Some helpers for floating point constants.
-static const long kSign32  []   = { 0x80000000 };
-static const long kNoSign32[]   = { 0x7FFFFFFF };
-static const long kSign64  []   = { 0x00000000, 0x80000000 };
-static const long kNoSign64[]   = { 0xFFFFFFFF, 0x7FFFFFFF };
-static const long kInfinity64[] = { 0x00000000, 0x7FF00000 };
-
-// Special floating point values.
-static const double kNAN = (double&)*kNoSign64;
-static const double kINF = (double&)*kInfinity64;
-
-
-template <class T> MTL_INLINE static T Conditional(bool condition, const T& a, const T& b)
-{
-  return condition ? a : b;
-}
-
-template <class T> MTL_INLINE static T Max(const T& a, const T& b)
-{
-  return Conditional(a > b, a, b);
-}
-template <class T> MTL_INLINE static T Max(const T& a, const T& b, const T& c)
-{
-  return Max(Max(a,b),c);
-}
-template <class T> MTL_INLINE static T Max(const T& a, const T& b, const T& c, const T& d)
-{
-  return Max(Max(a,b),Max(c,d));
-}
-
-template <class T> MTL_INLINE static T Min(const T& a, const T& b)
-{
-  return Conditional(a < b, a, b);
-}
-template <class T> MTL_INLINE static T Min(const T& a, const T& b, const T& c)
-{
-  return Min(Min(a,b),c);
-}
-template <class T> MTL_INLINE static T Min(const T& a, const T& b, const T& c, const T& d)
-{
-  return Min(Min(a,b),Min(c,d));
-}
 
 //
 // Recursive helper classes.

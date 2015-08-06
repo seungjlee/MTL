@@ -88,7 +88,8 @@ TEST(TestHouseholderQR)
   DynamicVector<F64> b = ys;
 
   t.Start();
-  I32 rank = SolveHouseholderQRTransposed(b, DynamicMatrix<F64>(At));
+  DynamicMatrix<F64> temp(At);
+  I32 rank = SolveHouseholderQRTransposed(b, temp);
   t.Stop();
   printf("  Householder solver time: %.3f msecs\n", t.Milliseconds());
 
@@ -103,7 +104,7 @@ TEST(TestHouseholderQR)
   SolveJacobiSVDTransposed(xx, rank, conditionNumber, At, ys);
   t.Stop();
   printf("  Jacobi SVD solver time:  %.3f msecs\n", t.Milliseconds());
-  printf("  Condition number %\n", conditionNumber);
+  printf("  Condition number %lf\n", conditionNumber);
 
   MTL_EQUAL_FLOAT(xx[0],  2.5, kSVDTol);
   MTL_EQUAL_FLOAT(xx[1],  0.3, kSVDTol);
@@ -180,7 +181,7 @@ TEST(TestHouseholderQR)
     t.Stop();
     printf("\n  Fixed-size version:\n");
     printf("  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
-           optimizer.Iterations(), t.Milliseconds());
+           (int)optimizer.Iterations(), t.Milliseconds());
     printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
 
     MTL_EQUAL_FLOAT(coeffs[0],  2.5, kLevenbergMarquardtTol);
@@ -199,7 +200,7 @@ TEST(TestHouseholderQR)
     t.Stop();
     printf("\n  Dynamic version:\n");
     printf("  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
-           optimizer.Iterations(), t.Milliseconds());
+           (int)optimizer.Iterations(), t.Milliseconds());
     printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
 
     MTL_EQUAL_FLOAT(coeffs[0],  2.5, kLevenbergMarquardtTol);
@@ -238,7 +239,8 @@ TEST(TestHouseholderQR_Speed)
     DynamicVector<F64> x = b;
 
     t_QR.Start();
-    I32 rank = SolveHouseholderQRTransposed(x, DynamicMatrix<F64>(At));
+    DynamicMatrix<F64> temp(At);
+    I32 rank = SolveHouseholderQRTransposed(x, temp);
     t_QR.Stop();
     MTL_EQUAL(rank, N);
 
@@ -295,12 +297,14 @@ TEST(TestLDLt)
 
     DynamicVector<F64> qrX = b;
     t_QR.Start();
-    SolveHouseholderQRTransposed(qrX, DynamicMatrix<F64>(A));
+    DynamicMatrix<F64> temp(A);
+    SolveHouseholderQRTransposed(qrX, temp);
     t_QR.Stop();
 
     DynamicVector<F64> ldlX = b;
     t_LDLt.Start();
-    SolveLDLt(ldlX, DynamicMatrix<F64>(A));
+    temp = A;
+    SolveLDLt(ldlX, temp);
     t_LDLt.Stop();
  
     DynamicVector<F64> svdX;

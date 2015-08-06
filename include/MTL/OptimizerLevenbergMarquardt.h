@@ -63,19 +63,19 @@ public:
     return SolveLDLt(x, A, tolerance);
   }
 
-  virtual void Optimize(Parameters& parameters)
+  virtual void Optimize(typename OptimizerNonLinearLeastSquares<N,T>::Parameters& parameters)
   {
     T v = T(2);
     Iterations_ = 0;
 
-    CostFunction(CurrentResiduals_, parameters);
-    BestSumOfSquaresOfResiduals_ = SumOfSquares(CurrentResiduals_);
+    this->CostFunction(this->CurrentResiduals_, parameters);
+    BestSumOfSquaresOfResiduals_ = SumOfSquares(this->CurrentResiduals_);
 
-    Jt_.Resize(N, (I32)CurrentResiduals_.Size());
+    Jt_.Resize(N, (I32)this->CurrentResiduals_.Size());
     Jt_.Zeros();
     A_.Zeros();
 
-    ComputeJacobian(Jt_, parameters);
+    this->ComputeJacobian(Jt_, parameters);
     ComputeNormalMatrix(A_, Jt_);
 
     T maxDiagonal = A_[0][0];
@@ -85,7 +85,7 @@ public:
     mu_ = maxDiagonal * InitialDampingFactor_;
 
     DynamicVector<T> G;
-    Parameters delta;
+    typename OptimizerNonLinearLeastSquares<N,T>::Parameters delta;
 
     bool done = false;
 
@@ -97,31 +97,31 @@ public:
       do
       {
         A_.AddToDiagonals(mu_);
-        G = Jt_ * CurrentResiduals_;
+        G = Jt_ * this->CurrentResiduals_;
         memcpy(&delta[0], G.Begin(), N*sizeof(T));
 
         I32 rank = Solve(delta, A_, LDLtRankTolerance_);
 
         if (rank == N)
         {
-          if (delta.SumOfSquares() > SquaredParametersDeltaTolerance_)
+          if (delta.SumOfSquares() > this->SquaredParametersDeltaTolerance_)
           {
-            Parameters newParameters = parameters;
+            typename OptimizerNonLinearLeastSquares<N,T>::Parameters newParameters = parameters;
             newParameters -= delta;
 
-            CostFunction(NewResiduals_, newParameters);
+            this->CostFunction(this->NewResiduals_, newParameters);
 
-            double newSumOfSquaresOfResiduals = SumOfSquares(NewResiduals_);
+            double newSumOfSquaresOfResiduals = SumOfSquares(this->NewResiduals_);
             if (newSumOfSquaresOfResiduals < BestSumOfSquaresOfResiduals_)
             {
               parameters = newParameters;
-              CurrentResiduals_ = NewResiduals_;
+              this->CurrentResiduals_ = this->NewResiduals_;
 
-              ComputeJacobian(Jt_, parameters);
+              this->ComputeJacobian(Jt_, parameters);
               ComputeNormalMatrix(A_, Jt_);
 
               p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
-              p /= delta.Dot(delta * mu_ + Parameters(G.Begin()));
+              p /= delta.Dot(delta * mu_ + typename OptimizerNonLinearLeastSquares<N,T>::Parameters(G.Begin()));
 
               mu_ = mu_ * Max(T(kOneThird), T(1) - Cube(T(2)*p - T(1)));
 
@@ -154,7 +154,7 @@ public:
       }
       while(!done && p < 0);
     }
-    while(!done && Iterations_ < MaxIterations_);
+    while(!done && Iterations_ < this->MaxIterations_);
   }
 
   U32 Iterations() const             { return Iterations_;                  }
@@ -196,7 +196,7 @@ public:
     return SolveLDLt(x, A, tolerance);
   }
 
-  virtual void Optimize(Parameters& parameters)
+  virtual void Optimize(typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters& parameters)
   {
     if (LDLtRankTolerance_ < 0)
       LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
@@ -206,16 +206,16 @@ public:
     T v = T(2);
     Iterations_ = 0;
 
-    CostFunction(CurrentResiduals_, parameters);
-    BestSumOfSquaresOfResiduals_ = SumOfSquares(CurrentResiduals_);
+    this->CostFunction(this->CurrentResiduals_, parameters);
+    BestSumOfSquaresOfResiduals_ = SumOfSquares(this->CurrentResiduals_);
 
-    Jt_.Resize(N, (I32)CurrentResiduals_.Size());
+    Jt_.Resize(N, (I32)this->CurrentResiduals_.Size());
     A_.Resize(N, N);
 
     Jt_.Zeros();
     A_.Zeros();
 
-    ComputeJacobian(Jt_, parameters);
+    this->ComputeJacobian(Jt_, parameters);
     ComputeNormalMatrix(A_, Jt_);
 
     T maxDiagonal = A_[0][0];
@@ -224,8 +224,8 @@ public:
 
     mu_ = maxDiagonal * InitialDampingFactor_;
 
-    Parameters G(N);
-    Parameters delta(N);
+    typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters G(N);
+    typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters delta(N);
 
     bool done = false;
 
@@ -237,27 +237,27 @@ public:
       do
       {
         A_.AddToDiagonals(mu_);
-        G = Jt_ * CurrentResiduals_;
+        G = Jt_ * this->CurrentResiduals_;
         OptimizedCopy(delta.Begin(), G.Begin(), delta.Size());
 
         I32 rank = Solve(delta, A_, LDLtRankTolerance_);
 
         if (rank == parameters.Size())
         {
-          if (SumOfSquares(delta) > SquaredParametersDeltaTolerance_)
+          if (SumOfSquares(delta) > this->SquaredParametersDeltaTolerance_)
           {
-            Parameters newParameters = parameters;
+            typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters newParameters = parameters;
             newParameters -= delta;
 
-            CostFunction(NewResiduals_, newParameters);
+            this->CostFunction(this->NewResiduals_, newParameters);
 
-            double newSumOfSquaresOfResiduals = SumOfSquares(NewResiduals_);
+            double newSumOfSquaresOfResiduals = SumOfSquares(this->NewResiduals_);
             if (newSumOfSquaresOfResiduals < BestSumOfSquaresOfResiduals_)
             {
               parameters = newParameters;
-              CurrentResiduals_ = NewResiduals_;
+              this->CurrentResiduals_ = this->NewResiduals_;
 
-              ComputeJacobian(Jt_, parameters);
+              this->ComputeJacobian(Jt_, parameters);
               ComputeNormalMatrix(A_, Jt_);
 
               p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
@@ -294,7 +294,7 @@ public:
       }
       while(!done && p < 0);
     }
-    while(!done && Iterations_ < MaxIterations_);
+    while(!done && Iterations_ < this->MaxIterations_);
   }
 
   U32 Iterations() const             { return Iterations_;                  }
@@ -336,7 +336,7 @@ public:
     return SolveLDLt(x, A, tolerance);
   }
 
-  virtual void Optimize(Parameters& parameters)
+  virtual void Optimize(typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters& parameters)
   {
     if (LDLtRankTolerance_ < 0)
       LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
@@ -347,14 +347,14 @@ public:
     T v = T(2);
     Iterations_ = 0;
 
-    CostFunction(CurrentResiduals_, parameters);
-    BestSumOfSquaresOfResiduals_ = SumOfSquares(CurrentResiduals_);
+    this->CostFunction(this->CurrentResiduals_, parameters);
+    BestSumOfSquaresOfResiduals_ = SumOfSquares(this->CurrentResiduals_);
 
     A_.Resize(N, N);
 
     A_.Zeros();
 
-    ComputeJacobian(J_, parameters);
+    this->ComputeJacobian(J_, parameters);
     ComputeNormalMatrix(A_, J_);
 
     T maxDiagonal = A_[0][0];
@@ -363,8 +363,8 @@ public:
 
     mu_ = maxDiagonal * InitialDampingFactor_;
 
-    Parameters G(N);
-    Parameters delta(N);
+    typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters G(N);
+    typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters delta(N);
 
     bool done = false;
 
@@ -376,27 +376,27 @@ public:
       do
       {
         A_.AddToDiagonals(mu_);
-        J_.MultiplyTransposed(G, CurrentResiduals_);
+        J_.MultiplyTransposed(G, this->CurrentResiduals_);
         OptimizedCopy(delta.Begin(), G.Begin(), delta.Size());
 
         I32 rank = Solve(delta, A_, LDLtRankTolerance_);
 
         if (rank == parameters.Size())
         {
-          if (SumOfSquares(delta) > SquaredParametersDeltaTolerance_)
+          if (SumOfSquares(delta) > this->SquaredParametersDeltaTolerance_)
           {
-            Parameters newParameters = parameters;
+            typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters newParameters = parameters;
             newParameters -= delta;
 
-            CostFunction(NewResiduals_, newParameters);
+            this->CostFunction(this->NewResiduals_, newParameters);
 
-            double newSumOfSquaresOfResiduals = SumOfSquares(NewResiduals_);
+            double newSumOfSquaresOfResiduals = SumOfSquares(this->NewResiduals_);
             if (newSumOfSquaresOfResiduals < BestSumOfSquaresOfResiduals_)
             {
               parameters = newParameters;
-              CurrentResiduals_ = NewResiduals_;
+              this->CurrentResiduals_ = this->NewResiduals_;
 
-              ComputeJacobian(J_, parameters);
+              this->ComputeJacobian(J_, parameters);
               ComputeNormalMatrix(A_, J_);
 
               p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
@@ -433,7 +433,7 @@ public:
       }
       while(!done && p < 0);
     }
-    while(!done && Iterations_ < MaxIterations_);
+    while(!done && Iterations_ < this->MaxIterations_);
   }
 
   U32 Iterations() const             { return Iterations_;                  }
@@ -450,7 +450,8 @@ protected:
 
   virtual void ComputeSparsityMatrix(I32 numberOfParams) = 0;
   virtual void ComputeJacobian(CompressedSparseMatrix<T>& J,
-                               const Parameters& currentParameters) = 0;
+                               const typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters&
+                               currentParameters) = 0;
 };
 
 }  // namespace MTL

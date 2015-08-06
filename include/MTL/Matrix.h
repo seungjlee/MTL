@@ -196,7 +196,7 @@ public:
   }
 
   template <I32 I, I32 J, I32 ROWS, I32 COLS>
-  MTL_INLINE Matrix<ROWS,COLS> SubMatrix() const
+  MTL_INLINE Matrix<ROWS,COLS,T> SubMatrix() const
   {
     assert(I >= 0 && I < M);
     assert(J >= 0 && J < N);
@@ -212,7 +212,7 @@ public:
   }
 
   template<I32 COL>
-  MTL_INLINE Matrix<M,1> Column() const
+  MTL_INLINE Matrix<M,1,T> Column() const
   {
     assert(COL >= 0 && COL < N);
 
@@ -225,7 +225,7 @@ public:
   }
 
   template<I32 ROW>
-  MTL_INLINE Matrix<1,N> Row() const
+  MTL_INLINE Matrix<1,N,T> Row() const
   {
     assert(ROW >= 0 && ROW < M);
 

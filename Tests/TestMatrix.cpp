@@ -210,7 +210,8 @@ void TestSolvers(const T& tol)
 
     ColumnVector<N,T> xSVD = b;
     time_SVD.Start();
-    SolveJacobiSVD<N>(SquareMatrix<N,T>(A), xSVD, rank, conditionNumber, tol);
+    SquareMatrix<N,T> temp(A);
+    SolveJacobiSVD<N>(temp, xSVD, rank, conditionNumber, tol);
     time_SVD.Stop();
     residuals = A * xSVD - b;
     maxRMS_SVD = Max(maxRMS_SVD, residuals.RMS());
@@ -219,14 +220,16 @@ void TestSolvers(const T& tol)
 
     ColumnVector<N,T> xQR = b;
     time_QR.Start();
-    SolveHouseholderQR<N>(xQR, SquareMatrix<N,T>(A));
+    temp = A;
+    SolveHouseholderQR<N>(xQR, temp);
     time_QR.Stop();
     residuals = A * xQR - b;
     maxRMS_QR = Max(maxRMS_QR, residuals.RMS());
 
     ColumnVector<N,T> xLDLt = b;
     time_LDLt.Start();
-    SolveLDLt<N>(xLDLt, SquareMatrix<N,T>(A), tol);
+    temp = A;
+    SolveLDLt<N>(xLDLt, temp, tol);
     time_LDLt.Stop();
     residuals = A * xLDLt - b;
     maxRMS_LDLt = Max(maxRMS_LDLt, residuals.RMS());
@@ -246,7 +249,7 @@ void TestSolvers(const T& tol)
   }
 
   printf("  Maximum condition number was: %f\n", maxConditionNumber);
-  printf("  Every solver ran %d times (%dx%d matrices).\n", kRepeats, N, N);
+  printf("  Every solver ran %d times (%ldx%ld matrices).\n", kRepeats, N, N);
 
   printf("  Solve SVD:     %9.3f msecs, Max RMS = %e\n",
          time_SVD.Milliseconds(), maxRMS_SVD);

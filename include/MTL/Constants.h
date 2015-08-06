@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
+// Copyright (c) 2015: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -22,40 +22,41 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef MTL_CONSTANTS_H
+#define MTL_CONSTANTS_H
 
-#ifndef MTL_PROJECTION_TO_IMAGE_TRANSFORM_3D_H
-#define MTL_PROJECTION_TO_IMAGE_TRANSFORM_3D_H
-
-#include "AffineTransform3D.h"
-#include "Point2D.h"
+#include "Definitions.h"
 
 namespace MTL
 {
 
-template <class T>
-class ProjectionToImageTransform : public AffineTransform3D<T>
-{
-public:
-  ProjectionToImageTransform(const typename AffineTransform3D<T>::MatrixType& m =
-                             AffineTransform3D<T>::MatrixType::eIdentity,
-                             const Vector3D<T>& v = Vector3D<T>(0,0,0))
-    : AffineTransform3D<T>(m, v)
-  {
-  }
+// Commonly used constants.
+static const double kPi          = 3.141592653589793238460;
+static const double kPiOverTwo   = 1.570796326794896619230;
+static const double kPiOverFour  = 0.785398163397448309616;
+static const double kTwoPi       = 2.0 * kPi;
+static const double kOneOverPi   = 1./kPi;
+static const double kTwoOverPi   = 2./kPi;
+static const double kHalf        = 0.500000000000000000000;
+static const double kOneThird    = 0.333333333333333333333;
+static const double kTwoThirds   = 0.666666666666666666667;
 
-  MTL_INLINE Point2D<T> operator*(const Point3D<T>& point) const
-  {
-    Point3D<T> pt3D = AffineTransform3D<T>::operator*(point);
+// Angle conversion constants.
+static const double kDegreesToRadians = kPi / 180.0;
+static const double kRadiansToDegrees = 180.0 / kPi;
 
-    return Point2D<T>(pt3D.x() / pt3D.z(), pt3D.y() / pt3D.z());
-  }
-};
+// Some helpers for floating point constants.
+static const long kSign32  []   = { 0x80000000 };
+static const long kNoSign32[]   = { 0x7FFFFFFF };
+static const long kSign64  []   = { 0x00000000, 0x80000000 };
+static const long kNoSign64[]   = { 0xFFFFFFFF, 0x7FFFFFFF };
+static const long kInfinity64[] = { 0x00000000, 0x7FF00000 };
+
+// Special floating point values.
+static const double kNAN = (double&)*kNoSign64;
+static const double kINF = (double&)*kInfinity64;
 
 }  // namespace MTL
 
-MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ProjectionToImageTransform<F32>);
-MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(ProjectionToImageTransform<F64>);
-MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(ProjectionToImageTransform<F32>,F32);
-MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(ProjectionToImageTransform<F64>,F64);
 
-#endif  // MTL_PROJECTION_TO_IMAGE_TRANSFORM_3D_H
+#endif // MTL_CONSTANTS_H
