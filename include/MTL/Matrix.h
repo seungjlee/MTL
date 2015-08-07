@@ -28,6 +28,7 @@
 
 #include <assert.h>
 #include <MTL/Array.h>
+#include <MTL/StreamMath.h>
 
 namespace MTL
 {

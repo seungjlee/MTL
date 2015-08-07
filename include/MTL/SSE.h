@@ -93,10 +93,10 @@ static const __m128d kX128_OnesF64    = X128_SetPacked(1.0 );
 static const __m128d kX128_TwosF64    = X128_SetPacked(2.0 );
 static const __m128d kX128_ZerosF64   = _mm_setzero_pd();
 static const __m128d kX128_HalvesF64  = X128_SetPacked(kHalf);
-static const __m128  kX128_SignF32    = X128_SetPacked(( F32&)*kSign32  );
-static const __m128  kX128_NoSignF32  = X128_SetPacked(( F32&)*kNoSign32);
-static const __m128d kX128_SignF64    = X128_SetPacked((double&)*kSign64  );
-static const __m128d kX128_NoSignF64  = X128_SetPacked((double&)*kNoSign64);
+static const __m128  kX128_SignF32    = X128_SetPacked(( F32&)kSign32  );
+static const __m128  kX128_NoSignF32  = X128_SetPacked(( F32&)kNoSign32);
+static const __m128d kX128_SignF64    = X128_SetPacked((double&)kSign64  );
+static const __m128d kX128_NoSignF64  = X128_SetPacked((double&)kNoSign64);
 static const __m128i kX128_ZerosI     = _mm_setzero_si128();
 static const __m128i kX128_NoZerosI   = X128_SetPacked(I32(-1));
 

@@ -27,7 +27,6 @@
 #define MTL_TIMER_H
 
 #include "Definitions.h"
-#include <sys/timeb.h>
 
 #if defined(WIN32) || defined(WIN64)
 #define WINDOWS_LEAN_AND_MEAN 1
@@ -41,7 +40,8 @@ static double InitClockFactorToMilliseconds()
 }
 
 static const double kClockFactorToMilliseconds = InitClockFactorToMilliseconds();
-
+#else
+#include <chrono>
 #endif
 
 namespace MTL
@@ -107,9 +107,11 @@ private:
     QueryPerformanceCounter(&count);
     return double(count.QuadPart) * kClockFactorToMilliseconds;
 #else
-    timeb t;
-    ftime(&t);
-    return double(t.time * 1000 + t.millitm);
+    std::chrono::time_point<std::chrono::high_resolution_clock> now =
+      std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<long long,std::ratio<1,1000000000>> t = now.time_since_epoch();
+    return t.count() * 1e-6;
 #endif
   }
 

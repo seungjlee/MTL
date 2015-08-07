@@ -26,7 +26,7 @@
 #define MTL_MATH_H
 
 #include <MTL/Constants.h>
-#include <MTL/SSE.h>
+#include <MTL/StreamMath.h>
 #include <float.h>
 
 
