@@ -226,8 +226,8 @@ TEST(TestStreamPerformance)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds() / kIterations);
     }
-    printf("  Dot product:    %8.3f GFLOPS, %.3f msecs.\n",
-           2 * kVectorSize * 1e-9 / bestTime, bestTime);
+    printf("  Dot product:    %8.3f GFLOPS, %.6f msecs.\n",
+           2 * kVectorSize * 1e-9 / bestTime, bestTime * 1e3);
     MTL_EQUAL_FLOAT(dotProduct, 2*kVectorSize, kTol);
 
     double sumOfSquares;
@@ -240,8 +240,8 @@ TEST(TestStreamPerformance)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds() / kIterations);
     }
-    printf("  Sum of Squares: %8.3f GFLOPS, %.3f msecs.\n",
-           2 * kVectorSize * 1e-9 / bestTime, bestTime);
+    printf("  Sum of Squares: %8.3f GFLOPS, %.6f msecs.\n",
+           2 * kVectorSize * 1e-9 / bestTime, bestTime * 1e3);
     MTL_EQUAL_FLOAT(sumOfSquares, kVectorSize, kTol);
   }
 }
