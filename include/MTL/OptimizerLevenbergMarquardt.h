@@ -58,9 +58,9 @@ public:
   }
 
   // Solves A*x = b. b is input as x. Returns rank of A.
-  virtual I32 Solve(ColumnVector<N>& x, SquareMatrix<N,T>& A, T tolerance)
+  virtual I32 Solve(ColumnVector<N,T>& x, SquareMatrix<N,T>& A, T tolerance)
   {
-    return SolveLDLt(x, A, tolerance);
+    return SolveLDLt<N,T>(x, A, tolerance);
   }
 
   virtual void Optimize(typename OptimizerNonLinearLeastSquares<N,T>::Parameters& parameters)
@@ -111,7 +111,7 @@ public:
 
             this->CostFunction(this->NewResiduals_, newParameters);
 
-            double newSumOfSquaresOfResiduals = SumOfSquares(this->NewResiduals_);
+            T newSumOfSquaresOfResiduals = SumOfSquares(this->NewResiduals_);
             if (newSumOfSquaresOfResiduals < BestSumOfSquaresOfResiduals_)
             {
               parameters = newParameters;
@@ -251,7 +251,7 @@ public:
 
             this->CostFunction(this->NewResiduals_, newParameters);
 
-            double newSumOfSquaresOfResiduals = SumOfSquares(this->NewResiduals_);
+            T newSumOfSquaresOfResiduals = SumOfSquares(this->NewResiduals_);
             if (newSumOfSquaresOfResiduals < BestSumOfSquaresOfResiduals_)
             {
               parameters = newParameters;
@@ -390,7 +390,7 @@ public:
 
             this->CostFunction(this->NewResiduals_, newParameters);
 
-            double newSumOfSquaresOfResiduals = SumOfSquares(this->NewResiduals_);
+            T newSumOfSquaresOfResiduals = SumOfSquares(this->NewResiduals_);
             if (newSumOfSquaresOfResiduals < BestSumOfSquaresOfResiduals_)
             {
               parameters = newParameters;

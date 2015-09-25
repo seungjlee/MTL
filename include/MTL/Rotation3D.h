@@ -101,6 +101,17 @@ public:
   MTL_INLINE Vector3D<T> operator*(const Vector3D<T>& pt) const
   { return Base::operator*(pt); }
 
+  template <class TT>
+  MTL_INLINE DynamicVector< Point3D<TT> > operator*
+  (const DynamicVector< Point3D<TT> >& pts) const
+  {
+    DynamicVector< Point3D<TT> > transformedPts(pts.Size());
+    for (SizeType i = 0; i < pts.Size(); i++)
+      transformedPts[i] = *this * pts[i];
+
+    return transformedPts;
+  }
+
   //
   // Computing rotations to/from a different axis using Given rotations.
   //
