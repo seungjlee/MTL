@@ -48,6 +48,17 @@ public:
     z(zz);
   }
 
+  T DistanceSquared(const Point3D& pt) const
+  {
+    Point3D delta = pt - *this;
+    return delta.SumOfSquares();
+  }
+
+  T Distance(const Point3D& pt) const
+  {
+    return Sqrt(DistanceSquared(pt));
+  }
+
   T Length() const  { return Base::FrobeniusNorm(); }
 
   const T& x() const   { return (*this)[0]; }
