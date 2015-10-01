@@ -85,12 +85,20 @@ MTL_INLINE static T Hypotenuse(const T& a, const T& b)
 
 #ifdef WIN32
 template <class T> MTL_INLINE static T Epsilon();
-template <> MTL_INLINE static F32 Epsilon<F32>()  { return FLT_EPSILON; }
-template <> MTL_INLINE static F64 Epsilon<F64>()  { return DBL_EPSILON; }
+template <> MTL_INLINE static F32 Epsilon<F32>()   { return FLT_EPSILON; }
+template <> MTL_INLINE static F64 Epsilon<F64>()   { return DBL_EPSILON; }
+
+template <class T> MTL_INLINE static T Infinity()  { return T(kINF);     }
+template <class T> MTL_INLINE static bool IsFinite(const T& a)
+{ return a > -Infinity<T>() && a < Infinity<T>(); }
 #else
 template <class T> inline T Epsilon();
-template <> inline F32 Epsilon<F32>()  { return FLT_EPSILON; }
-template <> inline F64 Epsilon<F64>()  { return DBL_EPSILON; }
+template <> inline F32 Epsilon<F32>()   { return FLT_EPSILON; }
+template <> inline F64 Epsilon<F64>()   { return DBL_EPSILON; }
+
+template <class T> inline T Infinity()  { return T(kINF);     }
+template <class T> inline bool IsFinite(const T& a)
+{ return a > -Infinity<T>() && a < Infinity<T>(); }
 #endif
 
 template <class T> MTL_INLINE static T EpsilonSquared()
