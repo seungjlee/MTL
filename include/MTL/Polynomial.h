@@ -26,7 +26,8 @@
 #ifndef MTL_POLYNOMIAL_H
 #define MTL_POLYNOMIAL_H
 
-#include "Matrix.h"
+#include "Point2D.h"
+#include "QR.h"
 
 namespace MTL
 {
@@ -52,6 +53,44 @@ template<class T>
 class Polynomial
 {
 public:
+  // Returns polynomial coefficients.
+  // Fit points so that:
+  //
+  //   y = c[0] * x^(N-1) + c[1] * x^(N-2) + ... + c[N-2] * x + c[N-1]
+  //
+  template <I32 N>
+  MTL_INLINE static ColumnVector<N,T> Fit(const DynamicVector<Point2D<T>>& pts)
+  {
+    DynamicMatrix<T> At;
+    DynamicVector<T> y;
+
+    return Fit<N>(At, y, pts);
+  }
+  template <I32 N>
+  MTL_INLINE static ColumnVector<N,T> Fit(DynamicMatrix<T>& At, DynamicVector<T>& y,
+                                          const DynamicVector<Point2D<T>>& pts)
+  {
+    At.Resize(N, (I32)pts.Size());
+    y.Resize(pts.Size());
+
+    FOR_EACH_INDEX(pts)
+    {
+      T x = pts[ptsIndex].x();
+
+      At[N-2][ptsIndex] = x;
+      for (int k = N-3; k >=0; k--)
+        At[k][ptsIndex] = At[k+1][ptsIndex] * x;
+
+      y[ptsIndex] = pts[ptsIndex].y();
+    }
+    OptimizedAssignAll(At[N-1], T(1), pts.Size());
+
+    SolveHouseholderQRTransposed(y, At);
+    ColumnVector<N,T> x;
+    memcpy(&x[0], y.Begin(), sizeof(x));
+    return x;
+  }
+
   template <I32 N> MTL_INLINE static T Evaluate(const T& x, const T* coefficients)
   {
     assert(N >= 3);
