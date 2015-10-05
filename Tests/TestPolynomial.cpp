@@ -114,12 +114,22 @@ TEST(TestPolynomialFit)
   printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
 
   t.ResetAndStart();
-  ColumnVector<4,F64> polyCoeffs = Polynomial<F64>::Fit<4>(pts);
+  ColumnVector<4,F64> polyCoeffs1 = Polynomial<F64>::Fit<4>(pts);
   t.Stop();
-  printf("  Polynomial fit time: %.3f msecs\n", t.Milliseconds());
+  printf("  Polynomial fit time 1: %.3f msecs\n", t.Milliseconds());
 
   FOR_EACH_INDEX(coeffs)
   {
-    MTL_EQUAL_FLOAT(polyCoeffs[(I32)coeffsIndex], coeffs[(I32)coeffsIndex], kTol);
+    MTL_EQUAL_FLOAT(polyCoeffs1[(I32)coeffsIndex], coeffs[(I32)coeffsIndex], kTol);
+  }
+
+  t.ResetAndStart();
+  ColumnVector<4,F64> polyCoeffs2 = Polynomial<F64>::Fit<4>(xs, ys);
+  t.Stop();
+  printf("  Polynomial fit time 2: %.3f msecs\n", t.Milliseconds());
+
+  FOR_EACH_INDEX(coeffs)
+  {
+    MTL_EQUAL_FLOAT(polyCoeffs2[(I32)coeffsIndex], coeffs[(I32)coeffsIndex], kTol);
   }
 }

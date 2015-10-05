@@ -59,6 +59,31 @@ public:
   //   y = c[0] * x^(N-1) + c[1] * x^(N-2) + ... + c[N-2] * x + c[N-1]
   //
   template <I32 N>
+  MTL_INLINE static ColumnVector<N,T> Fit(const DynamicVector<T>& xs, const DynamicVector<T>& ys)
+  {
+    assert(xs.Size() == ys.Size());
+
+    DynamicMatrix<T> At(N, (I32)xs.Size());
+    DynamicVector<T> y = ys.Size();
+
+    FOR_EACH_INDEX(xs)
+    {
+      T x = xs[xsIndex];
+
+      At[N-2][xsIndex] = x;
+      for (int k = N-3; k >=0; k--)
+        At[k][xsIndex] = At[k+1][xsIndex] * x;
+
+      y[xsIndex] = ys[xsIndex];
+    }
+    OptimizedAssignAll(At[N-1], T(1), xs.Size());
+
+    SolveHouseholderQRTransposed(y, At);
+    ColumnVector<N,T> x;
+    memcpy(&x[0], y.Begin(), sizeof(x));
+    return x;
+  }
+  template <I32 N>
   MTL_INLINE static ColumnVector<N,T> Fit(const DynamicVector<Point2D<T>>& pts)
   {
     DynamicMatrix<T> At;
