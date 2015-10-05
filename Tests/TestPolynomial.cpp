@@ -120,6 +120,6 @@ TEST(TestPolynomialFit)
 
   FOR_EACH_INDEX(coeffs)
   {
-    MTL_EQUAL_FLOAT(polyCoeffs[coeffsIndex], coeffs[coeffsIndex], kTol);
+    MTL_EQUAL_FLOAT(polyCoeffs[(I32)coeffsIndex], coeffs[(I32)coeffsIndex], kTol);
   }
 }
