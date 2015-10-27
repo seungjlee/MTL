@@ -292,10 +292,18 @@ public:
     AssignAll(Begin(), End(), val);
   }
 
-  MTL_INLINE T* Begin()              { return First_;         }
-  MTL_INLINE const T* Begin() const  { return First_;         }
-  MTL_INLINE T* End()                { return First_ + Size_; }
-  MTL_INLINE const T* End() const    { return First_ + Size_; }
+  MTL_INLINE T& Back()               { return *(First_ + Size_ - 1); }
+  MTL_INLINE const T& Back() const   { return *(First_ + Size_ - 1); }
+
+  MTL_INLINE T* Begin()              { return First_;                }
+  MTL_INLINE const T* Begin() const  { return First_;                }
+  MTL_INLINE T* End()                { return First_ + Size_;        }
+  MTL_INLINE const T* End() const    { return First_ + Size_;        }
+
+  MTL_INLINE T* begin()              { return First_;                }
+  MTL_INLINE const T* begin() const  { return First_;                }
+  MTL_INLINE T* end()                { return First_ + Size_;        }
+  MTL_INLINE const T* end() const    { return First_ + Size_;        }
 
   // Note that Clear() does not free resources. Call Release() if you really want to free up
   // resources.
