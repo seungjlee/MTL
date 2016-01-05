@@ -43,12 +43,12 @@ public:
   {
   }
 
-  virtual AffineTransform3D<T> Inverse() const
+  RotationTranslation3D<T> Inverse() const
   {
     typename AffineTransform3D<T>::MatrixType
       inv = AffineTransform3D<T>::Matrix_.ComputeTranspose();
 
-    return AffineTransform3D<T>(inv, inv * -AffineTransform3D<T>::Vector_);
+    return RotationTranslation3D<T>(inv, inv * -AffineTransform3D<T>::Vector_);
   }
 };
 

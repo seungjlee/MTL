@@ -54,7 +54,7 @@ public:
     return *this;
   }
 
-  virtual AffineTransform3D Inverse() const
+  AffineTransform3D Inverse() const
   {
     MatrixType inv = Matrix_.Inverse();
     return AffineTransform3D(inv, inv * -Vector_);
@@ -71,8 +71,8 @@ public:
 
   MTL_INLINE const MatrixType& Matrix() const  { return Matrix_; }
   MTL_INLINE void Matrix(const MatrixType& m)  { Matrix_ = m;    }
-  MTL_INLINE const VectorType& vector() const  { return Vector_; }
-  MTL_INLINE void vector(const VectorType& v)  { Vector_ = v;    }
+  MTL_INLINE const VectorType& Vector() const  { return Vector_; }
+  MTL_INLINE void Vector(const VectorType& v)  { Vector_ = v;    }
 
 protected:
   MatrixType Matrix_;
