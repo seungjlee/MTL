@@ -65,6 +65,12 @@ public:
 protected:
   virtual void CostFunction(DynamicVector<T>& residuals, const Parameters& parameters) = 0;
 
+  // User might need to override this if CostFunction is not thread safe.
+  virtual void ParallelCostFunction(DynamicVector<T>& residuals, const Parameters& parameters)
+  {
+    CostFunction(residuals, parameters);
+  }
+
   // User can override to use a more accurate Jacobian with partial derivatives or a different
   // finite difference method such as ComputeJacobianCentralFiniteDifference.
   virtual void ComputeJacobian(DynamicMatrix<T>& Jt,
@@ -124,7 +130,7 @@ protected:
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
 
       forwardDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
-      CostFunction(residualsPlusDelta, forwardDifferenceParameters);
+      ParallelCostFunction(residualsPlusDelta, forwardDifferenceParameters);
       forwardDifferenceParameters[i] = parameters[i];
 
       residualsPlusDelta -= CurrentResiduals_;
@@ -134,8 +140,8 @@ protected:
     }
   }
 
-  void  ParallelComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
-                                                       const Parameters& parameters)
+  void ParallelComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
+                                                      const Parameters& parameters)
   {
     #pragma omp parallel for
     for (I32 i = 0; i < N; i++)
@@ -145,9 +151,9 @@ protected:
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
 
       centralDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
-      CostFunction(residualsPlusDelta, centralDifferenceParameters);
+      ParallelCostFunction(residualsPlusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i] - FiniteDifferenceDelta_;
-      CostFunction(residualsMinusDelta, centralDifferenceParameters);
+      ParallelCostFunction(residualsMinusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i];
 
       residualsPlusDelta -= residualsMinusDelta;
@@ -201,6 +207,12 @@ public:
 protected:
   virtual void CostFunction(DynamicVector<T>& residuals, const Parameters& parameters) = 0;
 
+  // User might need to override this if CostFunction is not thread safe.
+  virtual void ParallelCostFunction(DynamicVector<T>& residuals, const Parameters& parameters)
+  {
+    CostFunction(residuals, parameters);
+  }
+
   // User can override to use a more accurate Jacobian with partial derivatives or a different
   // finite difference method such as ComputeJacobianCentralFiniteDifference.
   virtual void ComputeJacobian(DynamicMatrix<T>& Jt,
@@ -260,7 +272,7 @@ protected:
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
 
       forwardDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
-      CostFunction(residualsPlusDelta, forwardDifferenceParameters);
+      ParallelCostFunction(residualsPlusDelta, forwardDifferenceParameters);
       forwardDifferenceParameters[i] = parameters[i];
 
       residualsPlusDelta -= CurrentResiduals_;
@@ -281,9 +293,9 @@ protected:
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
 
       centralDifferenceParameters[i] = parameters[i] + FiniteDifferenceDelta_;
-      CostFunction(residualsPlusDelta, centralDifferenceParameters);
+      ParallelCostFunction(residualsPlusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i] - FiniteDifferenceDelta_;
-      CostFunction(residualsMinusDelta, centralDifferenceParameters);
+      ParallelCostFunction(residualsMinusDelta, centralDifferenceParameters);
       centralDifferenceParameters[i] = parameters[i];
 
       residualsPlusDelta -= residualsMinusDelta;
