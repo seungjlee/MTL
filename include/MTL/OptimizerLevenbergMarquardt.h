@@ -65,6 +65,7 @@ public:
 
   virtual void Optimize(typename OptimizerNonLinearLeastSquares<N,T>::Parameters& parameters)
   {
+    mu_ = 0;
     T v = T(2);
     Iterations_ = 0;
 
@@ -203,6 +204,7 @@ public:
 
     I32 N = (I32)parameters.Size();
 
+    mu_ = 0;
     T v = T(2);
     Iterations_ = 0;
 
@@ -344,6 +346,7 @@ public:
     I32 N = (I32)parameters.Size();
     ComputeSparsityMatrix(N);
 
+    mu_ = 0;
     T v = T(2);
     Iterations_ = 0;
 
