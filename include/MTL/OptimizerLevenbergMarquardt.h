@@ -54,7 +54,8 @@ public:
   // Compute A = Jt*J.
   virtual void ComputeNormalMatrix(SquareMatrix<N,T>& A, const DynamicMatrix<T>& Jt)
   {
-    MultiplyByTranspose(A[0], Jt[0], N, Jt.Cols(), N, Jt.RowSize());
+    // Only need lower matrix for LDLt solver.
+    MultiplyByTranspose_LowerMatrix(A[0], Jt[0], N, Jt.Cols(), N, Jt.RowSize());
   }
 
   // Solves A*x = b. b is input as x. Returns rank of A.
@@ -188,7 +189,8 @@ public:
   // Compute A = Jt*J.
   virtual void ComputeNormalMatrix(DynamicMatrix<T>& A, const DynamicMatrix<T>& Jt)
   {
-    MultiplyByTranspose(A[0], Jt[0], Jt.Rows(), Jt.Cols(), A.RowSize(), Jt.RowSize());
+    // Only need lower matrix for LDLt solver.
+    MultiplyByTranspose_LowerMatrix(A[0], Jt[0], Jt.Rows(), Jt.Cols(), A.RowSize(), Jt.RowSize());
   }
 
   // Solves A*x = b. b is input as x. Returns rank of A.
@@ -329,7 +331,8 @@ public:
   // Compute A = Jt*J.
   virtual void ComputeNormalMatrix(DynamicMatrix<T>& A, const CompressedSparseMatrix<T>& J)
   {
-    J.MultiplyTransposeByThisParallel(A);
+    // Only need lower matrix for LDLt solver.
+    J.MultiplyTransposeByThisParallel_LowerMatrix(A);
   }
 
   // Solves A*x = b. b is input as x. Returns rank of A.

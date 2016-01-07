@@ -349,6 +349,93 @@ public:
     }
   }
 
+  // Only fills lower part of matrix P.
+  void MultiplyTransposeByThisParallel_LowerMatrix(DynamicMatrix<T>& P) const
+  {
+    P.Resize(SparseMatrix<T>::Cols_, SparseMatrix<T>::Cols_);
+    P.Zeros();
+
+    const I32* ap = SparseMatrix<T>::Ap();
+    const I32* ai = SparseMatrix<T>::Ai();
+    const T* ax = SparseMatrix<T>::Ax();
+
+    if (Mp_.Size() > 0)
+    {
+      const I32* Mq = Mq_.Begin();
+      const I32* Mp = Mp_.Begin();
+      const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
+
+      #pragma omp parallel for
+      for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
+      {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+        P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+#else
+        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+#endif
+        if (i < SparseMatrix<T>::Cols_ - 1)
+        {
+          I32 index = Mq[i];
+          for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++, index++)
+          {
+            if (Mp[index] < Mp[index + 1])
+            {
+              const Point2D<I32>* p = pPairs + Mp[index];
+              const Point2D<I32>* pEnd = pPairs + Mp[index + 1];
+
+              T sum = 0;
+
+              for (; p < pEnd; p++)
+                sum += ax[p->x()] * ax[p->y()];
+
+              P[j][i] = sum;
+            }
+          }
+        }
+      }
+    }
+    else
+    {
+      #pragma omp parallel for
+      for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
+      {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+        P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+#else
+        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+#endif
+
+        for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++)
+        {
+          T sum = 0;
+          I32 p = ap[i];
+          I32 q = ap[j];
+          I32 pEnd = ap[i+1];
+          I32 qEnd = ap[j+1];
+          while (p < pEnd && q < qEnd)
+          {
+            if (ai[p] < ai[q])
+            {
+              p++;
+            }
+            else if (ai[p] > ai[q])
+            {
+              q++;
+            }
+            else
+            {
+              sum += ax[p] * ax[q];
+              p++;
+              q++;
+            }
+          }
+
+          P[j][i] = sum;
+        }
+      }
+    }
+  }
+
   void OptimizeMultiplyTransposeByThis()
   {
     const I32* ap = SparseMatrix<T>::Ap();

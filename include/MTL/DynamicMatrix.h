@@ -65,6 +65,39 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
     }
   }
 }
+// Only fills lower part of matrix.
+template<class T>
+MTL_INLINE static void MultiplyByTranspose_LowerMatrix(T* P, const T* M, I32 rows, I32 cols,
+                                                       I32 rowSizeP, I32 rowSizeM)
+{
+#if MTL_ENABLE_OPENMP
+  #pragma omp parallel for
+#endif
+  for (I32 i = 0; i < rows; i++)
+  {
+    for (I32 j = i; j < rows; j++)
+    {
+      if (i == j)
+      {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+        P[i*rowSizeP + j] = SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
+#else
+        P[i*rowSizeP + j] = SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
+#endif
+      }
+      else
+      {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+        P[j*rowSizeP + i] = DotProduct_StreamAligned_Sequential(M + i*rowSizeM,
+                                                              M + j*rowSizeM, cols);
+#else
+        P[j*rowSizeP + i] = DotProduct_Sequential(M + i*rowSizeM,
+                                                  M + j*rowSizeM, M + i*rowSizeM + cols);
+#endif
+      }
+    }
+  }
+}
 
 template<class T>
 MTL_INLINE static void Multiply(T* P, const T* A, const T* B, I32 rows, I32 N, I32 cols,
