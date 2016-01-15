@@ -411,55 +411,6 @@ private:
   MTL_INLINE static void FastZeroInit(T* p, SizeType size) {}
 };
 
-
-// Computes sizes and offsets for parallel processing.
-template <class T> MTL_INLINE static void ComputeParallelSubSizes
-(DynamicVector<SizeType>& subSizes, DynamicVector<SizeType>& offsets,
- SizeType totalSize, U64 numberOfThreads)
-{
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-  SizeType chunkSize = MTL::XX<T>::StreamSize(totalSize / numberOfThreads);
-#else
-  SizeType chunkSize = totalSize / numberOfThreads;
-#endif
-
-  subSizes.Clear();
-  subSizes.Resize(numberOfThreads, chunkSize);
-
-  offsets.Resize(numberOfThreads);
-  offsets.Zeros();
-
-  // Doing the laziest thing for now. Add the leftover to the last chunk.
-  SizeType remainder = totalSize - chunkSize * numberOfThreads;
-  subSizes[subSizes.Size() - 1] += remainder;
-
-  // Compute offsets.
-  for (U64 i = 1; i < numberOfThreads; i++)
-    offsets[i] = offsets[i-1] + subSizes[i-1];
-}
-MTL_INLINE static void ComputeParallelSubHeights
-(DynamicVector<SizeType>& subHeights, DynamicVector<SizeType>& offsets,
- SizeType height, U64 numberOfThreads, SizeType overlap = 0)
-{
-  SizeType effectiveHeight = height - overlap;
-  SizeType chunkHeight = effectiveHeight / numberOfThreads;
-
-  subHeights.Clear();
-  subHeights.Resize(numberOfThreads, chunkHeight + overlap);
-
-  offsets.Resize(numberOfThreads);
-  offsets.Zeros();
-
-  // Distribute the remainder.
-  SizeType remainder = effectiveHeight -chunkHeight  * numberOfThreads;
-  for (SizeType i = 0; i < remainder; i++)
-    subHeights[i]++;
-
-  // Compute offsets.
-  for (U64 i = 1; i < numberOfThreads; i++)
-    offsets[i] = offsets[i-1] + subHeights[i-1] - overlap;
-}
-
 }  // namespace MTL
 
 #include <MTL/OpenMP.h>

@@ -987,137 +987,169 @@ ScalarDivision_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size)
 template <class T> MTL_INLINE static T
 Sum_StreamAligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, Sum_StreamAligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, Sum_StreamAligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE static T
 Sum_StreamUnaligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, Sum_StreamUnaligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, Sum_StreamUnaligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Sum_StreamAligned_Sequential(subResults, subResults.Size);
 }
 
 template <class T> MTL_INLINE static T
 SumOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamAligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamAligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE static T
 SumOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamUnaligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamUnaligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE static T
 SumOfSquares_StreamAligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, SumOfSquares_StreamAligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, SumOfSquares_StreamAligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE static T
 SumOfSquares_StreamUnaligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, SumOfSquares_StreamUnaligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, SumOfSquares_StreamUnaligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE static T
 Min_StreamAligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, Min_StreamAligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, Min_StreamAligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Min_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Min_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE static T
 Min_StreamUnaligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, Min_StreamUnaligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, Min_StreamUnaligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Min_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Min_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE static T
 Max_StreamAligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, Max_StreamAligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, Max_StreamAligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Max_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Max_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE static T
 Max_StreamUnaligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, Max_StreamUnaligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, Max_StreamUnaligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Max_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Max_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE static T
 MinOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamAligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamAligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Min_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Min_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE static T
 MinOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamUnaligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamUnaligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Min_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Min_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE static T
 MaxOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamAligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+    ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamAligned_Sequential<T> >
+      (subResults, subResultsSize, p, size);
 
-  return Max_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Max_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE static T
 MaxOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamUnaligned_Sequential<T> >(p, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamUnaligned_Sequential<T> >
+    (subResults, subResultsSize, p, size);
 
-  return Max_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Max_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE static T
 DotProduct_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_2Src<T, T, DotProduct_StreamAligned_Sequential<T> >(p1, p2, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_2Src<T, T, DotProduct_StreamAligned_Sequential<T> >
+    (subResults, subResultsSize, p1, p2, size);
 
-  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE static T
 DotProduct_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeType size)
 {
-  DynamicVector<T> subResults =
-    ParallelReduction_2Src<T, T, DotProduct_StreamUnaligned_Sequential<T> >(p1, p2, size);
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_2Src<T, T, DotProduct_StreamUnaligned_Sequential<T> >
+    (subResults, subResultsSize, p1, p2, size);
 
-  return Sum_StreamAligned_Sequential(subResults.Begin(), subResults.Size());
+  return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE static void

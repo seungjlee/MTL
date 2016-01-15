@@ -43,6 +43,10 @@
   #define MTL_ENABLE_OPENMP 1
 #endif
 
+#ifndef MTL_MAX_THREADS
+  #define MTL_MAX_THREADS 1024
+#endif
+
 #include <omp.h>
 
 #ifndef MIN_OPENMP_DATA_SIZE
@@ -52,11 +56,6 @@
 namespace MTL
 {
 
-template <class T> class DynamicVector;
-template <class T> MTL_INLINE static void ComputeParallelSubSizes
-(DynamicVector<SizeType>& subSizes, DynamicVector<SizeType>& offsets,
- SizeType totalSize, U64 numberOfThreads);
-
 // Returns true if OpenMP should be used for the data size and number of threads.
 template <class T>
 MTL_INLINE static bool DoOpenMP(SizeType size, SizeType numberOfThreads)
@@ -65,16 +64,72 @@ MTL_INLINE static bool DoOpenMP(SizeType size, SizeType numberOfThreads)
 }
 
 //
-// Helper classes for multithreading.
+// Helper fuctions for multithreading.
 //
+
+// Computes sizes and offsets for parallel processing.
+template <class T> MTL_INLINE static void ComputeParallelSubSizes
+(SizeType* subSizes, SizeType* offsets,
+ SizeType totalSize, U64 numberOfThreads)
+{
+  assert(numberOfThreads <= MTL_MAX_THREADS);
+
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+  SizeType chunkSize = MTL::XX<T>::StreamSize(totalSize / numberOfThreads);
+#else
+  SizeType chunkSize = totalSize / numberOfThreads;
+#endif
+
+  for (U64 i = 0; i < numberOfThreads; i++)
+  {
+    offsets[i] = 0;
+    subSizes[i] = chunkSize;
+  }
+
+  // Doing the laziest thing for now. Add the leftover to the last chunk.
+  SizeType remainder = totalSize - chunkSize * numberOfThreads;
+  subSizes[numberOfThreads - 1] += remainder;
+
+  // Compute offsets.
+  for (U64 i = 1; i < numberOfThreads; i++)
+    offsets[i] = offsets[i-1] + subSizes[i-1];
+}
+MTL_INLINE static void ComputeParallelSubHeights
+(SizeType* subHeights, SizeType* offsets,
+ SizeType height, U64 numberOfThreads, SizeType overlap = 0)
+{
+  assert(numberOfThreads <= MTL_MAX_THREADS);
+
+  SizeType effectiveHeight = height - overlap;
+  SizeType chunkHeight = effectiveHeight / numberOfThreads;
+
+  for (U64 i = 0; i < numberOfThreads; i++)
+  {
+    offsets[i] = 0;
+    subHeights[i] = chunkHeight + overlap;
+  }
+
+  // Distribute the remainder.
+  SizeType remainder = effectiveHeight - chunkHeight * numberOfThreads;
+  for (SizeType i = 0; i < remainder; i++)
+    subHeights[i]++;
+
+  // Compute offsets.
+  for (U64 i = 1; i < numberOfThreads; i++)
+    offsets[i] = offsets[i-1] + subHeights[i-1] - overlap;
+}
+
 template <class T, void (*Func)(T*, SizeType)>
 MTL_INLINE static void Parallel_1Dst(T* p, SizeType size)
 {
 #if MTL_ENABLE_OPENMP
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads > MTL_MAX_THREADS)
+    numberOfThreads = MTL_MAX_THREADS;
+
   if (DoOpenMP<T>(size, numberOfThreads))
   {
-    DynamicVector<SizeType> subSizes, offsets;
+    SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
 
     #pragma omp parallel for
@@ -94,9 +149,12 @@ MTL_INLINE static void Parallel_1Dst_1Src(T* pDst, const T* pSrc, SizeType size)
 {
 #if MTL_ENABLE_OPENMP
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads > MTL_MAX_THREADS)
+    numberOfThreads = MTL_MAX_THREADS;
+
   if (DoOpenMP<T>(size, numberOfThreads))
   {
-    DynamicVector<SizeType> subSizes, offsets;
+    SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
 
     #pragma omp parallel for
@@ -113,9 +171,12 @@ MTL_INLINE static void Parallel_1Dst_1Val(T* p, const T& val, SizeType size)
 {
 #if MTL_ENABLE_OPENMP
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads > MTL_MAX_THREADS)
+    numberOfThreads = MTL_MAX_THREADS;
+
   if (DoOpenMP<T>(size, numberOfThreads))
   {
-    DynamicVector<SizeType> subSizes, offsets;
+    SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
 
     #pragma omp parallel for
@@ -132,9 +193,12 @@ MTL_INLINE static void Parallel_1Dst_1Src_1Val(T* pDst, const T* pSrc, const T& 
 {
 #if MTL_ENABLE_OPENMP
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads > MTL_MAX_THREADS)
+    numberOfThreads = MTL_MAX_THREADS;
+
   if (DoOpenMP<T>(size, numberOfThreads))
   {
-    DynamicVector<SizeType> subSizes, offsets;
+    SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
 
     #pragma omp parallel for
@@ -147,50 +211,59 @@ MTL_INLINE static void Parallel_1Dst_1Src_1Val(T* pDst, const T* pSrc, const T& 
 }
 
 template <class ReductionT, class T, ReductionT (*Func)(const T*, SizeType)>
-MTL_INLINE static DynamicVector<ReductionT> ParallelReduction_1Src(const T* pSrc, SizeType size)
+MTL_INLINE static void ParallelReduction_1Src(ReductionT* subResults, SizeType& subResultsSize,
+                                              const T* pSrc, SizeType size)
 {
 #if MTL_ENABLE_OPENMP
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads > MTL_MAX_THREADS)
+    numberOfThreads = MTL_MAX_THREADS;
+
   if (DoOpenMP<T>(size, numberOfThreads))
   {
-    DynamicVector<ReductionT> subResults(numberOfThreads);
-
-    DynamicVector<SizeType> subSizes, offsets;
+    SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
 
     #pragma omp parallel for
     for (I32 i = 0; i < numberOfThreads; i++)
       subResults[i] = Func(pSrc + offsets[i], subSizes[i]);
 
-    return subResults;
+    subResultsSize = numberOfThreads;
   }
   else
 #endif
-    return DynamicVector<ReductionT>(1, Func(pSrc, size));
+  {
+    subResults[0] = Func(pSrc, size);
+    subResultsSize = 1;
+  }
 }
 
 template <class ReductionT, class T, ReductionT (*Func)(const T*, const T*, SizeType)>
-MTL_INLINE static DynamicVector<ReductionT> ParallelReduction_2Src(const T* pSrc1, const T* pSrc2,
-                                                                   SizeType size)
+MTL_INLINE static void ParallelReduction_2Src(ReductionT* subResults, SizeType& subResultsSize,
+                                              const T* pSrc1, const T* pSrc2, SizeType size)
 {
 #if MTL_ENABLE_OPENMP
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads > MTL_MAX_THREADS)
+    numberOfThreads = MTL_MAX_THREADS;
+
   if (DoOpenMP<T>(size, numberOfThreads))
   {
-    DynamicVector<ReductionT> subResults(numberOfThreads);
-
-    DynamicVector<SizeType> subSizes, offsets;
+    SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
 
     #pragma omp parallel for
     for (long i = 0; i < numberOfThreads; i++)
       subResults[i] = Func(pSrc1 + offsets[i], pSrc2 + offsets[i], subSizes[i]);
 
-    return subResults;
+    subResultsSize = numberOfThreads;
   }
   else
 #endif
-    return DynamicVector<ReductionT>(1, Func(pSrc1, pSrc2, size));
+  {
+    subResults[0] = Func(pSrc1, pSrc2, size);
+    subResultsSize = 1;
+  }
 }
 
 }  // namespace MTL

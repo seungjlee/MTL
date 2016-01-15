@@ -155,7 +155,7 @@ MTL_INLINE static void GivensRotation_StreamAligned_Parallel(T* x, T* y, const T
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
   if (DoOpenMP<T>(N, numberOfThreads))
   {
-    DynamicVector<SizeType> subSizes, offsets;
+    SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, N, numberOfThreads);
 
     #pragma omp parallel for
@@ -174,7 +174,7 @@ MTL_INLINE static void GivensRotation_StreamAligned_Parallel(T* x, T* y, const T
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
   if (DoOpenMP<T>(N, numberOfThreads))
   {
-    DynamicVector<SizeType> subSizes, offsets;
+    SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, N, numberOfThreads);
 
     #pragma omp parallel for
