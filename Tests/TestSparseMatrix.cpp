@@ -40,10 +40,10 @@ protected:
   {
   }
 
-  virtual void ComputeJacobian(CompressedSparseMatrix<F64>& J,
-                               const Parameters& currentParameters)
+  virtual void ComputeJacobian(CompressedSparseMatrix<F64>& J, const Parameters& parameters)
   {
   }
+
   virtual void ComputeSparsityMatrix(I32 numberOfParams)
   {
   }
@@ -67,6 +67,8 @@ TEST(TestMultiplication)
   DynamicVector<F64> B(b, 4);
 
   CompressedSparseMatrix<F64> A(fullA);
+
+  MTL_EQUAL(A.NumberOfElements(), 8);
 
   DynamicVector<F64> C;
   A.MultiplyTransposed(C, B);

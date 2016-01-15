@@ -30,6 +30,7 @@
 #include "OptimizerNonLinearLeastSquares.h"
 #include "SparseMatrix.h"
 #include "LDLt.h"
+#include <memory>
 
 namespace MTL
 {
@@ -250,7 +251,8 @@ public:
         {
           if (SumOfSquares(delta) > this->SquaredParametersDeltaTolerance_)
           {
-            typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters newParameters = parameters;
+            typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters
+              newParameters = parameters;
             newParameters -= delta;
 
             this->CostFunction(this->NewResiduals_, newParameters);
@@ -329,20 +331,28 @@ public:
   }
 
   // Compute A = Jt*J.
-  virtual void ComputeNormalMatrix(DynamicMatrix<T>& A, const CompressedSparseMatrix<T>& J)
+  virtual void ComputeNormalMatrix(CompressedSparseMatrix<T>& A, const CompressedSparseMatrix<T>& J,
+                                   bool updateOptimizedMultiplyStructure)
   {
-    // Only need lower matrix for LDLt solver.
-    J.MultiplyTransposeByThisParallel_LowerMatrix(A);
+    J.MultiplyTransposeByThisParallel(A, updateOptimizedMultiplyStructure);
   }
 
   // Solves A*x = b. b is input as x. Returns rank of A.
-  virtual I32 Solve(DynamicVector<T>& x, DynamicMatrix<T>& A, T tolerance)
+  virtual I32 Solve(DynamicVector<T>& x, CompressedSparseMatrix<T>& A, T tolerance)
   {
-    return SolveLDLt(x, A, tolerance);
+    if (SymbolicLDLt_.get() == NULL)
+    {
+      SymbolicLDLt_.reset(new SymbolicLDLt<T>(A));
+    }
+
+    Temp_ = x;
+    return SolveLDLt(x, A, Temp_, *SymbolicLDLt_, tolerance);
   }
 
   virtual void Optimize(typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters& parameters)
   {
+    SymbolicLDLt_.reset();
+
     if (LDLtRankTolerance_ < 0)
       LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
 
@@ -356,16 +366,10 @@ public:
     this->CostFunction(this->CurrentResiduals_, parameters);
     BestSumOfSquaresOfResiduals_ = SumOfSquares(this->CurrentResiduals_);
 
-    A_.Resize(N, N);
-
-    A_.Zeros();
-
     this->ComputeJacobian(J_, parameters);
-    ComputeNormalMatrix(A_, J_);
+    ComputeNormalMatrix(A_, J_, true);
 
-    T maxDiagonal = A_[0][0];
-    for (I32 i = 1; i < N; i++)
-      maxDiagonal = Max(maxDiagonal, A_[i][i]);
+    T maxDiagonal = A_.MaxDiagonal();
 
     mu_ = maxDiagonal * InitialDampingFactor_;
 
@@ -381,7 +385,7 @@ public:
       T p = 0;
       do
       {
-        A_.AddToDiagonals(mu_);
+        A_.AddToDiagonalsIfEntryExists(mu_);
         J_.MultiplyTransposed(G, this->CurrentResiduals_);
         OptimizedCopy(delta.Begin(), G.Begin(), delta.Size());
 
@@ -391,7 +395,8 @@ public:
         {
           if (SumOfSquares(delta) > this->SquaredParametersDeltaTolerance_)
           {
-            typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters newParameters = parameters;
+            typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters
+              newParameters = parameters;
             newParameters -= delta;
 
             this->CostFunction(this->NewResiduals_, newParameters);
@@ -403,7 +408,7 @@ public:
               this->CurrentResiduals_ = this->NewResiduals_;
 
               this->ComputeJacobian(J_, parameters);
-              ComputeNormalMatrix(A_, J_);
+              ComputeNormalMatrix(A_, J_, false);
 
               p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
               p /= DotProduct(delta, delta * mu_ + G);
@@ -447,7 +452,9 @@ public:
 
 protected:
   CompressedSparseMatrix<T> J_;  // Jacobian matrix.
-  DynamicMatrix<T> A_;  // This should be sparse as well but for now...
+  CompressedSparseMatrix<T> A_;
+  std::shared_ptr<SymbolicLDLt<T>> SymbolicLDLt_;
+  DynamicVector<T> Temp_;
   T LDLtRankTolerance_;
   T BestSumOfSquaresOfResiduals_;
   T InitialDampingFactor_;
