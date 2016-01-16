@@ -331,10 +331,9 @@ public:
   }
 
   // Compute A = Jt*J.
-  virtual void ComputeNormalMatrix(CompressedSparseMatrix<T>& A, const CompressedSparseMatrix<T>& J,
-                                   bool updateOptimizedMultiplyStructure)
+  virtual void ComputeNormalMatrix(CompressedSparseMatrix<T>& A, const CompressedSparseMatrix<T>& J)
   {
-    J.MultiplyTransposeByThisParallel(A, updateOptimizedMultiplyStructure);
+    J.MultiplyTransposeByThisParallel(A);
   }
 
   // Solves A*x = b. b is input as x. Returns rank of A.
@@ -367,7 +366,7 @@ public:
     BestSumOfSquaresOfResiduals_ = SumOfSquares(this->CurrentResiduals_);
 
     this->ComputeJacobian(J_, parameters);
-    ComputeNormalMatrix(A_, J_, true);
+    ComputeNormalMatrix(A_, J_);
 
     T maxDiagonal = A_.MaxDiagonal();
 
@@ -408,7 +407,7 @@ public:
               this->CurrentResiduals_ = this->NewResiduals_;
 
               this->ComputeJacobian(J_, parameters);
-              ComputeNormalMatrix(A_, J_, false);
+              ComputeNormalMatrix(A_, J_);
 
               p = BestSumOfSquaresOfResiduals_ - newSumOfSquaresOfResiduals;
               p /= DotProduct(delta, delta * mu_ + G);

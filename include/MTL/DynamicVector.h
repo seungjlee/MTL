@@ -219,7 +219,11 @@ public:
 
   MTL_INLINE void AddBack(const DynamicVector& newElements)
   {
-    Insert(End(), newElements.Begin(), newElements.Size());
+    AddBack(newElements.Begin(), newElements.Size());
+  }
+  MTL_INLINE void AddBack(const T* pSrc, SizeType sourceSize)
+  {
+    Insert(End(), pSrc, sourceSize);
   }
 
   MTL_INLINE void Insert(T* pDst, const T* pSrc, SizeType sourceSize)

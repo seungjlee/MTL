@@ -112,7 +112,7 @@ public:
   CompressedSparseMatrix(I32 rows, I32 cols, SizeType allocationSize)
     : SparseMatrix<T>(rows, cols)
   {
-    Ap_.Resize(Cols_ + 1);
+    SparseMatrix<T>::Ap_.Resize(Cols_ + 1);
     Allocate(allocationSize);
   }
 
@@ -155,14 +155,22 @@ public:
 
   void Allocate(SizeType allocationSize)
   {
-    Ai_.Resize(allocationSize);
-    Ax_.Resize(allocationSize);
+    SparseMatrix<T>::Ai_.Resize(allocationSize);
+    SparseMatrix<T>::Ax_.Resize(allocationSize);
   }
 
   void Create(I32 rows, I32 cols,
               const DynamicVector<DynamicVector<I32>>& sparseColumns,
-              bool updateOptimizedMultiplyStructure = true)
+              bool updateOptimizedMultiplyStructure = false)
   {
+    SizeType totalDataSize = 0;
+    for (const auto& sparseCol : sparseColumns)
+      totalDataSize += sparseCol.Size();
+
+    SparseMatrix<T>::Ap_.Reserve(cols+1);
+    SparseMatrix<T>::Ai_.Reserve(totalDataSize);
+    SparseMatrix<T>::Ax_.Reserve(totalDataSize);
+
     SparseMatrix<T>::Rows_ = rows;
     SparseMatrix<T>::Cols_ = cols;
     SparseMatrix<T>::Clear();
@@ -183,8 +191,16 @@ public:
   void Create(I32 rows, I32 cols,
               const DynamicVector<DynamicVector<I32>>& sparseColumns,
               const DynamicVector<DynamicVector<T>>& sparseValues,
-              bool updateOptimizedMultiplyStructure = true)
+              bool updateOptimizedMultiplyStructure = false)
   {
+    SizeType totalDataSize = 0;
+    for (const auto& sparseCol : sparseColumns)
+      totalDataSize += sparseCol.Size();
+
+    SparseMatrix<T>::Ap_.Reserve(cols+1);
+    SparseMatrix<T>::Ai_.Reserve(totalDataSize);
+    SparseMatrix<T>::Ax_.Reserve(totalDataSize);
+
     SparseMatrix<T>::Rows_ = rows;
     SparseMatrix<T>::Cols_ = cols;
     SparseMatrix<T>::Clear();
@@ -284,8 +300,7 @@ public:
   }
   
   // Returns P = At * A as a dense matrix where A is this matrix.
-  void MultiplyTransposeByThis(CompressedSparseMatrix<T>& P,
-                               bool updateOptimizedMultiplyStructure) const
+  void MultiplyTransposeByThis(CompressedSparseMatrix<T>& P) const
   {
     DynamicVector<DynamicVector<I32>>&
       sparseRows = const_cast<CompressedSparseMatrix*>(this)->SparseRows_;
@@ -408,11 +423,10 @@ public:
       }
     }
 
-    P.Create(N, N, sparseRows, sparseValues, updateOptimizedMultiplyStructure);
+    P.Create(N, N, sparseRows, sparseValues, false);
   }
 
-  void MultiplyTransposeByThisParallel(CompressedSparseMatrix<T>& P,
-                                       bool updateOptimizedMultiplyStructure) const
+  void MultiplyTransposeByThisParallel(CompressedSparseMatrix<T>& P) const
   {
     DynamicVector<DynamicVector<I32>>&
       sparseRows = const_cast<CompressedSparseMatrix*>(this)->SparseRows_;
@@ -537,7 +551,7 @@ public:
       }
     }
 
-    P.Create(N, N, sparseRows, sparseValues, updateOptimizedMultiplyStructure);
+    P.Create(N, N, sparseRows, sparseValues, false);
   }
 
   // Returns P = At * A as a dense matrix where A is this matrix.
@@ -728,16 +742,26 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
-    Mp_.Clear();
-    Mq_.Resize(SparseMatrix<T>::Cols_);
-    MultiplyTransposeIndices_.Clear();
+    ParallelMp_.Resize(SparseMatrix<T>::Cols_);
+    ParallelMultiplyTransposeIndices_.Resize(SparseMatrix<T>::Cols_);
 
-    Mp_.PushBack(0);
+    #pragma omp parallel for
     for (I32 i = 1; i < SparseMatrix<T>::Cols_; i++)
     {
-      Mq_[i] = (I32)Mp_.Size() - 1; 
+      // Use a buffer for for efficiency.
+      enum
+      {
+        kBufferSize = 128
+      };
+      Point2D<I32> buffer[kBufferSize];
+      I32 bufferIndex = 0;
+
+      ParallelMultiplyTransposeIndices_[i].Clear();
+      ParallelMp_[i].Clear();
+
       for (I32 j = 0; j < i+1; j++)
       {
+        I32 count = 0;
         I32 p = ap[i];
         I32 q = ap[j];
         I32 pEnd = ap[i+1];
@@ -754,14 +778,41 @@ public:
           }
           else
           {
-            MultiplyTransposeIndices_.PushBack(Point2D<I32>(p,q));
+            if (bufferIndex == kBufferSize)
+            {
+              ParallelMultiplyTransposeIndices_[i].AddBack(buffer, bufferIndex);
+              bufferIndex = 0;
+            }
+            buffer[bufferIndex].x(p);
+            buffer[bufferIndex].y(q);
+            bufferIndex++;
+
+            count++;
+
             p++;
             q++;
           }
         }
-        Mp_.PushBack((I32)MultiplyTransposeIndices_.Size());
+        ParallelMp_[i].PushBack(count);
       }
+      ParallelMultiplyTransposeIndices_[i].AddBack(buffer, bufferIndex);
     }
+
+    Mp_.Clear();
+    Mq_.Resize(SparseMatrix<T>::Cols_);
+    MultiplyTransposeIndices_.Clear();
+
+    Mp_.PushBack(0);
+    for (I32 i = 1; i < SparseMatrix<T>::Cols_; i++)
+    {
+      Mq_[i] = (I32)Mp_.Size() - 1;
+      MultiplyTransposeIndices_.AddBack(ParallelMultiplyTransposeIndices_[i]);
+      Mp_.AddBack(ParallelMp_[i]);
+    }
+
+    for (I32 i = 1; i < Mp_.Size(); i++)
+      Mp_[i] += Mp_[i-1];
+
   }
 
 protected:
@@ -773,6 +824,10 @@ protected:
   // For computing MultiplyTransposeByThis().
   DynamicVector<DynamicVector<I32>> SparseRows_;
   DynamicVector<DynamicVector<T>> SparseValues_;
+
+  // For parallel processing.
+  DynamicVector<DynamicVector<I32>> ParallelMp_;
+  DynamicVector<DynamicVector<Point2D<I32>>> ParallelMultiplyTransposeIndices_;
 };
 
 template <class T>
