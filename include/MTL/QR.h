@@ -134,10 +134,18 @@ template <class T>
 static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
                                         const T& tolerance = Epsilon<T>())
 {
+  DynamicVector<I32> permutation(N);
+  DynamicVector<T> permuteBuffer(N);
+  return SolveHouseholderQRTransposed(x, At, M, N, rowSize, permutation.Begin(),
+                                      permuteBuffer.Begin(), tolerance);
+}
+template <class T>
+static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
+                                        I32* P, T* pQtb,
+                                        const T& tolerance = Epsilon<T>())
+{
   assert(M >= N);  // Not supporting or testing M < N cases.
 
-  DynamicVector<I32> PBuffer(N);
-  I32* P = PBuffer.Begin();
   for (I32 i = 0; i < N; i++)
     P[i] = i;
 
@@ -223,10 +231,29 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
     }
   }
 
-  DynamicVector<T> Qtb(x, N);
-  const T* pQtb = Qtb.Begin();
+  memcpy(pQtb, &x[0], N*sizeof(x[0]));
   for (I32 i = 0; i < N; i++)
     x[P[i]] = pQtb[i];
+
+  return rank;
+}
+template <class T>
+static I32 SolveHouseholderQRTransposed(DynamicVector<T>& x, DynamicMatrix<T>& At,
+                                        DynamicVector<I32>& permutation,
+                                        DynamicVector<T>& permuteBuffer,
+                                        const T& tolerance = Epsilon<T>())
+{
+  I32 M = At.Cols();
+  I32 N = At.Rows();
+  assert(M == (I32)x.Size());
+
+  permutation.Resize(N);
+  permuteBuffer.Resize(N);
+
+  I32 rank = SolveHouseholderQRTransposed(x.Begin(), At[0], M, N, At.RowSize(),
+                                          permutation.Begin(), permuteBuffer.Begin(), tolerance);
+
+  x.Resize(N);
 
   return rank;
 }
@@ -235,15 +262,12 @@ static I32 SolveHouseholderQRTransposed(DynamicVector<T>& x,
                                         DynamicMatrix<T>& At,
                                         const T& tolerance = Epsilon<T>())
 {
-  I32 M = At.Cols();
   I32 N = At.Rows();
-  assert(M == (I32)x.Size());
 
-  I32 rank = SolveHouseholderQRTransposed(x.Begin(), At[0], M, N, At.RowSize(), tolerance);
+  DynamicVector<I32> permutation(N);
+  DynamicVector<T> permuteBuffer(N);
 
-  x.Resize(N);
-
-  return rank;
+  return SolveHouseholderQRTransposed(x, At, permutation, permuteBuffer, tolerance);
 }
 
 }  // namespace MTL

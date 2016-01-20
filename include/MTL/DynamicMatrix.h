@@ -224,11 +224,15 @@ public:
   // Computes (*this) * this->getTranspose().
   MTL_INLINE DynamicMatrix MultiplyByTranspose() const
   {
-    DynamicMatrix squareSymmetricMatrix(Rows(), Rows());
+    DynamicMatrix squareSymmetricMatrix;
+    MultiplyByTranspose(squareSymmetricMatrix);
+    return squareSymmetricMatrix;
+  }
+  MTL_INLINE void MultiplyByTranspose(DynamicMatrix& squareSymmetricMatrix) const
+  {
+    squareSymmetricMatrix.Resize(Rows(), Rows());
     MTL::MultiplyByTranspose(squareSymmetricMatrix[0], (*this)[0], Rows(), Cols(),
                              squareSymmetricMatrix.RowSize(), RowSize());
-
-    return squareSymmetricMatrix;
   }
 
   MTL_INLINE DynamicMatrix operator+=(const DynamicMatrix& B)
