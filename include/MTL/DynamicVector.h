@@ -230,15 +230,18 @@ public:
   {
     assert(pDst >= First_ && pDst <= End());
     assert(pSrc >= End() || pSrc + sourceSize < First_);
-
-    SizeType moveSize = End() - pDst;
-    SizeType insertOffset = pDst - First_;
-    SizeType newTotalSize = Size_ + sourceSize;
-    Reserve(newTotalSize);
-    T* pNewDst = First_ + insertOffset;
-    CopyBackwards(pNewDst + sourceSize, pNewDst, moveSize);
-    OptimizedCopy(pNewDst, pSrc, sourceSize);
-    Size_ = newTotalSize;
+    
+    if (sourceSize > 0)
+    {
+      SizeType moveSize = End() - pDst;
+      SizeType insertOffset = pDst - First_;
+      SizeType newTotalSize = Size_ + sourceSize;
+      Reserve(newTotalSize);
+      T* pNewDst = First_ + insertOffset;
+      CopyBackwards(pNewDst + sourceSize, pNewDst, moveSize);
+      OptimizedCopy(pNewDst, pSrc, sourceSize);
+      Size_ = newTotalSize;
+    }
   }
   MTL_INLINE void Insert(T* pDst, const T* pSrc, const T* pSrcEnd)
   {
