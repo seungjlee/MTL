@@ -220,6 +220,23 @@ public:
       OptimizeMultiplyTransposeByThis();
   }
 
+  T operator()(I32 row, I32 col) const
+  {
+    assert(col <= SparseMatrix<T>::Cols_);
+
+    const I32* ap = SparseMatrix<T>::Ap();
+    const I32* ai = SparseMatrix<T>::Ai();
+    const T* ax = SparseMatrix<T>::Ax();
+
+    for (I32 k = ap[col]; k < ap[col+1]; k++)
+    {
+      if (ai[k] == row)
+        return ax[k];
+    }
+
+    return T(0);
+  }
+
   T MaxDiagonal() const
   {
     const I32 N = SparseMatrix<T>::Cols_;

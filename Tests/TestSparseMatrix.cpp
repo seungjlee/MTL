@@ -86,4 +86,11 @@ TEST(TestMultiplication)
   for (I32 row = 0; row < M1.Rows(); row++)
     for (I32 col = 0; col < M1.Cols(); col++)
       MTL_EQUAL_FLOAT(M2[row][col], M1[row][col], kTol);
+
+  CompressedSparseMatrix<F64> M3;
+  A.MultiplyTransposeByThis(M3);
+
+  for (I32 row = 0; row < M1.Rows(); row++)
+    for (I32 col = 0; col < M1.Cols(); col++)
+      MTL_EQUAL_FLOAT(M3(row,col), M1[row][col], kTol);
 }
