@@ -994,29 +994,6 @@ static Int init_rows_cols       /* returns TRUE if OK, or FALSE otherwise */
 
     if (stats [COLAMD_STATUS] == COLAMD_OK_BUT_JUMBLED)
     {
-
-#if 0
-        /* make sure column lengths are correct */
-        for (col = 0 ; col < n_col ; col++)
-        {
-            p [col] = Col [col].length ;
-        }
-        for (row = 0 ; row < n_row ; row++)
-        {
-            rp = &A [Row [row].start] ;
-            rp_end = rp + Row [row].length ;
-            while (rp < rp_end)
-            {
-                p [*rp++]-- ;
-            }
-        }
-        for (col = 0 ; col < n_col ; col++)
-        {
-            assert (p [col] == 0) ;
-        }
-        /* now p is all zero (different than when debugging is turned off) */
-#endif /* NDEBUG */
-
         /* === Compute col pointers ========================================= */
 
         /* col form of the matrix starts at A [0]. */
@@ -1094,10 +1071,6 @@ static void init_scoring
     Int min_score ;             /* smallest column score */
     Int max_deg ;               /* maximum row degree */
     Int next_col ;              /* Used to add to degree list.*/
-
-#if 0
-    Int debug_count ;           /* debug only. */
-#endif /* NDEBUG */
 
     /* === Extract knobs ==================================================== */
 
@@ -1245,15 +1218,7 @@ static void init_scoring
     /* yet).  Rows may contain dead columns, but all live rows contain at */
     /* least one live column. */
 
-#if 0
-    debug_structures (n_row, n_col, Row, Col, A, n_col2) ;
-#endif /* NDEBUG */
-
     /* === Initialize degree lists ========================================== */
-
-#if 0
-    debug_count = 0 ;
-#endif /* NDEBUG */
 
     /* clear the hash buckets */
     for (c = 0 ; c <= n_col ; c++)
@@ -1294,20 +1259,8 @@ static void init_scoring
 
             /* see if this score is less than current min */
             min_score = Min (min_score, score) ;
-
-#if 0
-            debug_count++ ;
-#endif /* NDEBUG */
-
         }
     }
-
-#if 0
-    DEBUG1 (("colamd: Live cols %d out of %d, non-princ: %d\n",
-        debug_count, n_col, n_col-debug_count)) ;
-    assert (debug_count == n_col2) ;
-    debug_deg_lists (n_row, n_col, Row, Col, head, min_score, n_col2, max_deg) ;
-#endif /* NDEBUG */
 
     /* === Return number of remaining columns, and max row degree =========== */
 
@@ -1389,13 +1342,6 @@ static Int garbage_collection  /* returns the new value of pfree */
     Int c ;			/* a column index */
     Int length ;		/* length of a row or column */
 
-#if 0
-    Int debug_rows ;
-    DEBUG2 (("Defrag..\n")) ;
-    for (psrc = &A[0] ; psrc < pfree ; psrc++) assert (*psrc >= 0) ;
-    debug_rows = 0 ;
-#endif /* NDEBUG */
-
     /* === Defragment the columns =========================================== */
 
     pdest = &A[0] ;
@@ -1441,9 +1387,6 @@ static Int garbage_collection  /* returns the new value of pfree */
 	    assert (ROW_IS_ALIVE (r)) ;
 	    /* flag the start of the row with the one's complement of row */
 	    *psrc = ONES_COMPLEMENT (r) ;
-#if 0
-	    debug_rows++ ;
-#endif /* NDEBUG */
 	}
     }
 
@@ -1477,9 +1420,6 @@ static Int garbage_collection  /* returns the new value of pfree */
 	    }
 	    Row [r].length = (Int) (pdest - &A [Row [r].start]) ;
 	    assert (Row [r].length > 0) ;
-#if 0
-	    debug_rows-- ;
-#endif /* NDEBUG */
 	}
     }
     /* ensure we found all the rows */
@@ -1526,12 +1466,6 @@ static Int garbage_collection  /* returns the new value of pfree */
 static void detect_super_cols
 (
     /* === Parameters ======================================================= */
-
-#if 0
-    /* these two parameters are only needed when debugging is enabled: */
-    Int n_col,			/* number of columns of A */
-    Colamd_Row Row [],		/* of size n_row+1 */
-#endif /* NDEBUG */
 
     Colamd_Col Col [],		/* of size n_col+1 */
     Int A [],			/* row indices of A */
@@ -1728,11 +1662,6 @@ static Int find_ordering       /* return the number of garbage collections */
     Int next_col ;              /* Used by Dlist operations. */
     Int ngarbage ;              /* number of garbage collections performed */
 
-#if 0
-    Int debug_d ;               /* debug loop counter */
-    Int debug_step = 0 ;        /* debug loop counter */
-#endif /* NDEBUG */
-
     /* === Initialization and clear mark ==================================== */
 
     max_mark = INT_MAX - n_col ;        /* INT_MAX defined in <limits.h> */
@@ -1744,35 +1673,12 @@ static Int find_ordering       /* return the number of garbage collections */
 
     for (k = 0 ; k < n_col2 ; /* 'k' is incremented below */)
     {
-
-#if 0
-        if (debug_step % 100 == 0)
-        {
-            DEBUG2 (("\n...       Step k: %d out of n_col2: %d\n", k, n_col2)) ;
-        }
-        else
-        {
-            DEBUG3 (("\n----------Step k: %d out of n_col2: %d\n", k, n_col2)) ;
-        }
-        debug_step++ ;
-        debug_deg_lists (n_row, n_col, Row, Col, head,
-                min_score, n_col2-k, max_deg) ;
-        debug_matrix (n_row, n_col, Row, Col, A) ;
-#endif /* NDEBUG */
-
         /* === Select pivot column, and order it ============================ */
 
         /* make sure degree list isn't empty */
         assert (min_score >= 0) ;
         assert (min_score <= n_col) ;
         assert (head [min_score] >= COLAMD_EMPTY) ;
-
-#if 0
-        for (debug_d = 0 ; debug_d < min_score ; debug_d++)
-        {
-            assert (head [debug_d] == COLAMD_EMPTY) ;
-        }
-#endif /* NDEBUG */
 
         /* get pivot column from head of minimum degree list */
         while (head [min_score] == COLAMD_EMPTY && min_score < n_col)
@@ -1812,10 +1718,6 @@ static Int find_ordering       /* return the number of garbage collections */
             assert (pfree + needed_memory < Alen) ;
             /* garbage collection has wiped out the Row[].shared2.mark array */
             tag_mark = clear_mark (0, max_mark, n_row, Row) ;
-
-#if 0
-            debug_matrix (n_row, n_col, Row, Col, A) ;
-#endif /* NDEBUG */
         }
 
         /* === Compute pivot row pattern ==================================== */
@@ -1864,11 +1766,6 @@ static Int find_ordering       /* return the number of garbage collections */
         /* clear tag on pivot column */
         Col [pivot_col].shared1.thickness = pivot_col_thickness ;
         max_deg = Max (max_deg, pivot_row_degree) ;
-
-#if 0
-        DEBUG3 (("check2\n")) ;
-        debug_mark (n_row, Row, tag_mark, max_mark) ;
-#endif /* NDEBUG */
 
         /* === Kill all rows used to construct pivot row ==================== */
 
@@ -1993,11 +1890,6 @@ static Int find_ordering       /* return the number of garbage collections */
             }
         }
 
-#if 0
-        debug_deg_lists (n_row, n_col, Row, Col, head,
-                min_score, n_col2-k-pivot_row_degree, max_deg) ;
-#endif /* NDEBUG */
-
         /* === Add up set differences for each column ======================= */
 
         /* for each column in pivot row */
@@ -2093,10 +1985,6 @@ static Int find_ordering       /* return the number of garbage collections */
 
         detect_super_cols (
 
-#if 0
-                n_col, Row,
-#endif /* NDEBUG */
-
                 Col, A, head, pivot_row_start, pivot_row_length) ;
 
         /* === Kill the pivotal column ====================================== */
@@ -2106,11 +1994,6 @@ static Int find_ordering       /* return the number of garbage collections */
         /* === Clear mark =================================================== */
 
         tag_mark = clear_mark (tag_mark+max_deg+1, max_mark, n_row, Row) ;
-
-#if 0
-        DEBUG3 (("check3\n")) ;
-        debug_mark (n_row, Row, tag_mark, max_mark) ;
-#endif /* NDEBUG */
 
         /* === Finalize the new pivot row, and column scores ================ */
 
@@ -2171,11 +2054,6 @@ static Int find_ordering       /* return the number of garbage collections */
             min_score = Min (min_score, cur_score) ;
 
         }
-
-#if 0
-        debug_deg_lists (n_row, n_col, Row, Col, head,
-                min_score, n_col2-k, max_deg) ;
-#endif /* NDEBUG */
 
         /* === Resurrect the new pivot row ================================== */
 
