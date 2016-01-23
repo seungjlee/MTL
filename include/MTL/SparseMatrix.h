@@ -315,7 +315,7 @@ public:
       }
     }
   }
-  
+
   // Returns P = At * A as a dense matrix where A is this matrix.
   void MultiplyTransposeByThis(CompressedSparseMatrix<T>& P) const
   {
@@ -464,13 +464,15 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
+    I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+
     if (Mp_.Size() > 0)
     {
       const I32* Mq = Mq_.Begin();
       const I32* Mp = Mp_.Begin();
       const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
 
-      #pragma omp parallel for
+      #pragma omp parallel for num_threads(numberOfThreads)
       for (I32 i = 0; i < N; i++)
       {
         I32 index = Mq[i];
@@ -508,7 +510,7 @@ public:
     }
     else
     {
-      #pragma omp parallel for
+      #pragma omp parallel for num_threads(numberOfThreads)
       for (I32 i = 0; i < N; i++)
       {
         for (I32 j = 0; j < i+1; j++)
@@ -669,13 +671,15 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
+    I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+
     if (Mp_.Size() > 0)
     {
       const I32* Mq = Mq_.Begin();
       const I32* Mp = Mp_.Begin();
       const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
 
-      #pragma omp parallel for
+      #pragma omp parallel for num_threads(numberOfThreads)
       for (I32 i = 0; i < N; i++)
       {
         I32 index = Mq[i];
@@ -712,7 +716,7 @@ public:
     }
     else
     {
-      #pragma omp parallel for
+      #pragma omp parallel for num_threads(numberOfThreads)
       for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -755,23 +759,38 @@ public:
 
   void OptimizeMultiplyTransposeByThis()
   {
+    I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+
     const I32* ap = SparseMatrix<T>::Ap();
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
-    ParallelMp_.Resize(SparseMatrix<T>::Cols_);
-    ParallelMultiplyTransposeIndices_.Resize(SparseMatrix<T>::Cols_);
+    const I32 N = SparseMatrix<T>::Cols_;
+    const I32 rows = SparseMatrix<T>::Rows_;
 
-    #pragma omp parallel for
-    for (I32 i = 1; i < SparseMatrix<T>::Cols_; i++)
+    ParallelMp_.Resize(N);
+    ParallelMultiplyTransposeIndices_.Resize(N);
+
+    ThreadMultiplyTransposeIndices_.Resize(numberOfThreads);
+
+    #pragma omp parallel for num_threads(numberOfThreads)
+    for (I32 i = 1; i < N; i++)
     {
+      int threadNumber = omp_get_thread_num();
+
+      DynamicVector<Point2D<I32>>&
+        threadMultiplyTransposeIndices = ThreadMultiplyTransposeIndices_[threadNumber];
+      threadMultiplyTransposeIndices.Reserve(rows);
+
       // Use a buffer for for efficiency.
       enum
       {
-        kBufferSize = 128
+        kBufferSize = 1024
       };
-      Point2D<I32> buffer[kBufferSize];
-      I32 bufferIndex = 0;
+      I32 iBuffer[kBufferSize];
+      Point2D<I32> pBuffer[kBufferSize];
+      I32 iBufferIndex = 0;
+      I32 pBufferIndex = 0;
 
       ParallelMultiplyTransposeIndices_[i].Clear();
       ParallelMp_[i].Clear();
@@ -783,53 +802,107 @@ public:
         I32 q = ap[j];
         I32 pEnd = ap[i+1];
         I32 qEnd = ap[j+1];
-        while (p < pEnd && q < qEnd)
+
+        if (pEnd - p == rows && qEnd - q == rows)
         {
-          if (ai[p] < ai[q])
+          threadMultiplyTransposeIndices.Resize(rows);
+          for (I32 k = 0; k < threadMultiplyTransposeIndices.Size(); k++)
           {
-            p++;
+            threadMultiplyTransposeIndices[k].x(p++);
+            threadMultiplyTransposeIndices[k].y(q++);
           }
-          else if (ai[p] > ai[q])
+        }
+        else if (pEnd - p == rows)
+        {
+          threadMultiplyTransposeIndices.Resize(qEnd - q);
+          for (I32 k = 0; k < threadMultiplyTransposeIndices.Size(); k++)
           {
-            q++;
-          }
-          else
-          {
-            if (bufferIndex == kBufferSize)
-            {
-              ParallelMultiplyTransposeIndices_[i].AddBack(buffer, bufferIndex);
-              bufferIndex = 0;
-            }
-            buffer[bufferIndex].x(p);
-            buffer[bufferIndex].y(q);
-            bufferIndex++;
-
-            count++;
-
-            p++;
+            threadMultiplyTransposeIndices[k].x(p + ai[q]);
+            threadMultiplyTransposeIndices[k].y(q);
             q++;
           }
         }
-        ParallelMp_[i].PushBack(count);
+        else if (qEnd - q == rows)
+        {
+          threadMultiplyTransposeIndices.Resize(pEnd - p);
+          for (I32 k = 0; k < threadMultiplyTransposeIndices.Size(); k++)
+          {
+            threadMultiplyTransposeIndices[k].x(p);
+            threadMultiplyTransposeIndices[k].y(q + ai[p]);
+            p++;
+          }
+        }
+        else
+        {
+          threadMultiplyTransposeIndices.Clear();
+          while (p < pEnd && q < qEnd)
+          {
+            if (ai[p] < ai[q])
+            {
+              while (p < pEnd && ai[p] < ai[q])
+                p++;
+            }
+            else if (ai[p] > ai[q])
+            {
+              while (q < qEnd && ai[p] > ai[q])
+                q++;
+            }
+            else
+            {
+              threadMultiplyTransposeIndices.PushBack(Point2D<I32>(p,q));
+              p++;
+              q++;
+            }
+          }
+        }
+
+        if (threadMultiplyTransposeIndices.Size() > 0)
+        {
+          ParallelMultiplyTransposeIndices_[i].PushBack(threadMultiplyTransposeIndices);
+        }
+
+        if (iBufferIndex == kBufferSize)
+        {
+          ParallelMp_[i].PushBack(DynamicVector<I32>(iBuffer, iBufferIndex));
+          iBufferIndex = 0;
+        }
+
+        iBuffer[iBufferIndex++] = (I32)threadMultiplyTransposeIndices.Size();
       }
-      ParallelMultiplyTransposeIndices_[i].AddBack(buffer, bufferIndex);
+
+      if (iBufferIndex > 0)
+      {
+        ParallelMp_[i].PushBack(DynamicVector<I32>(iBuffer, iBufferIndex));
+      }
     }
 
-    Mp_.Clear();
-    Mq_.Resize(SparseMatrix<T>::Cols_);
+    Mq_.Resize(N);
+    Mp_.Resize(ComputeTotalSize(ParallelMp_) + 1);
+
+    MultiplyTransposeIndices_.Reserve(ComputeTotalSize(ParallelMultiplyTransposeIndices_));
     MultiplyTransposeIndices_.Clear();
 
-    Mp_.PushBack(0);
-    for (I32 i = 1; i < SparseMatrix<T>::Cols_; i++)
+    I32 index = 0;
+    Mp_[index++] = 0;
+    for (I32 i = 1; i < N; i++)
     {
-      Mq_[i] = (I32)Mp_.Size() - 1;
-      MultiplyTransposeIndices_.AddBack(ParallelMultiplyTransposeIndices_[i]);
-      Mp_.AddBack(ParallelMp_[i]);
+      Mq_[i] = index - 1;
+
+      for (U32 k = 0; k < ParallelMultiplyTransposeIndices_[i].Size(); k++)
+        MultiplyTransposeIndices_.AddBack(ParallelMultiplyTransposeIndices_[i][k]);
+
+      for (U32 k = 0; k < ParallelMp_[i].Size(); k++)
+      {
+        if (ParallelMp_[i][k].Size() > 0)
+        {
+          OptimizedCopy(Mp_.Begin() + index, ParallelMp_[i][k].Begin(), ParallelMp_[i][k].Size());
+          index += (I32)ParallelMp_[i][k].Size();
+        }
+      }
     }
 
-    for (I32 i = 1; i < Mp_.Size(); i++)
+    for (U32 i = 1; i < Mp_.Size(); i++)
       Mp_[i] += Mp_[i-1];
-
   }
 
 protected:
@@ -843,8 +916,26 @@ protected:
   DynamicVector<DynamicVector<T>> SparseValues_;
 
   // For parallel processing.
-  DynamicVector<DynamicVector<I32>> ParallelMp_;
-  DynamicVector<DynamicVector<Point2D<I32>>> ParallelMultiplyTransposeIndices_;
+  DynamicVector<DynamicVector<DynamicVector<I32>>> ParallelMp_;
+  DynamicVector<DynamicVector<DynamicVector<Point2D<I32>>>> ParallelMultiplyTransposeIndices_;
+  DynamicVector<DynamicVector<Point2D<I32>>> ThreadMultiplyTransposeIndices_;
+
+private:
+  template<class TT>
+  SizeType ComputeTotalSize(const DynamicVector<DynamicVector<DynamicVector<TT>>>& v)
+  {
+    SizeType total = 0;
+
+    for (U32 i = 0; i < v.Size(); i++)
+    {
+      for (U32 k = 0; k < v[i].Size(); k++)
+      {
+        total += v[i][k].Size();
+      }
+    }
+
+    return total;
+  }
 };
 
 template <class T>
