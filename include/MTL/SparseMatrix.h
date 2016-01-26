@@ -338,17 +338,16 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
-    if (Mp_.Size() > 0)
+    if (RowIndexPairs_.Size() > 0)
     {
-      const I32* Mq = Mq_.Begin();
-      const I32* Mp = Mp_.Begin();
-      const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
-
-      for (I32 i = 0; i < N; i++)
+      for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
       {
-        I32 index = Mq[i];
-        for (I32 j = 0; j < i+1; j++)
+        I32 pairIndex = 0;
+        for (I32 index1 = 0; index1 < (I32)ColumnPairs_[index0].Size(); index1++)
         {
+          I32 i = ColumnPairs_[index0][index1].x();
+          I32 j = ColumnPairs_[index0][index1].y();
+
           if (i == j)
           {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -361,20 +360,19 @@ public:
           }
           else
           {
-            if (Mp[index] < Mp[index + 1])
-            {
-              const Point2D<I32>* p = pPairs + Mp[index];
-              const Point2D<I32>* pEnd = pPairs + Mp[index + 1];
+            const Point2D<I32>* p = RowIndexPairs_[index0][pairIndex].Begin();
+            const Point2D<I32>*
+              pEnd = p + RowIndexPairs_[index0][pairIndex].Size();
 
-              T sum = 0;
+            T sum = 0;
 
-              for (; p < pEnd; p++)
-                sum += ax[p->x()] * ax[p->y()];
+            for (; p < pEnd; p++)
+              sum += ax[p->x()] * ax[p->y()];
 
-              sparseRows[i].PushBack(j);
-              sparseValues[i].PushBack(sum);
-            }
-            index++;
+            sparseRows[i].PushBack(j);
+            sparseValues[i].PushBack(sum);
+
+            pairIndex++;
           }
         }
       }
@@ -466,18 +464,17 @@ public:
 
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
 
-    if (Mp_.Size() > 0)
+    if (RowIndexPairs_.Size() > 0)
     {
-      const I32* Mq = Mq_.Begin();
-      const I32* Mp = Mp_.Begin();
-      const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
-
       #pragma omp parallel for num_threads(numberOfThreads)
-      for (I32 i = 0; i < N; i++)
+      for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
       {
-        I32 index = Mq[i];
-        for (I32 j = 0; j < i+1; j++)
+        I32 pairIndex = 0;
+        for (I32 index1 = 0; index1 < (I32)ColumnPairs_[index0].Size(); index1++)
         {
+          I32 i = ColumnPairs_[index0][index1].x();
+          I32 j = ColumnPairs_[index0][index1].y();
+
           if (i == j)
           {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -490,20 +487,19 @@ public:
           }
           else
           {
-            if (Mp[index] < Mp[index + 1])
-            {
-              const Point2D<I32>* p = pPairs + Mp[index];
-              const Point2D<I32>* pEnd = pPairs + Mp[index + 1];
+            const Point2D<I32>* p = RowIndexPairs_[index0][pairIndex].Begin();
+            const Point2D<I32>*
+              pEnd = p + RowIndexPairs_[index0][pairIndex].Size();
 
-              T sum = 0;
+            T sum = 0;
 
-              for (; p < pEnd; p++)
-                sum += ax[p->x()] * ax[p->y()];
+            for (; p < pEnd; p++)
+              sum += ax[p->x()] * ax[p->y()];
 
-              sparseRows[i].PushBack(j);
-              sparseValues[i].PushBack(sum);
-            }
-            index++;
+            sparseRows[i].PushBack(j);
+            sparseValues[i].PushBack(sum);
+
+            pairIndex++;
           }
         }
       }
@@ -583,37 +579,40 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
-    if (Mp_.Size() > 0)
+    if (RowIndexPairs_.Size() > 0)
     {
-      const I32* Mq = Mq_.Begin();
-      const I32* Mp = Mp_.Begin();
-      const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
-
-      for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
+      for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
       {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
-#else
-        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
-#endif
-        if (i < SparseMatrix<T>::Cols_ - 1)
+        I32 pairIndex = 0;
+        for (I32 index1 = 0; index1 < (I32)ColumnPairs_[index0].Size(); index1++)
         {
-          I32 index = Mq[i];
-          for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++, index++)
+          I32 i = ColumnPairs_[index0][index1].x();
+          I32 j = ColumnPairs_[index0][index1].y();
+
+          if (i == j)
           {
-            if (Mp[index] < Mp[index + 1])
-            {
-              const Point2D<I32>* p = pPairs + Mp[index];
-              const Point2D<I32>* pEnd = pPairs + Mp[index + 1];
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+            T sum = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+#else
+            T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+#endif
+            P[i][i] = sum;
+          }
+          else
+          {
+            const Point2D<I32>* p = RowIndexPairs_[index0][pairIndex].Begin();
+            const Point2D<I32>*
+              pEnd = p + RowIndexPairs_[index0][pairIndex].Size();
 
-              T sum = 0;
+            T sum = 0;
 
-              for (; p < pEnd; p++)
-                sum += ax[p->x()] * ax[p->y()];
+            for (; p < pEnd; p++)
+              sum += ax[p->x()] * ax[p->y()];
 
-              P[i][j] = sum;
-              P[j][i] = sum;
-            }
+            P[i][j] = sum;
+            P[j][i] = sum;
+
+            pairIndex++;
           }
         }
       }
@@ -673,18 +672,17 @@ public:
 
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
 
-    if (Mp_.Size() > 0)
+    if (RowIndexPairs_.Size() > 0)
     {
-      const I32* Mq = Mq_.Begin();
-      const I32* Mp = Mp_.Begin();
-      const Point2D<I32>* pPairs = MultiplyTransposeIndices_.Begin();
-
       #pragma omp parallel for num_threads(numberOfThreads)
-      for (I32 i = 0; i < N; i++)
+      for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
       {
-        I32 index = Mq[i];
-        for (I32 j = 0; j < i+1; j++)
+        I32 pairIndex = 0;
+        for (I32 index1 = 0; index1 < (I32)ColumnPairs_[index0].Size(); index1++)
         {
+          I32 i = ColumnPairs_[index0][index1].x();
+          I32 j = ColumnPairs_[index0][index1].y();
+
           if (i == j)
           {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -696,20 +694,19 @@ public:
           }
           else
           {
-            if (Mp[index] < Mp[index + 1])
-            {
-              const Point2D<I32>* p = pPairs + Mp[index];
-              const Point2D<I32>* pEnd = pPairs + Mp[index + 1];
+            const Point2D<I32>* p = RowIndexPairs_[index0][pairIndex].Begin();
+            const Point2D<I32>*
+              pEnd = p + RowIndexPairs_[index0][pairIndex].Size();
 
-              T sum = 0;
+            T sum = 0;
 
-              for (; p < pEnd; p++)
-                sum += ax[p->x()] * ax[p->y()];
+            for (; p < pEnd; p++)
+              sum += ax[p->x()] * ax[p->y()];
 
-              P[i][j] = sum;
-              P[j][i] = sum;
-            }
-            index++;
+            P[i][j] = sum;
+            P[j][i] = sum;
+
+            pairIndex++;
           }
         }
       }
@@ -761,166 +758,149 @@ public:
   {
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
 
-    const I32* ap = SparseMatrix<T>::Ap();
-    const I32* ai = SparseMatrix<T>::Ai();
-    const T* ax = SparseMatrix<T>::Ax();
-
     const I32 N = SparseMatrix<T>::Cols_;
-    const I32 rows = SparseMatrix<T>::Rows_;
 
-    ParallelMp_.Resize(N);
-    ParallelMultiplyTransposeIndices_.Resize(N);
+    RowIndexPairs_.Resize(N);
+    ColumnPairs_.Resize(N);
 
-    ThreadMultiplyTransposeIndices_.Resize(numberOfThreads);
+    ThreadRowIndexPairs_.Resize(numberOfThreads);
 
+    ColumnPairs_[0].Clear();
+    ColumnPairs_[0].PushBack(Point2D<I32>(0,0));
+
+    //
+    // Attempting to balance the load for the threads.
+    //
     #pragma omp parallel for num_threads(numberOfThreads)
-    for (I32 i = 1; i < N; i++)
+    for (I32 i = 1; i < N/2+1; i++)
     {
-      int threadNumber = omp_get_thread_num();
+      I32 threadNumber = omp_get_thread_num();
 
-      DynamicVector<Point2D<I32>>&
-        threadMultiplyTransposeIndices = ThreadMultiplyTransposeIndices_[threadNumber];
-      threadMultiplyTransposeIndices.Reserve(rows);
+      ThreadRowIndexPairs_[threadNumber].Reserve(SparseMatrix<T>::Rows_);
 
-      // Use a buffer for for efficiency.
-      enum
-      {
-        kBufferSize = 1024
-      };
-      I32 iBuffer[kBufferSize];
-      Point2D<I32> pBuffer[kBufferSize];
-      I32 iBufferIndex = 0;
-      I32 pBufferIndex = 0;
+      I32 j = N - i;
 
-      ParallelMultiplyTransposeIndices_[i].Clear();
-      ParallelMp_[i].Clear();
-
-      for (I32 j = 0; j < i+1; j++)
-      {
-        I32 count = 0;
-        I32 p = ap[i];
-        I32 q = ap[j];
-        I32 pEnd = ap[i+1];
-        I32 qEnd = ap[j+1];
-
-        if (pEnd - p == rows && qEnd - q == rows)
-        {
-          threadMultiplyTransposeIndices.Resize(rows);
-          for (I32 k = 0; k < threadMultiplyTransposeIndices.Size(); k++)
-          {
-            threadMultiplyTransposeIndices[k].x(p++);
-            threadMultiplyTransposeIndices[k].y(q++);
-          }
-        }
-        else if (pEnd - p == rows)
-        {
-          threadMultiplyTransposeIndices.Resize(qEnd - q);
-          for (I32 k = 0; k < threadMultiplyTransposeIndices.Size(); k++)
-          {
-            threadMultiplyTransposeIndices[k].x(p + ai[q]);
-            threadMultiplyTransposeIndices[k].y(q);
-            q++;
-          }
-        }
-        else if (qEnd - q == rows)
-        {
-          threadMultiplyTransposeIndices.Resize(pEnd - p);
-          for (I32 k = 0; k < threadMultiplyTransposeIndices.Size(); k++)
-          {
-            threadMultiplyTransposeIndices[k].x(p);
-            threadMultiplyTransposeIndices[k].y(q + ai[p]);
-            p++;
-          }
-        }
-        else
-        {
-          threadMultiplyTransposeIndices.Clear();
-          while (p < pEnd && q < qEnd)
-          {
-            if (ai[p] < ai[q])
-            {
-              while (p < pEnd && ai[p] < ai[q])
-                p++;
-            }
-            else if (ai[p] > ai[q])
-            {
-              while (q < qEnd && ai[p] > ai[q])
-                q++;
-            }
-            else
-            {
-              threadMultiplyTransposeIndices.PushBack(Point2D<I32>(p,q));
-              p++;
-              q++;
-            }
-          }
-        }
-
-        if (threadMultiplyTransposeIndices.Size() > 0)
-        {
-          ParallelMultiplyTransposeIndices_[i].PushBack(threadMultiplyTransposeIndices);
-        }
-
-        if (iBufferIndex == kBufferSize)
-        {
-          ParallelMp_[i].PushBack(DynamicVector<I32>(iBuffer, iBufferIndex));
-          iBufferIndex = 0;
-        }
-
-        iBuffer[iBufferIndex++] = (I32)threadMultiplyTransposeIndices.Size();
-      }
-
-      if (iBufferIndex > 0)
-      {
-        ParallelMp_[i].PushBack(DynamicVector<I32>(iBuffer, iBufferIndex));
-      }
+      OptimizeMultiplyTransposeByThis(i, ThreadRowIndexPairs_[threadNumber]);
+      if (j > i)
+        OptimizeMultiplyTransposeByThis(j, ThreadRowIndexPairs_[threadNumber]);
     }
-
-    Mq_.Resize(N);
-    Mp_.Resize(ComputeTotalSize(ParallelMp_) + 1);
-
-    MultiplyTransposeIndices_.Reserve(ComputeTotalSize(ParallelMultiplyTransposeIndices_));
-    MultiplyTransposeIndices_.Clear();
-
-    I32 index = 0;
-    Mp_[index++] = 0;
-    for (I32 i = 1; i < N; i++)
-    {
-      Mq_[i] = index - 1;
-
-      for (U32 k = 0; k < ParallelMultiplyTransposeIndices_[i].Size(); k++)
-        MultiplyTransposeIndices_.AddBack(ParallelMultiplyTransposeIndices_[i][k]);
-
-      for (U32 k = 0; k < ParallelMp_[i].Size(); k++)
-      {
-        if (ParallelMp_[i][k].Size() > 0)
-        {
-          OptimizedCopy(Mp_.Begin() + index, ParallelMp_[i][k].Begin(), ParallelMp_[i][k].Size());
-          index += (I32)ParallelMp_[i][k].Size();
-        }
-      }
-    }
-
-    for (U32 i = 1; i < Mp_.Size(); i++)
-      Mp_[i] += Mp_[i-1];
   }
 
 protected:
-  // Data cached to optimize computation of At * A
-  DynamicVector<I32> Mq_;
-  DynamicVector<I32> Mp_;
-  DynamicVector<Point2D<I32>> MultiplyTransposeIndices_;
-
   // For computing MultiplyTransposeByThis().
   DynamicVector<DynamicVector<I32>> SparseRows_;
   DynamicVector<DynamicVector<T>> SparseValues_;
 
-  // For parallel processing.
-  DynamicVector<DynamicVector<DynamicVector<I32>>> ParallelMp_;
-  DynamicVector<DynamicVector<DynamicVector<Point2D<I32>>>> ParallelMultiplyTransposeIndices_;
-  DynamicVector<DynamicVector<Point2D<I32>>> ThreadMultiplyTransposeIndices_;
+  // Data cached to optimize computation of At * A
+  DynamicVector<DynamicVector<Point2D<I32>>> ColumnPairs_;
+  DynamicVector<DynamicVector<DynamicVector<Point2D<I32>>>> RowIndexPairs_;
+  DynamicVector<DynamicVector<Point2D<I32>>> ThreadRowIndexPairs_;
 
 private:
+  void OptimizeMultiplyTransposeByThis(I32 i, DynamicVector<Point2D<I32>>& rowIndexPairs)
+  {
+    //
+    // Note that this is working under the assumption that every column has at least one
+    // entry which is reasonable for any stable system of linear equations.
+    //
+    const I32* ap = SparseMatrix<T>::Ap();
+    const I32* ai = SparseMatrix<T>::Ai();
+
+    const I32 N = SparseMatrix<T>::Cols_;
+    const I32 rows = SparseMatrix<T>::Rows_;
+
+    ColumnPairs_[i].Clear();
+    RowIndexPairs_[i].Clear();
+
+    for (I32 j = 0; j < i; j++)
+    {
+      I32 count = 0;
+      I32 p = ap[i];
+      I32 q = ap[j];
+      const I32 pEnd = ap[i+1];
+      const I32 qEnd = ap[j+1];
+
+      if (pEnd - p != rows && qEnd - q != rows)
+      {
+        rowIndexPairs.Clear();
+        while (p < pEnd && q < qEnd)
+        {
+          if (ai[p] < ai[q])
+          {
+            if (ai[pEnd - 1] < ai[q])
+              break;
+
+            while (p < pEnd && ai[p] < ai[q])
+              p++;
+          }
+          else if (ai[p] > ai[q])
+          {
+            if (ai[p] > ai[qEnd - 1])
+              break;
+
+            while (q < qEnd && ai[p] > ai[q])
+              q++;
+          }
+          else
+          {
+            rowIndexPairs.PushBack(Point2D<I32>(p,q));
+            p++;
+            q++;
+          }
+        }
+
+        if (rowIndexPairs.Size() > 0)
+        {
+          RowIndexPairs_[i].PushBack(rowIndexPairs);
+          ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+        }
+      }
+      else if (pEnd - p != rows)
+      {
+        RowIndexPairs_[i].Resize(RowIndexPairs_[i].Size() + 1);
+        RowIndexPairs_[i].Back().Resize(pEnd - p);
+        Point2D<I32>* pPairs = RowIndexPairs_[i].Back().Begin();
+        for (I32 k = 0; k < RowIndexPairs_[i].Back().Size(); k++)
+        {
+          pPairs[k].x(p);
+          pPairs[k].y(q + ai[p]);
+          p++;
+        }
+
+        ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+      }
+      else if (qEnd - q != rows)
+      {
+        RowIndexPairs_[i].Resize(RowIndexPairs_[i].Size() + 1);
+        RowIndexPairs_[i].Back().Resize(qEnd - q);
+        Point2D<I32>* pPairs = RowIndexPairs_[i].Back().Begin();
+        for (I32 k = 0; k < RowIndexPairs_[i].Back().Size(); k++)
+        {
+          pPairs[k].x(p + ai[q]);
+          pPairs[k].y(q);
+          q++;
+        }
+
+        ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+      }
+      else
+      {
+        RowIndexPairs_[i].Resize(RowIndexPairs_[i].Size() + 1);
+        RowIndexPairs_[i].Back().Resize(rows);
+        Point2D<I32>* pPairs = RowIndexPairs_[i].Back().Begin();
+        for (I32 k = 0; k < RowIndexPairs_[i].Back().Size(); k++)
+        {
+          pPairs[k].x(p++);
+          pPairs[k].y(q++);
+        }
+
+        ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+      }
+    }
+
+    ColumnPairs_[i].PushBack(Point2D<I32>(i,i));
+  }
+
   template<class TT>
   SizeType ComputeTotalSize(const DynamicVector<DynamicVector<DynamicVector<TT>>>& v)
   {
