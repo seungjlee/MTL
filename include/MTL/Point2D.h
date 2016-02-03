@@ -47,6 +47,17 @@ public:
     y(yy);
   }
 
+  T DistanceSquared(const Point2D& pt) const
+  {
+    Point2D delta = pt - *this;
+    return delta.SumOfSquares();
+  }
+
+  T Distance(const Point2D& pt) const
+  {
+    return Sqrt(DistanceSquared(pt));
+  }
+
   T Length() const  { return Base::FrobeniusNorm(); }
 
   const T& x() const   { return (*this)[0]; }
