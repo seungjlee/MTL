@@ -36,11 +36,21 @@ template <class T>
 class RotationTranslation3D : public AffineTransform3D<T>
 {
 public:
-
   RotationTranslation3D(const Rotation3D<T>& r = Rotation3D<T>(Rotation3D<T>::eIdentity),
                         const Vector3D<T>& v = Vector3D<T>(0,0,0))
     : AffineTransform3D<T>(r, v)
   {
+  }
+
+  MTL_INLINE RotationTranslation3D operator*(const RotationTranslation3D& transform) const
+  {
+    return RotationTranslation3D(Matrix_ * transform.Matrix_,
+                                 Matrix_ * transform.Vector_ + Vector_);
+  }
+  MTL_INLINE RotationTranslation3D& operator*=(const RotationTranslation3D& transform)
+  {
+    *this = *this * transform;
+    return *this;
   }
 
   RotationTranslation3D<T> Inverse() const
