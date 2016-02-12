@@ -352,7 +352,7 @@ template <class T> MTL_INLINE static T DotProduct(const DynamicVector<T>& v1,
 
 template <class T> MTL_INLINE static T Mean(const DynamicVector<T>& v)
 {
-  return Sum(v) / v.Size();
+  return Sum(v) / T(v.Size());
 }
 
 template <class T> MTL_INLINE static T Variance(const DynamicVector<T>& v, const T& mean)
