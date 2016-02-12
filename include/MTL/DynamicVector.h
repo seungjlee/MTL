@@ -217,6 +217,12 @@ public:
     }
   }
 
+  MTL_INLINE void PopBack() 
+  {
+    assert(Size_ > 0);
+    Resize(Size_ - 1);
+  }
+
   MTL_INLINE void AddBack(const DynamicVector& newElements)
   {
     AddBack(newElements.Begin(), newElements.Size());
