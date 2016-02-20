@@ -53,6 +53,15 @@ public:
     return *this;
   }
 
+  MTL_INLINE Point3D<T> operator*(const Point3D<T>& point) const
+  {
+    return Matrix_ * point + Vector_;
+  }
+  MTL_INLINE Vector3D<T> operator*(const Vector3D<T>& vector) const
+  {
+    return Matrix_ * vector;
+  }
+
   RotationTranslation3D<T> Inverse() const
   {
     typename AffineTransform3D<T>::MatrixType
