@@ -31,6 +31,8 @@
 namespace MTL
 {
 
+template <class T> class X128;
+
 template <class T>
 MTL_INLINE static T Abs(const T& a)
 {
