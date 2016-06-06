@@ -365,6 +365,8 @@ template <class T> MTL_INLINE static T Variance(const DynamicVector<T>& v, const
   return SumOfSquares(deltas) / (deltas.Size()-1);
 }
 
+#pragma warning(push)
+#pragma warning(disable: 4756)
 template <class T> MTL_INLINE static T RMS(const DynamicVector<T>& v)
 {
   if (v.Size() > 0)
@@ -372,6 +374,7 @@ template <class T> MTL_INLINE static T RMS(const DynamicVector<T>& v)
   else
     return T(kINF);
 }
+#pragma warning(pop)
 
 template <class T> MTL_INLINE static T FrobeniusNorm(const DynamicVector<T>& v)
 {

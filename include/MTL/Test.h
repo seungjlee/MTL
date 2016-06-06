@@ -27,9 +27,10 @@
 #define MTL_TEST_H
 
 #include "CPU.h"
-#include "Exception.h"
-#include "Timer.h"
 #include "DynamicVector.h"
+#include "Exception.h"
+#include "StringHelpers.h"
+#include "Timer.h"
 
 //
 // Macros.
@@ -127,6 +128,19 @@ public:
     for (U32 i = 0; i < Arguments_.Size(); i++)
     {
       if (str == Arguments_[i])
+        return i;
+    }
+
+    return -1;
+  }
+
+  static I32 FindArgumentIgnoreCase(const String& str)
+  {
+    String lowerCaseStr = ToLowerCase(str);
+
+    for (U32 i = 0; i < Arguments_.Size(); i++)
+    {
+      if (lowerCaseStr == ToLowerCase(Arguments_[i]))
         return i;
     }
 
