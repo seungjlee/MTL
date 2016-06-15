@@ -844,9 +844,9 @@ public:
     ColumnVector<N,I32> P;
     T sign;
 
-    if (factorizeLUP(LU, P, sign))
+    if (LUP(LU, P, sign))
     {
-      return conditionNumber(*this, LU, P);
+      return ConditionNumber(*this, LU, P);
     }
     else
       return T(kINF);  // Return infinity.
@@ -856,9 +856,28 @@ public:
   {
     SquareMatrix inverse;
     inverse.Identity();
-    SolveLUP<N,N,T>(inverse, LU, P);
+    MTL::SolveLUP<N,N,T>(inverse, LU, P);
 
     return M.FrobeniusNorm() * inverse.FrobeniusNorm();
+  }
+
+  MTL_INLINE T StableDeterminant(T tolerance = T(1)/Epsilon<T>()) const
+  {
+    SquareMatrix LU;
+    ColumnVector<N,I32> P;
+    T sign;
+
+    if (LUP(LU, P, sign))
+    {
+      if (ConditionNumber(*this, LU, P) < tolerance)
+        return Determinant();
+      else
+        return T(0);
+    }
+    else
+    {
+      return T(0);
+    }
   }
 };
 
@@ -1092,6 +1111,13 @@ MTL_INLINE static bool SolveWithInverse(ColumnVector<N,T>& x,
   x = Inverse(A, determinant) * b;
 
   return true;
+}
+
+template<I32 N, class T> MTL_INLINE T StableDeterminant(const Matrix<N,N,T>& A,
+                                                        T tolerance = T(1)/Epsilon<T>())
+{
+  const SquareMatrix<N,T>* ptr = (const SquareMatrix<N,T>*)&A;
+  return ptr->StableDeterminant(tolerance);
 }
 
 // Recursive implementation of matrix determinant computation.

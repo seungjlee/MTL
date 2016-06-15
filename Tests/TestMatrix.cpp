@@ -28,6 +28,7 @@
 #include <MTL/QR.h>
 #include <MTL/SVD.h>
 #include <MTL/Random.h>
+#include <MTL/ProjectionToImageTransform.h>
 
 using namespace MTL;
 
@@ -135,6 +136,20 @@ TEST(TestInverseAndDeterminant)
       MTL_EQUAL_FLOAT(InvA1[row][col], InvA2[row][col], kTol);
 
   MTL_EQUAL_FLOAT(A.Determinant(), DeterminantRecursive(A), kTol);
+  MTL_EQUAL_FLOAT(A.Determinant(), A.StableDeterminant(), kTol);
+
+  I32 rank;
+  F64 conditionNumber;
+  ColumnVector3D xSVD;
+  SquareMatrix3x3 temp(A);
+  SolveJacobiSVD<3>(temp, xSVD, rank, conditionNumber);
+  printf("SVD Condition number of A = %.15f\n", conditionNumber);
+  printf("LUP Condition number of A = %.15f\n", A.ConditionNumber());
+
+  ProjectionToImageTransform<F64> P1;
+  ProjectionToImageTransform<F64> P2;
+
+  SquareMatrix3x3 F = ComputeFundamentalMatrix(P1,P2);
 }
 
 TEST(TestPseudoinverse)
