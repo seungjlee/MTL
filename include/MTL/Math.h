@@ -26,12 +26,42 @@
 #define MTL_MATH_H
 
 #include <MTL/Constants.h>
-#include <MTL/StreamMath.h>
 #include <float.h>
 
 
 namespace MTL
 {
+
+template <class T> MTL_INLINE static T Conditional(bool condition, const T& a, const T& b)
+{
+  return condition ? a : b;
+}
+
+template <class T> MTL_INLINE static T Max(const T& a, const T& b)
+{
+  return Conditional(a > b, a, b);
+}
+template <class T> MTL_INLINE static T Max(const T& a, const T& b, const T& c)
+{
+  return Max(Max(a,b),c);
+}
+template <class T> MTL_INLINE static T Max(const T& a, const T& b, const T& c, const T& d)
+{
+  return Max(Max(a,b),Max(c,d));
+}
+
+template <class T> MTL_INLINE static T Min(const T& a, const T& b)
+{
+  return Conditional(a < b, a, b);
+}
+template <class T> MTL_INLINE static T Min(const T& a, const T& b, const T& c)
+{
+  return Min(Min(a,b),c);
+}
+template <class T> MTL_INLINE static T Min(const T& a, const T& b, const T& c, const T& d)
+{
+  return Min(Min(a,b),Min(c,d));
+}
 
 //
 // Recursive helper classes.
@@ -67,7 +97,10 @@ template <class T> MTL_INLINE static void Swap(T& a, T& b)
   b = temp;
 }
 
-template <class T> MTL_INLINE static T Abs(const T& a);
+template <class T> MTL_INLINE static T Abs(const T& a)
+{
+  return abs(a);
+}
 
 // A more numerically stable version of sqrt(a*a + b*b).
 template <class T>

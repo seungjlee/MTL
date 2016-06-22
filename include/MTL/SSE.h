@@ -33,37 +33,6 @@
 namespace MTL
 {
 
-template <class T> MTL_INLINE static T Conditional(bool condition, const T& a, const T& b)
-{
-  return condition ? a : b;
-}
-
-template <class T> MTL_INLINE static T Max(const T& a, const T& b)
-{
-  return Conditional(a > b, a, b);
-}
-template <class T> MTL_INLINE static T Max(const T& a, const T& b, const T& c)
-{
-  return Max(Max(a,b),c);
-}
-template <class T> MTL_INLINE static T Max(const T& a, const T& b, const T& c, const T& d)
-{
-  return Max(Max(a,b),Max(c,d));
-}
-
-template <class T> MTL_INLINE static T Min(const T& a, const T& b)
-{
-  return Conditional(a < b, a, b);
-}
-template <class T> MTL_INLINE static T Min(const T& a, const T& b, const T& c)
-{
-  return Min(Min(a,b),c);
-}
-template <class T> MTL_INLINE static T Min(const T& a, const T& b, const T& c, const T& d)
-{
-  return Min(Min(a,b),Min(c,d));
-}
-
 // Set all values in the XMM register with the same single input value.
 MTL_INLINE static __m128  X128_SetPacked(F32 val)    { return _mm_set1_ps(val);                    }
 MTL_INLINE static __m128d X128_SetPacked(F64 val)    { return _mm_set1_pd(val);                    }

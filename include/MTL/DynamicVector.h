@@ -29,6 +29,8 @@
 #include <assert.h>
 #include <omp.h>
 #include <MTL/Matrix.h>
+#include <MTL/Math.h>
+#include <MTL/Stream.h>
 #include <MTL/StreamMath.h>
 
 //
