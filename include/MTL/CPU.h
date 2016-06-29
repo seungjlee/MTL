@@ -62,11 +62,16 @@ public:
 
   U64 NumberOfCores() const           { return NumberOfCores_;          }
 
-  bool SSE()  { return CPU_Rep_.f_1_EDX_[25] || false; }
-  bool SSE2() { return CPU_Rep_.f_1_EDX_[26] || false; }
-  bool AVX()  { return CPU_Rep_.f_1_ECX_[28] || false; }
-  bool AVX2() { return CPU_Rep_.f_7_EBX_[5]  || false; }
-  bool FMA()  { return CPU_Rep_.f_1_ECX_[12] || false; }
+  bool SSE()  const  { return CPU_Rep_.f_1_EDX_[25] || false; }
+  bool SSE2() const  { return CPU_Rep_.f_1_EDX_[26] || false; }
+  bool AVX()  const  { return CPU_Rep_.f_1_ECX_[28] || false; }
+  bool AVX2() const  { return CPU_Rep_.f_7_EBX_[5]  || false; }
+  bool FMA()  const  { return CPU_Rep_.f_1_ECX_[12] || false; }
+
+  bool IsIntel() const         { return CPU_Rep_.isIntel_;        }
+
+  // Intel's hyperthreading for example.
+  bool Multithreading() const  { return CPU_Rep_.multithreading_; }
 
 private:
   CPU() : NumberOfThreads_(1)
@@ -74,7 +79,8 @@ private:
     NumberOfCores_ = omp_get_num_procs();
     omp_set_num_threads((int)NumberOfCores_);
 
-    if (CPU_Rep_.isIntel_ && CPU_Rep_.multithreading_)
+    // We usually want the actual number of cores.
+    if (IsIntel() && Multithreading())
       NumberOfCores_ /= 2;
 
     NumberOfThreads(NumberOfCores_);

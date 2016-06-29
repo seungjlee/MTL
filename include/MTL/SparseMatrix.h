@@ -756,7 +756,11 @@ public:
 
   void OptimizeMultiplyTransposeByThis()
   {
-    I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+    I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfCores();
+
+    // Mostly logical operations so we can take advantage of hyperthreading.
+    if (MTL::CPU::Instance().IsIntel() && MTL::CPU::Instance().Multithreading())
+      numberOfThreads *= 2;
 
     const I32 N = SparseMatrix<T>::Cols_;
 
@@ -819,10 +823,13 @@ private:
       I32 q = ap[j];
       const I32 pEnd = ap[i+1];
       const I32 qEnd = ap[j+1];
+      const I32 pRows = pEnd - p;
+      const I32 qRows = qEnd - q;
 
-      if (pEnd - p != rows && qEnd - q != rows)
+      if (pRows != rows && qRows != rows)
       {
         rowIndexPairs.Clear();
+
         while (p < pEnd && q < qEnd)
         {
           if (ai[p] < ai[q])
@@ -855,7 +862,7 @@ private:
           ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
         }
       }
-      else if (pEnd - p != rows)
+      else if (pRows != rows)
       {
         RowIndexPairs_[i].Resize(RowIndexPairs_[i].Size() + 1);
         RowIndexPairs_[i].Back().Resize(pEnd - p);
@@ -869,7 +876,7 @@ private:
 
         ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
       }
-      else if (qEnd - q != rows)
+      else if (qRows != rows)
       {
         RowIndexPairs_[i].Resize(RowIndexPairs_[i].Size() + 1);
         RowIndexPairs_[i].Back().Resize(qEnd - q);
