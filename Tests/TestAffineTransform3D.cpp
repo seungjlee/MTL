@@ -33,7 +33,13 @@ static const double kTol = 1e-12;
 
 TEST(TestRotationTranslation3D)
 {
-  RotationTranslation3D<F64> T;
+  RotationTranslation3D<F64> T(Rotation3D<F64>(Rotation3D<F64>::eIdentity),
+                               Vector3D<F64>(1,2,3));
+  T.ScaleVector(3);
+
+  MTL_EQUAL(T.Vector().x(), 3);
+  MTL_EQUAL(T.Vector().y(), 6);
+  MTL_EQUAL(T.Vector().z(), 9);
 }
 
 

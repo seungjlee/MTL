@@ -69,6 +69,8 @@ public:
     return Matrix_ * vector;
   }
 
+  MTL_INLINE void ScaleVector(T factor)  { Vector_ *= factor;    }
+
   MTL_INLINE const MatrixType& Matrix() const  { return Matrix_; }
   MTL_INLINE void Matrix(const MatrixType& m)  { Matrix_ = m;    }
   MTL_INLINE const VectorType& Vector() const  { return Vector_; }
