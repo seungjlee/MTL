@@ -70,6 +70,13 @@ public:
   void z(const T& yy)  { (*this)[2] = yy;   }
 };
 
+template<class T>
+MTL_INLINE static Point3D<T> Mean(const DynamicVector<Point3D<T>>& v)
+{
+  return Sum(v) / T(v.Size());
+}
+
+
 }  // namespace MTL
 
 MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(Point3D<F32>);

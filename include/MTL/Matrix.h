@@ -39,6 +39,8 @@ class Matrix
   typedef T DataType[M][N];
 
 public:
+  typedef T ElementType;
+
   enum Initialize
   {
     eNothing,
