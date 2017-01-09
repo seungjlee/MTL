@@ -73,7 +73,7 @@ public:
     // From Multiple View Geometry (2nd Edition), R. Hartley and A. Zisserman (A4.10).
     Rotation3D<T> A = R - Rotation3D<T>(Rotation3D<T>::eIdentity);
 
-    long rank;
+    I32 rank;
     T conditionNumber;
     Vector3D<T> rotationVector;
     SolveJacobiSVDHomogeneous(A, rotationVector, rank, conditionNumber);

@@ -124,7 +124,7 @@ public:
     if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
     {
       #pragma omp parallel for
-      for (long k = 0; k < (long)size; k++)
+      for (I32 k = 0; k < (I32)size; k++)
         pDst[k] = T(pSrc[k]);
     }
     else
@@ -363,7 +363,7 @@ protected:
     if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
     {
       #pragma omp parallel for
-      for (long k = 0; k < (long)size; k++)
+      for (I32 k = 0; k < (I32)size; k++)
         p[k] = val;
     }
     else
@@ -523,7 +523,7 @@ template <class T> MTL_INLINE static void OptimizedAssignAll(T* p, const T& val,
     if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
     {
       #pragma omp parallel for
-      for (long k = 0; k < (long)size; k++)
+      for (I32 k = 0; k < (I32)size; k++)
         p[k] = val;
     }
     else

@@ -253,7 +253,7 @@ MTL_INLINE static void ParallelReduction_2Src(ReductionT* subResults, SizeType& 
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
 
     #pragma omp parallel for
-    for (long i = 0; i < numberOfThreads; i++)
+    for (I32 i = 0; i < numberOfThreads; i++)
       subResults[i] = Func(pSrc1 + offsets[i], pSrc2 + offsets[i], subSizes[i]);
 
     subResultsSize = numberOfThreads;

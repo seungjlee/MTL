@@ -171,7 +171,7 @@ public:
     T solution = initial;
     T delta;
 
-    for (long i = 0; i < MAX_ITERATIONS; i++)
+    for (I32 i = 0; i < MAX_ITERATIONS; i++)
     {
       delta = Polynomial<T>::Evaluate(solution, coefficients) /
               Polynomial<T>::Evaluate(solution, derivative);

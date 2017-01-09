@@ -103,8 +103,8 @@ static I32 SolveLDLt(ColumnVector<N,T>& x, SquareMatrix<N,T>& A,
   T D[N];
   LDLt_JustForSolver(A, D);
 
-  long rank = 0;
-  for (long i = 0; i < N; i++)
+  I32 rank = 0;
+  for (I32 i = 0; i < N; i++)
     if (Abs(D[i]) > tolerance)
       rank++;
 
@@ -174,8 +174,8 @@ static I32 SolveLDLt(T* x, T* A, I32 N, I32 rowSize,
   DynamicVector<T> D(N);
   LDLt_JustForSolver(A, D.Begin(), N, rowSize);
 
-  long rank = 0;
-  for (long i = 0; i < N; i++)
+  I32 rank = 0;
+  for (I32 i = 0; i < N; i++)
     if (Abs(D[i]) > tolerance)
       rank++;
 

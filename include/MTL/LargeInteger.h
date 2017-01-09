@@ -54,47 +54,88 @@ public:
     }
   }
 
-  LargeInteger operator+(const LargeInteger rhs) const
+  LargeInteger operator+(const LargeInteger& rhs) const
   {
+    if (*this < rhs)
+      return rhs + *this;
+
     LargeInteger sum = *this;
 
     for (U32 i = 0; i < rhs.Data_.Size(); i++)
     {
-      if (i == Data_.Size())
-      {
-        sum.Data_.PushBack(rhs.Data_[i]);
-      }
-      else
-      {
-        U64 sum64 = U64(Data_[i]) + U64(rhs.Data_[i]);
+      U64 sum64 = U64(Data_[i]) + U64(rhs.Data_[i]);
 
-        if (sum64 > kLimit)
+      if (sum64 > kLimit)
+      {
+        sum64 -= kLimit;
+
+        if (i + 1 == sum.Data_.Size())
         {
-          sum64 -= kLimit;
-
-          if (i + 1 == sum.Data_.Size())
-          {
-            sum.Data_.PushBack(1);
-          }
-          else
-          {
-            sum.Data_[i+1]++;
-          }
+          sum.Data_.PushBack(1);
         }
-
-        sum.Data_[i] = U32(sum64);
+        else
+        {
+          sum.Data_[i+1]++;
+        }
       }
+
+      sum.Data_[i] = U32(sum64);
     }
 
     return sum;
   }
 
-  void Print() const
+  LargeInteger operator*(const LargeInteger& rhs) const
   {
-    printf("%d", Data_.Back());
+    if (*this < rhs)
+      return rhs * *this;
+
+    LargeInteger product(0);
+    product.Data_.Resize(Data_.Size());
+    product.Data_.Zeros();
+
+    for (U32 i = 0; i < rhs.Data_.Size(); i++)
+    {
+      U64 product64 = U64(Data_[i]) * U64(rhs.Data_[i]);
+
+    }
+
+    return product;
+  }
+
+  bool operator<(const LargeInteger& rhs) const
+  {
+    if (Data_.Size() == rhs.Data_.Size())
+    {
+      for (int i = (int)Data_.Size() - 1; i >= 0; i--)
+      {
+        if (Data_[i] < rhs.Data_[i])
+          return true;
+
+        if (Data_[i] > rhs.Data_[i])
+          return false;
+      }
+
+      return false;
+    }
+
+    return Data_.Size() < rhs.Data_.Size();
+  }
+
+  String GetString() const
+  {
+    String str;
+    wchar_t buffer[16];
+    wsprintf(buffer, L"%d", Data_.Back());
+    str = buffer;
 
     for (I32 i = I32(Data_.Size()) - 2; i >= 0; i--)
-      printf("%09d", Data_[i]);
+    {
+      wsprintf(buffer, L"%09d", Data_[i]);
+      str += buffer;
+    }
+
+    return str;
   }
 
 private:

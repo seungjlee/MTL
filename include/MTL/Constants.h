@@ -46,11 +46,11 @@ static const double kDegreesToRadians = kPi / 180.0;
 static const double kRadiansToDegrees = 180.0 / kPi;
 
 // Some helpers for floating point constants.
-static const long      kSign32     = 0x80000000;
-static const long      kNoSign32   = 0x7FFFFFFF;
-static const long long kSign64     = 0x8000000000000000;
-static const long long kNoSign64   = 0x7FFFFFFFFFFFFFFF;
-static const long long kInfinity64 = 0x7FF0000000000000;
+static const I32 kSign32     = 0x80000000;
+static const I32 kNoSign32   = 0x7FFFFFFF;
+static const I64 kSign64     = 0x8000000000000000;
+static const I64 kNoSign64   = 0x7FFFFFFFFFFFFFFF;
+static const I64 kInfinity64 = 0x7FF0000000000000;
 
 }  // namespace MTL
 
