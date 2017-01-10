@@ -1009,8 +1009,8 @@ static I32 SolveLDLt(DynamicVector<T>& x, const CompressedSparseMatrix<T>& A,
   LDLt_Numeric(n, Ap, Ai, Ax, Lp, symLDLt.Parent(), symLDLt.Lnz(), Li, Lx, D, Y,
                symLDLt.Pattern(), symLDLt.Flag(), P, symLDLt.Pinv());
 
-  long rank = 0;
-  for (long i = 0; i < n; i++)
+  I32 rank = 0;
+  for (I32 i = 0; i < n; i++)
     if (Abs(D[i]) > tolerance)
       rank++;
 

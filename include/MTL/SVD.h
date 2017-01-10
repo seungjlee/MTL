@@ -205,7 +205,7 @@ MTL_INLINE static bool SolveJacobiSVD(SquareMatrix<N,T>& A, ColumnVector<N,T>& x
   return SolveJacobiSVD(A, x, rank, conditionNumber, x, tol);
 }
 
-template <I32 M, long N, class T>
+template <I32 M, I32 N, class T>
 MTL_INLINE static bool SolveJacobiSVDHomogeneous(Matrix<M,N,T>& A, ColumnVector<N,T>& x,
                                                  I32& rank, T& conditionNumber,
                                                  const T& tol = T(-1.0))
