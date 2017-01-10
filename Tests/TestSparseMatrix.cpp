@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2015: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
+// Copyright (c) 2015-2017: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -28,7 +28,7 @@
 
 using namespace MTL;
 
-static const double kTol = 1e-14;
+static const double kTol = 1e-11;
 
 class SparseOptimizer : public SparseOptimizerLevenbergMarquardt<F64>
 {
@@ -93,4 +93,108 @@ TEST(TestMultiplication)
   for (I32 row = 0; row < M1.Rows(); row++)
     for (I32 col = 0; col < M1.Cols(); col++)
       MTL_EQUAL_FLOAT(M3(row,col), M1[row][col], kTol);
+}
+
+TEST(TestLargeMultiplication)
+{
+  enum
+  {
+    kRepeats = 10,
+    kRows = 20000,
+    kCols = 200
+  };
+
+  Timer timeSparseMtxV;
+  Timer timeFullMtxV;
+  Timer timeSparseMtxM;
+  Timer timeFullMtxM;
+  Timer timeOptimizeMtxM;
+  Timer timeOptimizedSequentialMtxM;
+  Timer timeOptimizedParallelMtxM;
+
+  Random random;
+  CompressedSparseMatrix<F64> M3, M4, M5;
+
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    DynamicVector<F64> B = random.DynamicVector<F64>(kRows, -1, 1);
+    DynamicMatrix<F64> fullA = random.DynamicMatrix<F64>(kRows, kCols, -1, 1);
+
+    for (I32 row = 0; row < fullA.Rows(); row++)
+      for (I32 col = 0; col < fullA.Cols(); col++)
+        if (Abs(fullA[row][col]) < 0.9)
+          fullA[row][col] = 0.0;
+
+    DynamicMatrix<F64> fullAt = fullA.ComputeTranspose();
+
+    CompressedSparseMatrix<F64> A(fullA);
+
+    DynamicVector<F64> C;
+
+    timeSparseMtxV.Start();
+    A.MultiplyTransposed(C, B);
+    timeSparseMtxV.Stop();
+
+    timeFullMtxV.Start();
+    DynamicVector<F64> D = fullAt * B;
+    timeFullMtxV.Stop();
+
+    MTL_EQUAL(D.Size(), C.Size());
+
+    for (U32 i = 0; i < C.Size(); i++)
+      MTL_EQUAL_FLOAT(D[i], C[i], kTol);
+
+    DynamicMatrix<F64> M2;
+    A.MultiplyTransposeByThis(M2);
+
+    timeFullMtxM.Start();
+    DynamicMatrix<F64> M1 = fullAt.MultiplyByTranspose();
+    timeFullMtxM.Stop();
+
+    for (I32 row = 0; row < M1.Rows(); row++)
+      for (I32 col = 0; col < M1.Cols(); col++)
+        MTL_EQUAL_FLOAT(M2[row][col], M1[row][col], kTol);
+
+    timeSparseMtxM.Start();
+    A.MultiplyTransposeByThisParallel(M3);
+    timeSparseMtxM.Stop();
+
+    for (I32 row = 0; row < M1.Rows(); row++)
+      for (I32 col = 0; col < M1.Cols(); col++)
+        MTL_EQUAL_FLOAT(M3(row,col), M1[row][col], kTol);
+
+    timeOptimizeMtxM.Start();
+    A.OptimizeMultiplyTransposeByThis();
+    timeOptimizeMtxM.Stop();
+
+    timeOptimizedSequentialMtxM.Start();
+    A.MultiplyTransposeByThis(M4);
+    timeOptimizedSequentialMtxM.Stop();
+
+    for (I32 row = 0; row < M1.Rows(); row++)
+      for (I32 col = 0; col < M1.Cols(); col++)
+        MTL_EQUAL_FLOAT(M4(row,col), M1[row][col], kTol);
+
+    timeOptimizedParallelMtxM.Start();
+    A.MultiplyTransposeByThisParallel(M5);
+    timeOptimizedParallelMtxM.Stop();
+
+    for (I32 row = 0; row < M1.Rows(); row++)
+      for (I32 col = 0; col < M1.Cols(); col++)
+        MTL_EQUAL_FLOAT(M5(row,col), M1[row][col], kTol);
+  }
+
+  printf("\n");
+  printf("Dense  Mt x V time: %9.3f msecs.\n", timeFullMtxV.Milliseconds());
+  printf("Sparse Mt x V time: %9.3f msecs.\n", timeSparseMtxV.Milliseconds());
+  printf("Dense  Mt x M time: %9.3f msecs.\n", timeFullMtxM.Milliseconds());
+  printf("Sparse Mt x M time: %9.3f msecs.\n\n", timeSparseMtxM.Milliseconds());
+  printf("Prepare optimized sparse Mt x M time:      %9.3f msecs.\n",
+         timeOptimizeMtxM.Milliseconds());
+  printf("Optimized sparse Mt x M time (sequential): %9.3f msecs.\n",
+         timeOptimizedSequentialMtxM.Milliseconds());
+  printf("Optimized sparse Mt x M time (parallel):   %9.3f msecs.\n",
+         timeOptimizedParallelMtxM.Milliseconds());
+  printf("\n");
 }

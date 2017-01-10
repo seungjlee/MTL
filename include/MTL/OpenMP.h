@@ -66,6 +66,15 @@ MTL_INLINE static bool DoOpenMP(SizeType size, SizeType numberOfThreads)
 //
 // Helper fuctions for multithreading.
 //
+MTL_INLINE static SizeType ComputeParallelSubSizesBlockSize(SizeType size, U64 numberOfThreads)
+{
+  SizeType blockSize = size / numberOfThreads;
+
+  if (blockSize * numberOfThreads < size)
+    blockSize++;
+
+  return blockSize;
+}
 
 // Computes sizes and offsets for parallel processing.
 template <class T> MTL_INLINE static void ComputeParallelSubSizes
@@ -253,7 +262,7 @@ MTL_INLINE static void ParallelReduction_2Src(ReductionT* subResults, SizeType& 
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
 
     #pragma omp parallel for
-    for (I32 i = 0; i < numberOfThreads; i++)
+    for (long i = 0; i < numberOfThreads; i++)
       subResults[i] = Func(pSrc1 + offsets[i], pSrc2 + offsets[i], subSizes[i]);
 
     subResultsSize = numberOfThreads;

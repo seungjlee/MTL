@@ -441,6 +441,7 @@ public:
     P.Create(N, N, sparseRows, sparseValues, false);
   }
 
+  // Returns P = At * A where A is this matrix.
   void MultiplyTransposeByThisParallel(CompressedSparseMatrix<T>& P) const
   {
     DynamicVector<DynamicVector<I32>>&
@@ -463,10 +464,13 @@ public:
     const T* ax = SparseMatrix<T>::Ax();
 
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+    SizeType blockSize = ComputeParallelSubSizesBlockSize(ColumnPairs_.Size(), numberOfThreads);
 
     if (RowIndexPairs_.Size() > 0)
     {
-      #pragma omp parallel for num_threads(numberOfThreads)
+#if MTL_ENABLE_OPENMP
+      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+#endif
       for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
       {
         I32 pairIndex = 0;
@@ -506,7 +510,9 @@ public:
     }
     else
     {
-      #pragma omp parallel for num_threads(numberOfThreads)
+#if MTL_ENABLE_OPENMP
+      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+#endif
       for (I32 i = 0; i < N; i++)
       {
         for (I32 j = 0; j < i+1; j++)
@@ -659,6 +665,7 @@ public:
     }
   }
 
+  // Returns P = At * A as a dense matrix where A is this matrix.
   void MultiplyTransposeByThisParallel(DynamicMatrix<T>& P) const
   {
     const I32 N = SparseMatrix<T>::Cols_;
@@ -671,10 +678,13 @@ public:
     const T* ax = SparseMatrix<T>::Ax();
 
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+    SizeType blockSize = ComputeParallelSubSizesBlockSize(ColumnPairs_.Size(), numberOfThreads);
 
     if (RowIndexPairs_.Size() > 0)
     {
-      #pragma omp parallel for num_threads(numberOfThreads)
+#if MTL_ENABLE_OPENMP
+      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+#endif
       for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
       {
         I32 pairIndex = 0;
@@ -713,7 +723,9 @@ public:
     }
     else
     {
-      #pragma omp parallel for num_threads(numberOfThreads)
+#if MTL_ENABLE_OPENMP
+      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+#endif
       for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -764,10 +776,13 @@ public:
 
     const I32 N = SparseMatrix<T>::Cols_;
 
+    SizeType blockSize = ComputeParallelSubSizesBlockSize(N/2, numberOfThreads);
+
     RowIndexPairs_.Resize(N);
     ColumnPairs_.Resize(N);
 
     ThreadRowIndexPairs_.Resize(numberOfThreads);
+    ThreadNonZeroMap_.Resize(numberOfThreads);
 
     ColumnPairs_[0].Clear();
     ColumnPairs_[0].PushBack(Point2D<I32>(0,0));
@@ -775,7 +790,9 @@ public:
     //
     // Attempting to balance the load for the threads.
     //
-    #pragma omp parallel for num_threads(numberOfThreads)
+#if MTL_ENABLE_OPENMP
+    #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+#endif
     for (I32 i = 1; i < N/2+1; i++)
     {
       I32 threadNumber = omp_get_thread_num();
@@ -784,9 +801,11 @@ public:
 
       I32 j = N - i;
 
-      OptimizeMultiplyTransposeByThis(i, ThreadRowIndexPairs_[threadNumber]);
+      OptimizeMultiplyTransposeByThis(i, ThreadRowIndexPairs_[threadNumber],
+                                      ThreadNonZeroMap_[threadNumber]);
       if (j > i)
-        OptimizeMultiplyTransposeByThis(j, ThreadRowIndexPairs_[threadNumber]);
+        OptimizeMultiplyTransposeByThis(j, ThreadRowIndexPairs_[threadNumber],
+                                        ThreadNonZeroMap_[threadNumber]);
     }
   }
 
@@ -799,9 +818,11 @@ protected:
   DynamicVector<DynamicVector<Point2D<I32>>> ColumnPairs_;
   DynamicVector<DynamicVector<DynamicVector<Point2D<I32>>>> RowIndexPairs_;
   DynamicVector<DynamicVector<Point2D<I32>>> ThreadRowIndexPairs_;
+  DynamicVector<DynamicVector<I32>> ThreadNonZeroMap_;
 
 private:
-  void OptimizeMultiplyTransposeByThis(I32 i, DynamicVector<Point2D<I32>>& rowIndexPairs)
+  void OptimizeMultiplyTransposeByThis(I32 i, DynamicVector<Point2D<I32>>& rowIndexPairs,
+                                       DynamicVector<I32>& nonZeroMap)
   {
     //
     // Note that this is working under the assumption that every column has at least one
@@ -810,8 +831,24 @@ private:
     const I32* ap = SparseMatrix<T>::Ap();
     const I32* ai = SparseMatrix<T>::Ai();
 
-    const I32 N = SparseMatrix<T>::Cols_;
     const I32 rows = SparseMatrix<T>::Rows_;
+
+    I32 p = ap[i];
+    const I32 pEnd = ap[i+1];
+    const I32 pRows = pEnd - p;
+    const I32 pFirstNonZeroRow = ai[p];
+    const I32 pLastNonZeroRow = ai[pEnd - 1];
+
+    I32* pNonZeroMap = NULL;
+    if (pRows != rows)
+    {
+      nonZeroMap.Resize(pLastNonZeroRow - pFirstNonZeroRow + 1);
+      nonZeroMap.Zeros();
+      pNonZeroMap = nonZeroMap.Begin();
+
+      for (I32 k = ap[i]; k < ap[i+1]; k++)
+        pNonZeroMap[ai[k] - pFirstNonZeroRow] = k+1;
+    }
 
     ColumnPairs_[i].Clear();
     RowIndexPairs_[i].Clear();
@@ -819,47 +856,67 @@ private:
     for (I32 j = 0; j < i; j++)
     {
       I32 count = 0;
-      I32 p = ap[i];
       I32 q = ap[j];
-      const I32 pEnd = ap[i+1];
       const I32 qEnd = ap[j+1];
-      const I32 pRows = pEnd - p;
       const I32 qRows = qEnd - q;
+
+      p = ap[i];
 
       if (pRows != rows && qRows != rows)
       {
-        rowIndexPairs.Clear();
-
-        while (p < pEnd && q < qEnd)
+        if (ai[p] <= ai[qEnd - 1] && ai[q] <= pLastNonZeroRow)
         {
-          if (ai[p] < ai[q])
+          rowIndexPairs.Clear();
+
+          while (q < qEnd && ai[q] <= ai[pEnd - 1])
           {
-            if (ai[pEnd - 1] < ai[q])
+            if (ai[q] < ai[p])
+            {
+              if (ai[p] > ai[qEnd - 1])
+                break;
+
+              while (q < qEnd && ai[q] < ai[p])
+                q++;
+            }
+
+            if (q >= qEnd)
               break;
 
-            while (p < pEnd && ai[p] < ai[q])
-              p++;
-          }
-          else if (ai[p] > ai[q])
-          {
-            if (ai[p] > ai[qEnd - 1])
-              break;
+            if (ai[q] == ai[p])
+            {
+              rowIndexPairs.PushBack(Point2D<I32>(p,q));
 
-            while (q < qEnd && ai[p] > ai[q])
-              q++;
-          }
-          else
-          {
-            rowIndexPairs.PushBack(Point2D<I32>(p,q));
-            p++;
+              if (ai[p] == ai[qEnd - 1])
+                break;
+              if (++p == pEnd)
+                break;
+            }
+            else
+            {
+              assert(ai[q] >= pFirstNonZeroRow);
+
+              if (ai[q] > pLastNonZeroRow)
+                break;
+
+              U32 pp = pNonZeroMap[ai[q] - pFirstNonZeroRow];
+              if (pp)
+              {
+                rowIndexPairs.PushBack(Point2D<I32>(pp-1,q));
+
+                if (pp == pEnd || ai[pp-1] == ai[qEnd - 1])
+                  break;
+
+                p = pp;
+              }
+            }
             q++;
           }
-        }
 
-        if (rowIndexPairs.Size() > 0)
-        {
-          RowIndexPairs_[i].PushBack(rowIndexPairs);
-          ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+          if (rowIndexPairs.Size() > 0)
+          {
+            RowIndexPairs_[i].PushBack(rowIndexPairs);
+            ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+          }
         }
       }
       else if (pRows != rows)
@@ -952,8 +1009,8 @@ static I32 SolveLDLt(DynamicVector<T>& x, const CompressedSparseMatrix<T>& A,
   LDLt_Numeric(n, Ap, Ai, Ax, Lp, symLDLt.Parent(), symLDLt.Lnz(), Li, Lx, D, Y,
                symLDLt.Pattern(), symLDLt.Flag(), P, symLDLt.Pinv());
 
-  I32 rank = 0;
-  for (I32 i = 0; i < n; i++)
+  long rank = 0;
+  for (long i = 0; i < n; i++)
     if (Abs(D[i]) > tolerance)
       rank++;
 
