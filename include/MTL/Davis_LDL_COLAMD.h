@@ -148,7 +148,7 @@ static void LDLt_Numeric
 //
 // From COLAMD library by Stefan I. Larimore and Timothy A. Davis.
 //
-#define Int long
+#define Int I32
 #define COLAMD_EMPTY   (-1)
 
 /* Row and column status */
