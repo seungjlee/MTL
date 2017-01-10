@@ -30,7 +30,7 @@ using MTL::Max;
 // From LDL library by Timothy A. Davis.
 //
 static void LDLt_Symbolic
-(int n,          /* A and L are n-by-n, where n >= 0 */
+(int n,               /* A and L are n-by-n, where n >= 0 */
  const I32* Ap,  /* input of size n+1, not modified */
  const I32* Ai,  /* input of size nz=Ap[n], not modified */
  I32* Lp,        /* output of size n+1, not defined on input */
@@ -79,17 +79,17 @@ static void LDLt_Symbolic
 
 template<class T>
 static void LDLt_Numeric
-(int n,              /* A and L are n-by-n, where n >= 0 */
+(int n,                   /* A and L are n-by-n, where n >= 0 */
  const I32* Ap,      /* input of size n+1, not modified */
  const I32* Ai,      /* input of size nz=Ap[n], not modified */
- const T* Ax,        /* input of size nz=Ap[n], not modified */
+ const T* Ax,             /* input of size nz=Ap[n], not modified */
  const I32* Lp,      /* input of size n+1, not modified */
  const I32* Parent,  /* input of size n, not modified */
  I32* Lnz,           /* output of size n, not defn. on input */
  I32* Li,            /* output of size lnz=Lp[n], not defined on input */
- T* Lx,              /* output of size lnz=Lp[n], not defined on input */
- T* D,               /* output of size n, not defined on input */
- T* Y,               /* workspace of size n, not defn. on input or output */
+ T* Lx,                   /* output of size lnz=Lp[n], not defined on input */
+ T* D,                    /* output of size n, not defined on input */
+ T* Y,                    /* workspace of size n, not defn. on input or output */
  I32* Pattern,       /* workspace of size n, not defn. on input or output */
  I32* Flag ,         /* workspace of size n, not defn. on input or output */
  const I32* P,             /* optional input of size n */
@@ -148,7 +148,7 @@ static void LDLt_Numeric
 //
 // From COLAMD library by Stefan I. Larimore and Timothy A. Davis.
 //
-#define Int int
+#define Int MTL::I32
 #define COLAMD_EMPTY   (-1)
 
 /* Row and column status */
@@ -1648,7 +1648,7 @@ static Int find_ordering       /* return the number of garbage collections */
     Int col ;                   /* a column index */
     Int max_score ;             /* maximum possible score */
     Int cur_score ;             /* score of current column */
-    unsigned Int hash ;         /* hash value for supernode detection */
+    MTL::U32 hash ;             /* hash value for supernode detection */
     Int head_column ;           /* head of hash bucket */
     Int first_col ;             /* first column in hash bucket */
     Int tag_mark ;              /* marker value for mark array */
