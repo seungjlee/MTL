@@ -159,6 +159,7 @@ public:
     SparseMatrix<T>::Ax_.Resize(allocationSize);
   }
 
+  // Expects row numbers in each column to be sorted.
   void Create(I32 rows, I32 cols,
               const DynamicVector<DynamicVector<I32>>& sparseColumns,
               bool updateOptimizedMultiplyStructure = false)
@@ -188,6 +189,7 @@ public:
       OptimizeMultiplyTransposeByThis();
   }
 
+  // Expects row numbers in each column to be sorted.
   void Create(I32 rows, I32 cols,
               const DynamicVector<DynamicVector<I32>>& sparseColumns,
               const DynamicVector<DynamicVector<T>>& sparseValues,
@@ -385,13 +387,16 @@ public:
         {
           if (i == j)
           {
+            if (ap[i+1] > ap[i])
+            {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-            T sum = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+              T sum = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #else
-            T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+              T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
-            sparseRows[i].PushBack(i);
-            sparseValues[i].PushBack(sum);
+              sparseRows[i].PushBack(i);
+              sparseValues[i].PushBack(sum);
+            }
           }
           else
           {
@@ -464,11 +469,13 @@ public:
     const T* ax = SparseMatrix<T>::Ax();
 
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
-    SizeType blockSize = ComputeParallelSubSizesBlockSize(ColumnPairs_.Size(), numberOfThreads);
 
     if (RowIndexPairs_.Size() > 0)
     {
 #if MTL_ENABLE_OPENMP
+      SizeType blockSize = ComputeParallelSubSizesBlockSize(ColumnPairs_.Size(), numberOfThreads);
+      assert(blockSize > 0);
+
       #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
 #endif
       for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
@@ -511,6 +518,9 @@ public:
     else
     {
 #if MTL_ENABLE_OPENMP
+      SizeType blockSize = ComputeParallelSubSizesBlockSize(N, numberOfThreads);
+      assert(blockSize > 0);
+
       #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
 #endif
       for (I32 i = 0; i < N; i++)
@@ -519,13 +529,16 @@ public:
         {
           if (i == j)
           {
+            if (ap[i+1] > ap[i])
+            {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-            T sum = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+              T sum = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #else
-            T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+              T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
-            sparseRows[i].PushBack(i);
-            sparseValues[i].PushBack(sum);
+              sparseRows[i].PushBack(i);
+              sparseValues[i].PushBack(sum);
+            }
           }
           else
           {
@@ -597,11 +610,15 @@ public:
 
           if (i == j)
           {
+            T sum = 0;
+            if (ap[i+1] > ap[i])
+            {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-            T sum = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+              sum = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #else
-            T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+              sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
+            }
             P[i][i] = sum;
           }
           else
@@ -678,11 +695,13 @@ public:
     const T* ax = SparseMatrix<T>::Ax();
 
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
-    SizeType blockSize = ComputeParallelSubSizesBlockSize(ColumnPairs_.Size(), numberOfThreads);
 
     if (RowIndexPairs_.Size() > 0)
     {
 #if MTL_ENABLE_OPENMP
+      SizeType blockSize = ComputeParallelSubSizesBlockSize(ColumnPairs_.Size(), numberOfThreads);
+      assert(blockSize > 0);
+
       #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
 #endif
       for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
@@ -695,11 +714,15 @@ public:
 
           if (i == j)
           {
+            T sum = 0;
+            if (ap[i+1] > ap[i])
+            {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-            T sum = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
+              sum = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #else
-            T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+              sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
 #endif
+            }
             P[i][i] = sum;
           }
           else
@@ -724,9 +747,12 @@ public:
     else
     {
 #if MTL_ENABLE_OPENMP
+      SizeType blockSize = ComputeParallelSubSizesBlockSize(N, numberOfThreads);
+      assert(blockSize > 0);
+
       #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
 #endif
-      for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
+      for (I32 i = 0; i < N; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         P[i][i] = SumOfSquares_StreamUnaligned_Sequential(ax + ap[i], ap[i+1] - ap[i]);
@@ -774,23 +800,28 @@ public:
     if (MTL::CPU::Instance().IsIntel() && MTL::CPU::Instance().Multithreading())
       numberOfThreads *= 2;
 
-    const I32 N = SparseMatrix<T>::Cols_;
+    ThreadRowIndexPairs_.Resize(numberOfThreads);
+    ThreadNonZeroMap_.Resize(numberOfThreads);
 
-    SizeType blockSize = ComputeParallelSubSizesBlockSize(N/2, numberOfThreads);
+    const I32 N = SparseMatrix<T>::Cols_;
 
     RowIndexPairs_.Resize(N);
     ColumnPairs_.Resize(N);
 
-    ThreadRowIndexPairs_.Resize(numberOfThreads);
-    ThreadNonZeroMap_.Resize(numberOfThreads);
-
-    ColumnPairs_[0].Clear();
+    for (I32 i = 0; i < N; i++)
+    {
+      RowIndexPairs_[i].Clear();
+      ColumnPairs_[i].Clear();
+    }
     ColumnPairs_[0].PushBack(Point2D<I32>(0,0));
 
     //
     // Attempting to balance the load for the threads.
     //
 #if MTL_ENABLE_OPENMP
+    SizeType blockSize = ComputeParallelSubSizesBlockSize(N/2, numberOfThreads);
+    assert(blockSize > 0);
+
     #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
 #endif
     for (I32 i = 1; i < N/2+1; i++)
@@ -824,24 +855,25 @@ private:
   void OptimizeMultiplyTransposeByThis(I32 i, DynamicVector<Point2D<I32>>& rowIndexPairs,
                                        DynamicVector<I32>& nonZeroMap)
   {
-    //
-    // Note that this is working under the assumption that every column has at least one
-    // entry which is reasonable for any stable system of linear equations.
-    //
     const I32* ap = SparseMatrix<T>::Ap();
     const I32* ai = SparseMatrix<T>::Ai();
-
-    const I32 rows = SparseMatrix<T>::Rows_;
 
     I32 p = ap[i];
     const I32 pEnd = ap[i+1];
     const I32 pRows = pEnd - p;
+
+    if(pRows > 0)
+    {
+
+    const I32 rows = SparseMatrix<T>::Rows_;
+
     const I32 pFirstNonZeroRow = ai[p];
     const I32 pLastNonZeroRow = ai[pEnd - 1];
 
     I32* pNonZeroMap = NULL;
     if (pRows != rows)
     {
+      assert(pLastNonZeroRow > pFirstNonZeroRow);
       nonZeroMap.Resize(pLastNonZeroRow - pFirstNonZeroRow + 1);
       nonZeroMap.Zeros();
       pNonZeroMap = nonZeroMap.Begin();
@@ -963,6 +995,7 @@ private:
     }
 
     ColumnPairs_[i].PushBack(Point2D<I32>(i,i));
+    }
   }
 
   template<class TT>
