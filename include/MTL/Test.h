@@ -48,17 +48,17 @@ static Test_ ## TestName                                                        
 void Test_ ## TestName::Run()
 
 #define MTL_VERIFY(Expression)                                                                     \
-MTL::Test::Verify(Expression, #Expression, String(MTL__FILE__), __LINE__)
+MTL::Test::Verify(Expression, #Expression, MTL::String(MTL__FILE__), __LINE__)
 
 #define MTL_EQUAL(Actual, Expected)                                                                \
-MTL::Test::Equal(Actual, Expected, String(MTL__FILE__), __LINE__)
+MTL::Test::Equal(Actual, Expected, MTL::String(MTL__FILE__), __LINE__)
 
 #define MTL_EQUAL_FLOAT(Actual, Expected, Tolerance)                                               \
 MTL::Test::EqualFloat(double(Actual), double(Expected), double(Tolerance),                         \
-                      String(MTL__FILE__), __LINE__)
+                      MTL::String(MTL__FILE__), __LINE__)
 
 #define MTL_LESS_THAN(Actual, Limit)                                                               \
-MTL::Test::LessThan(Actual, Limit, String(MTL__FILE__), __LINE__)
+MTL::Test::LessThan(Actual, Limit, MTL::String(MTL__FILE__), __LINE__)
 
 namespace MTL
 {
@@ -74,6 +74,23 @@ public:
 
   virtual void Run() = 0;
 
+  void RunTest()
+  {
+#if defined(WIN32) || defined(WIN64)
+    __try
+    {
+#endif
+      Run();
+#if defined(WIN32) || defined(WIN64)
+    }
+    __except(EXCEPTION_EXECUTE_HANDLER)  
+    {
+      Out() << "ERROR: SEH exception caught!" << std::endl;
+      TotalNumberOfFailures_++;
+    }
+#endif
+  }
+
   static void RunAll()
   {
     Out() << std::endl;
@@ -84,7 +101,7 @@ public:
       try
       {
         Timer timer(true);
-        List_[i]->Run();
+        List_[i]->RunTest();
         timer.Stop();
         List_[i]->TimeElapsed_ = timer.Seconds();
       }
@@ -192,7 +209,8 @@ public:
     }
   }
 
-  static void EqualFloat(double actual, double expected, double tolerance, const String& file, U64 line)
+  static void EqualFloat(double actual, double expected, double tolerance, const String& file,
+                         U64 line)
   {
     double difference = actual - expected;
     if (MTL::Abs(difference) > tolerance || actual != actual)
