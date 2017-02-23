@@ -274,7 +274,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
   T epsilon = Epsilon<T>();
   T epsilon2 = Square(epsilon);
 
-  I32 maxIterations = Max(M, 30L);
+  I32 maxIterations = Max(M, 30);
 
   OptimizedZeros(Vt, N*rowSizeV);
 
