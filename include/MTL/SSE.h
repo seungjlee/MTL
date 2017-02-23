@@ -228,6 +228,11 @@ public:
   MTL_INLINE void Set(F32 val0, F32 val1, F32 val2, F32 val3)
   { Data_ = _mm_setr_ps(val0, val1, val2, val3); }
 
+  // Conversion helpers.
+  MTL_INLINE explicit X128(F64 val)  { Set((F32)val); }
+  MTL_INLINE explicit X128(F64 val0, F64 val1, F64 val2, F64 val3)
+  { Set((F32)val0, (F32)val1, (F32)val2, (F32)val3); }
+
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosF32;  }
   MTL_INLINE static X128 Ones()    { return kX128_OnesF32;   }
   MTL_INLINE static X128 Halves()  { return kX128_HalvesF32; }

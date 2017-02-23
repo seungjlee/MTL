@@ -495,7 +495,7 @@ Sum_StreamAligned_Sequential(const T* p, SizeType size)
 {
   const T* pEnd = p + size;
 
-  XX<T> xSum(0);
+  XX<T> xSum(T(0));
   FOR_STREAM(p, size)
   {
     XX<T> xx;
@@ -509,7 +509,7 @@ Sum_StreamUnaligned_Sequential(const T* p, SizeType size)
 {
   const T* pEnd = p + size;
 
-  XX<T> xSum(0);
+  XX<T> xSum(T(0));
   FOR_STREAM(p, size)
   {
     XX<T> xx;
@@ -524,7 +524,7 @@ SumOfAbsolutes_StreamAligned_Sequential(const T* p, SizeType size)
 {
   const T* pEnd = p + size;
 
-  XX<T> xSum(0);
+  XX<T> xSum(T(0));
   FOR_STREAM(p, size)
   {
     XX<T> xx;
@@ -538,7 +538,7 @@ SumOfAbsolutes_StreamUnaligned_Sequential(const T* p, SizeType size)
 {
   const T* pEnd = p + size;
 
-  XX<T> xSum(0);
+  XX<T> xSum(T(0));
   FOR_STREAM(p, size)
   {
     XX<T> xx;
@@ -553,7 +553,7 @@ SumOfSquares_StreamAligned_Sequential(const T* p, SizeType size)
 {
   const T* pEnd = p + size;
 
-  XX<T> xSum(0);
+  XX<T> xSum(T(0));
   FOR_STREAM(p, size)
   {
     XX<T> xx;
@@ -567,7 +567,7 @@ SumOfSquares_StreamUnaligned_Sequential(const T* p, SizeType size)
 {
   const T* pEnd = p + size;
 
-  XX<T> xSum(0);
+  XX<T> xSum(T(0));
   FOR_STREAM(p, size)
   {
     XX<T> xx;
