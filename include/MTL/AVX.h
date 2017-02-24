@@ -56,10 +56,10 @@ static const __m256d kX256_OnesF64    = X256_SetPacked(1.0 );
 static const __m256d kX256_TwosF64    = X256_SetPacked(2.0 );
 static const __m256d kX256_ZerosF64   = _mm256_setzero_pd();
 static const __m256d kX256_HalvesF64  = X256_SetPacked(kHalf);
-static const __m256  kX256_SignF32    = X256_SetPacked(( F32&)*kSign32  );
-static const __m256  kX256_NoSignF32  = X256_SetPacked(( F32&)*kNoSign32);
-static const __m256d kX256_SignF64    = X256_SetPacked((double&)*kSign64  );
-static const __m256d kX256_NoSignF64  = X256_SetPacked((double&)*kNoSign64);
+static const __m256  kX256_SignF32    = X256_SetPacked(*((F32*)&kSign32)  );
+static const __m256  kX256_NoSignF32  = X256_SetPacked(*((F32*)&kNoSign32));
+static const __m256d kX256_SignF64    = X256_SetPacked(*((F64*)&kSign64  ));
+static const __m256d kX256_NoSignF64  = X256_SetPacked(*((F64*)&kNoSign64));
 static const __m256i kX256_ZerosI     = _mm256_setzero_si256();
 static const __m256i kX256_NoZerosI   = X256_SetPacked(I32(-1));
 
@@ -224,6 +224,12 @@ public:
   MTL_INLINE void Set(F32 val0, F32 val1, F32 val2, F32 val3,
                       F32 val4, F32 val5, F32 val6, F32 val7)
   { Data_ = _mm256_setr_ps(val0, val1, val2, val3, val4, val5, val6, val7); }
+
+  // Conversion helpers.
+  MTL_INLINE explicit X256(F64 val)  { Set((F32)val); }
+  MTL_INLINE explicit X256(F64 val0, F64 val1, F64 val2, F64 val3,
+                           F32 val4, F32 val5, F32 val6, F32 val7)
+  { Set((F32)val0, (F32)val1, (F32)val2, (F32)val3, (F32)val4, (F32)val5, (F32)val6, (F32)val7); }
 
   MTL_INLINE static X256 Zeros()   { return kX256_ZerosF32;  }
   MTL_INLINE static X256 Ones()    { return kX256_OnesF32;   }
