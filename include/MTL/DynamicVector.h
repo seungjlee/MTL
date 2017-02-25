@@ -108,6 +108,13 @@ public:
     Assign(pSrcBegin, pSrcEnd);
   }
 
+  // Constructor that does not own the data buffer.
+  MTL_INLINE DynamicVector(SizeType size, const T* pData)
+    : Buffer_(0), First_((T*)pData), Size_(size), BufferSize_(0),
+      AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
+  {
+  }
+
   // Constructor that casts types.
   template <class T2>
   MTL_INLINE explicit DynamicVector(const DynamicVector<T2>& rhs)

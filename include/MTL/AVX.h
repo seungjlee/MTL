@@ -97,6 +97,7 @@ public:
   MTL_INLINE const DataType& Data() const               { return Data_;                 }
   MTL_INLINE const T* pData() const                     { return (T*)&Data_;            }
   MTL_INLINE const T& operator[](SizeType i) const      { return pData()[i];            }
+  MTL_INLINE       T& operator[](SizeType i)            { return ((T*)pData())[i];      }
 
 protected:
   DataType Data_;
