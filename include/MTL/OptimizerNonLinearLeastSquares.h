@@ -123,7 +123,12 @@ protected:
   void ParallelComputeJacobianForwardFiniteDifference(DynamicMatrix<T>& Jt,
                                                       const Parameters& parameters)
   {
-    #pragma omp parallel for
+#if MTL_ENABLE_OPENMP
+    I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+    SizeType blockSize = ComputeParallelSubSizesBlockSize(N, numberOfThreads);
+
+    #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+#endif
     for (I32 i = 0; i < N; i++)
     {
       Parameters forwardDifferenceParameters = parameters;
@@ -143,7 +148,12 @@ protected:
   void ParallelComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
                                                       const Parameters& parameters)
   {
-    #pragma omp parallel for
+#if MTL_ENABLE_OPENMP
+    I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+    SizeType blockSize = ComputeParallelSubSizesBlockSize(N, numberOfThreads);
+
+    #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+#endif
     for (I32 i = 0; i < N; i++)
     {
       Parameters centralDifferenceParameters = parameters;
@@ -265,7 +275,12 @@ protected:
   void ParallelComputeJacobianForwardFiniteDifference(DynamicMatrix<T>& Jt,
                                                       const Parameters& parameters)
   {
-    #pragma omp parallel for
+#if MTL_ENABLE_OPENMP
+    I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+    SizeType blockSize = ComputeParallelSubSizesBlockSize(parameters.Size(), numberOfThreads);
+
+    #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+#endif
     for (I32 i = 0; i < parameters.Size(); i++)
     {
       Parameters forwardDifferenceParameters = parameters;
@@ -285,7 +300,12 @@ protected:
   void  ParallelComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
                                                        const Parameters& parameters)
   {
-    #pragma omp parallel for
+#if MTL_ENABLE_OPENMP
+    I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+    SizeType blockSize = ComputeParallelSubSizesBlockSize(parameters.Size(), numberOfThreads);
+
+    #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+#endif
     for (I32 i = 0; i < parameters.Size(); i++)
     {
       Parameters centralDifferenceParameters = parameters;
