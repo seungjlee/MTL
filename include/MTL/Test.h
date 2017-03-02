@@ -60,6 +60,9 @@ MTL::Test::EqualFloat(double(Actual), double(Expected), double(Tolerance),      
 #define MTL_LESS_THAN(Actual, Limit)                                                               \
 MTL::Test::LessThan(Actual, Limit, MTL::String(MTL__FILE__), __LINE__)
 
+#define MTL_LESS_THAN_OR_EQUAL_TO(Actual, Limit)                                                   \
+MTL::Test::LessThanOrEqualTo(Actual, Limit, MTL::String(MTL__FILE__), __LINE__)
+
 namespace MTL
 {
 
@@ -225,6 +228,26 @@ public:
 
   template <class T1, class T2>
   static void LessThan(const T1& actual, const T2& limit, const String& file, U64 line)
+  {
+    if (actual == limit)
+    {
+      TotalNumberOfFailures_++;
+      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
+            << "  Actual value is '" << actual
+            << "' which is equal to the limit '"
+            << limit << "' but it is expected to be less than this limit." << std::endl;
+    }
+    else if (actual > limit)
+    {
+      TotalNumberOfFailures_++;
+      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
+            << "  Actual value is '" << actual
+            << "' which is greater the limit '"
+            << limit << "'" << std::endl;
+    }
+  }
+  template <class T1, class T2>
+  static void LessThanOrEqualTo(const T1& actual, const T2& limit, const String& file, U64 line)
   {
     if (actual > limit)
     {
