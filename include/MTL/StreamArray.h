@@ -126,6 +126,21 @@ template <class T> MTL_INLINE static T SumOfSquares_Sequential(const T* p, const
 
   return sum;
 }
+template <class T> MTL_INLINE static T SumOfSquaredDifferences_Sequential(const T* p1, const T* p2,
+                                                                          const T* pEnd1)
+{
+  if (p1 >= pEnd1)
+    return T();
+
+  T sum = Square(*p1++ - *p2++);
+  for (; p1 < pEnd1; p1++, p2++)
+  {
+    T difference = *p1 - *p2;
+    sum = MultiplyAndAdd(difference, difference, sum);
+  }
+
+  return sum;
+}
 
 template <class T> MTL_INLINE static T Min_Sequential(const T* p, const T* pEnd)
 {
@@ -575,6 +590,39 @@ SumOfSquares_StreamUnaligned_Sequential(const T* p, SizeType size)
     xSum = MultiplyAndAdd(xx, xx, xSum);
   }
   return Sum< XX<T>::Increment >(xSum.pData()) + SumOfSquares_Sequential(p, pEnd);
+}
+
+template <class T> MTL_INLINE static T
+SumOfSquaredDifferences_StreamAligned_Sequential(const T* p1, const T* p2, SizeType size)
+{
+  const T* pEnd1 = p1 + size;
+
+  XX<T> xSum(T(0));
+  FOR_STREAM2(p1, p2, size)
+  {
+    XX<T> xx1, xx2;
+    xx1.LoadPackedAligned(p1);
+    xx2.LoadPackedAligned(p2);
+    xx1 -= xx2;
+    xSum = MultiplyAndAdd(xx1, xx1, xSum);
+  }
+  return Sum< XX<T>::Increment >(xSum.pData()) + SumOfSquaredDifferences_Sequential(p1, p2, pEnd1);
+}
+template <class T> MTL_INLINE static T
+SumOfSquaredDifferences_StreamUnaligned_Sequential(const T* p1, const T* p2, SizeType size)
+{
+  const T* pEnd1 = p1 + size;
+
+  XX<T> xSum(T(0));
+  FOR_STREAM2(p1, p2, size)
+  {
+    XX<T> xx1, xx2;
+    xx1.LoadPackedUnaligned(p1);
+    xx2.LoadPackedUnaligned(p2);
+    xx1 -= xx2;
+    xSum = MultiplyAndAdd(xx1, xx1, xSum);
+  }
+  return Sum< XX<T>::Increment >(xSum.pData()) + SumOfSquaredDifferences_Sequential(p1, p2, pEnd1);
 }
 
 template <class T> MTL_INLINE static T
@@ -1044,6 +1092,27 @@ SumOfSquares_StreamUnaligned_Parallel(const T* p, SizeType size)
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, SumOfSquares_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p, size);
+
+  return Sum_StreamAligned_Sequential(subResults, subResultsSize);
+}
+
+template <class T> MTL_INLINE static T
+SumOfSquaredDifferences_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size)
+{
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_2Src<T, T, SumOfSquaredDifferences_StreamAligned_Sequential<T> >
+    (subResults, subResultsSize, p1, p2, size);
+
+  return Sum_StreamAligned_Sequential(subResults, subResultsSize);
+}
+template <class T> MTL_INLINE static T
+SumOfSquaredDifferences_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeType size)
+{
+  T subResults[MTL_MAX_THREADS];
+  SizeType subResultsSize;
+  ParallelReduction_2Src<T, T, SumOfSquaredDifferences_StreamUnaligned_Sequential<T> >
+    (subResults, subResultsSize, p1, p2, size);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }

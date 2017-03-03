@@ -48,6 +48,7 @@ static const double kRadiansToDegrees = 180.0 / kPi;
 // Some helpers for floating point constants.
 static const I32 kSign32     = 0x80000000;
 static const I32 kNoSign32   = 0x7FFFFFFF;
+static const I32 kInfinity32 = 0x7F800000;
 static const I64 kSign64     = 0x8000000000000000;
 static const I64 kNoSign64   = 0x7FFFFFFFFFFFFFFF;
 static const I64 kInfinity64 = 0x7FF0000000000000;
@@ -55,7 +56,9 @@ static const I64 kInfinity64 = 0x7FF0000000000000;
 }  // namespace MTL
 
 // Special floating point values.
-#define kNAN ((double&)MTL::kNoSign64)
-#define kINF ((double&)MTL::kInfinity64)
+#define kNAN   ((MTL::F64&)MTL::kNoSign64)
+#define kINF   ((MTL::F64&)MTL::kInfinity64)
+#define kNAN32 ((MTL::F32&)MTL::kNoSign32)
+#define kINF32 ((MTL::F32&)MTL::kInfinity32)
 
 #endif // MTL_CONSTANTS_H

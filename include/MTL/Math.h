@@ -115,24 +115,16 @@ MTL_INLINE static T Hypotenuse(const T& a, const T& b)
     return (bb == T(0.0) ? T(0.0) : bb * Sqrt(T(1.0) + Square(aa/bb)));
 }
 
+template <class T> MTL_INLINE T Epsilon();
+template <> MTL_INLINE F32 Epsilon<F32>()   { return FLT_EPSILON; }
+template <> MTL_INLINE F64 Epsilon<F64>()   { return DBL_EPSILON; }
 
-#ifdef WIN32
-template <class T> MTL_INLINE static T Epsilon();
-template <> MTL_INLINE static F32 Epsilon<F32>()   { return FLT_EPSILON; }
-template <> MTL_INLINE static F64 Epsilon<F64>()   { return DBL_EPSILON; }
+template <class T> MTL_INLINE T Infinity();
+template <> MTL_INLINE F32 Infinity<F32>()  { return kINF32;      }
+template <> MTL_INLINE F64 Infinity<F64>()  { return kINF;        }
 
-template <class T> MTL_INLINE static T Infinity()  { return T(kINF);     }
-template <class T> MTL_INLINE static bool IsFinite(const T& a)
+template <class T> MTL_INLINE bool IsFinite(const T& a)
 { return a > -Infinity<T>() && a < Infinity<T>(); }
-#else
-template <class T> inline T Epsilon();
-template <> inline F32 Epsilon<F32>()   { return FLT_EPSILON; }
-template <> inline F64 Epsilon<F64>()   { return DBL_EPSILON; }
-
-template <class T> inline T Infinity()  { return T(kINF);     }
-template <class T> inline bool IsFinite(const T& a)
-{ return a > -Infinity<T>() && a < Infinity<T>(); }
-#endif
 
 template <class T> MTL_INLINE static T EpsilonSquared()
 {
