@@ -257,3 +257,27 @@ TEST(Test_AddBack_Insert)
       MTL_EQUAL(v[vIndex], 777);
   }
 }
+
+TEST(Test_SumOfSquaredDifferences)
+{
+  static const double kTol = 1e-14;
+
+  enum
+  {
+    N = 128*1024,
+    kRepeats = 1000
+  };
+
+  Random random;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    DynamicVector<F64> v1 = random.DynamicVector<F64>(N, -1.0, 1.0);
+    DynamicVector<F64> v2 = random.DynamicVector<F64>(N, -1.0, 1.0);
+
+    F64 s1 = SumOfSquares(v1 - v2);
+    F64 s2 = SumOfSquaredDifferences(v1, v2);
+
+    MTL_EQUAL_FLOAT(s1, s2, kTol);
+  }
+}

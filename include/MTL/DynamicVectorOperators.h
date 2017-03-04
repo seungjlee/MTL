@@ -345,6 +345,12 @@ template <class T> MTL_INLINE static T DotProduct(const DynamicVector<T>& v1,
 {
   return DotProduct_Sequential(v1.Begin(), v2.Begin(), v1.End());
 }
+template <class T> MTL_INLINE static T SumOfSquaredDifferences(const DynamicVector<T>& v1,
+                                                               const DynamicVector<T>& v2)
+{
+  return SumOfSquaredDifferences_Sequential(v1.Begin(), v2.Begin(), v1.End());
+}
+
 
 //
 // Some extra operations.
@@ -466,6 +472,18 @@ MTL_INLINE static T DotProduct(const MTL::DynamicVector<T>& v1, const MTL::Dynam
   return MTL::DotProduct_StreamAligned_Parallel(v1.Begin(), v2.Begin(), v2.Size());               \
 }                                                                                                 \
 }
+
+#define MTL_DYNAMIC_VECTOR_STREAM_SUM_OF_SQUARED_DIFFERENCES(T)                                   \
+namespace MTL                                                                                     \
+{                                                                                                 \
+MTL_INLINE static T SumOfSquaredDifferences(const MTL::DynamicVector<T>& v1,                      \
+                                            const MTL::DynamicVector<T>& v2)                      \
+{                                                                                                 \
+  assert(v1.Size() == v2.Size());                                                                 \
+  return MTL::SumOfSquaredDifferences_StreamAligned_Parallel(v1.Begin(), v2.Begin(), v2.Size());  \
+}                                                                                                 \
+}
+
 #else // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM(T)
@@ -477,6 +495,7 @@ MTL_INLINE static T DotProduct(const MTL::DynamicVector<T>& v1, const MTL::Dynam
 #define MTL_DYNAMIC_VECTOR_STREAM_MAX_OF_ABSOLUTES(T)
 #define MTL_DYNAMIC_VECTOR_STREAM_MAX_NORM(T)
 #define MTL_DYNAMIC_VECTOR_STREAM_DOT_PRODUCT(T)
+#define MTL_DYNAMIC_VECTOR_STREAM_SUM_OF_SQUARED_DIFFERENCES(T)
 
 #endif // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 
@@ -490,7 +509,8 @@ MTL_DYNAMIC_VECTOR_STREAM_MAX(T)                           \
 MTL_DYNAMIC_VECTOR_STREAM_MIN_OF_ABSOLUTES(T)              \
 MTL_DYNAMIC_VECTOR_STREAM_MAX_OF_ABSOLUTES(T)              \
 MTL_DYNAMIC_VECTOR_STREAM_MAX_NORM(T)                      \
-MTL_DYNAMIC_VECTOR_STREAM_DOT_PRODUCT(T)
+MTL_DYNAMIC_VECTOR_STREAM_DOT_PRODUCT(T)                   \
+MTL_DYNAMIC_VECTOR_STREAM_SUM_OF_SQUARED_DIFFERENCES(T)
 
 // Define optimizations for valid types.
 MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(F32,F32);
