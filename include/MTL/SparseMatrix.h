@@ -362,9 +362,10 @@ public:
           }
           else
           {
-            const Point2D<I32>* p = RowIndexPairs_[index0][pairIndex].Begin();
             const Point2D<I32>*
-              pEnd = p + RowIndexPairs_[index0][pairIndex].Size();
+              p = RowIndexPairs_[index0].Begin() + RowIndexPairsStart_[index0][pairIndex];
+            const Point2D<I32>*
+              pEnd = RowIndexPairs_[index0].Begin() + RowIndexPairsEnd_[index0][pairIndex];
 
             T sum = 0;
 
@@ -498,9 +499,10 @@ public:
           }
           else
           {
-            const Point2D<I32>* p = RowIndexPairs_[index0][pairIndex].Begin();
             const Point2D<I32>*
-              pEnd = p + RowIndexPairs_[index0][pairIndex].Size();
+              p = RowIndexPairs_[index0].Begin() + RowIndexPairsStart_[index0][pairIndex];
+            const Point2D<I32>*
+              pEnd = RowIndexPairs_[index0].Begin() + RowIndexPairsEnd_[index0][pairIndex];
 
             T sum = 0;
 
@@ -623,9 +625,10 @@ public:
           }
           else
           {
-            const Point2D<I32>* p = RowIndexPairs_[index0][pairIndex].Begin();
             const Point2D<I32>*
-              pEnd = p + RowIndexPairs_[index0][pairIndex].Size();
+              p = RowIndexPairs_[index0].Begin() + RowIndexPairsStart_[index0][pairIndex];
+            const Point2D<I32>*
+              pEnd = RowIndexPairs_[index0].Begin() + RowIndexPairsEnd_[index0][pairIndex];
 
             T sum = 0;
 
@@ -727,9 +730,10 @@ public:
           }
           else
           {
-            const Point2D<I32>* p = RowIndexPairs_[index0][pairIndex].Begin();
             const Point2D<I32>*
-              pEnd = p + RowIndexPairs_[index0][pairIndex].Size();
+              p = RowIndexPairs_[index0].Begin() + RowIndexPairsStart_[index0][pairIndex];
+            const Point2D<I32>*
+              pEnd = RowIndexPairs_[index0].Begin() + RowIndexPairsEnd_[index0][pairIndex];
 
             T sum = 0;
 
@@ -806,12 +810,16 @@ public:
     const I32 N = SparseMatrix<T>::Cols_;
 
     RowIndexPairs_.Resize(N);
+    RowIndexPairsStart_.Resize(N);
+    RowIndexPairsEnd_.Resize(N);
     ColumnPairs_.Resize(N);
 
     for (I32 i = 0; i < N; i++)
     {
       RowIndexPairs_[i].Clear();
       ColumnPairs_[i].Clear();
+      RowIndexPairsStart_[i].Clear();
+      RowIndexPairsEnd_[i].Clear();
     }
     ColumnPairs_[0].PushBack(Point2D<I32>(0,0));
 
@@ -847,7 +855,9 @@ protected:
 
   // Data cached to optimize computation of At * A
   DynamicVector<DynamicVector<Point2D<I32>>> ColumnPairs_;
-  DynamicVector<DynamicVector<DynamicVector<Point2D<I32>>>> RowIndexPairs_;
+  DynamicVector<DynamicVector<Point2D<I32>>> RowIndexPairs_;
+  DynamicVector<DynamicVector<I32>> RowIndexPairsStart_;
+  DynamicVector<DynamicVector<I32>> RowIndexPairsEnd_;
   DynamicVector<DynamicVector<Point2D<I32>>> ThreadRowIndexPairs_;
   DynamicVector<DynamicVector<I32>> ThreadNonZeroMap_;
 
@@ -864,137 +874,149 @@ private:
 
     if(pRows > 0)
     {
+      const I32 rows = SparseMatrix<T>::Rows_;
 
-    const I32 rows = SparseMatrix<T>::Rows_;
+      const I32 pFirstNonZeroRow = ai[p];
+      const I32 pLastNonZeroRow = ai[pEnd - 1];
 
-    const I32 pFirstNonZeroRow = ai[p];
-    const I32 pLastNonZeroRow = ai[pEnd - 1];
-
-    I32* pNonZeroMap = NULL;
-    if (pRows != rows)
-    {
-      assert(pLastNonZeroRow > pFirstNonZeroRow);
-      nonZeroMap.Resize(pLastNonZeroRow - pFirstNonZeroRow + 1);
-      nonZeroMap.Zeros();
-      pNonZeroMap = nonZeroMap.Begin();
-
-      for (I32 k = ap[i]; k < ap[i+1]; k++)
-        pNonZeroMap[ai[k] - pFirstNonZeroRow] = k+1;
-    }
-
-    ColumnPairs_[i].Clear();
-    RowIndexPairs_[i].Clear();
-
-    for (I32 j = 0; j < i; j++)
-    {
-      I32 count = 0;
-      I32 q = ap[j];
-      const I32 qEnd = ap[j+1];
-      const I32 qRows = qEnd - q;
-
-      p = ap[i];
-
-      if (pRows != rows && qRows != rows)
+      I32* pNonZeroMap = NULL;
+      if (pRows != rows)
       {
-        if (ai[p] <= ai[qEnd - 1] && ai[q] <= pLastNonZeroRow)
+        assert(pLastNonZeroRow > pFirstNonZeroRow);
+        nonZeroMap.Resize(pLastNonZeroRow - pFirstNonZeroRow + 1);
+        nonZeroMap.Zeros();
+        pNonZeroMap = nonZeroMap.Begin();
+
+        for (I32 k = ap[i]; k < ap[i+1]; k++)
+          pNonZeroMap[ai[k] - pFirstNonZeroRow] = k+1;
+      }
+
+      ColumnPairs_[i].Clear();
+      RowIndexPairs_[i].Clear();
+
+      for (I32 j = 0; j < i; j++)
+      {
+        I32 count = 0;
+        I32 q = ap[j];
+        const I32 qEnd = ap[j+1];
+        const I32 qRows = qEnd - q;
+
+        p = ap[i];
+
+        if (pRows != rows && qRows != rows)
         {
-          rowIndexPairs.Clear();
-
-          while (q < qEnd && ai[q] <= ai[pEnd - 1])
+          if (ai[p] <= ai[qEnd - 1] && ai[q] <= pLastNonZeroRow)
           {
-            if (ai[q] < ai[p])
+            rowIndexPairs.Clear();
+
+            while (q < qEnd && ai[q] <= ai[pEnd - 1])
             {
-              if (ai[p] > ai[qEnd - 1])
-                break;
-
-              while (q < qEnd && ai[q] < ai[p])
-                q++;
-            }
-
-            if (q >= qEnd)
-              break;
-
-            if (ai[q] == ai[p])
-            {
-              rowIndexPairs.PushBack(Point2D<I32>(p,q));
-
-              if (ai[p] == ai[qEnd - 1])
-                break;
-              if (++p == pEnd)
-                break;
-            }
-            else
-            {
-              assert(ai[q] >= pFirstNonZeroRow);
-
-              if (ai[q] > pLastNonZeroRow)
-                break;
-
-              U32 pp = pNonZeroMap[ai[q] - pFirstNonZeroRow];
-              if (pp)
+              if (ai[q] < ai[p])
               {
-                rowIndexPairs.PushBack(Point2D<I32>(pp-1,q));
-
-                if (pp == pEnd || ai[pp-1] == ai[qEnd - 1])
+                if (ai[p] > ai[qEnd - 1])
                   break;
 
-                p = pp;
+                while (q < qEnd && ai[q] < ai[p])
+                  q++;
               }
+
+              if (q >= qEnd)
+                break;
+
+              if (ai[q] == ai[p])
+              {
+                rowIndexPairs.PushBack(Point2D<I32>(p,q));
+
+                if (ai[p] == ai[qEnd - 1])
+                  break;
+                if (++p == pEnd)
+                  break;
+              }
+              else
+              {
+                assert(ai[q] >= pFirstNonZeroRow);
+
+                if (ai[q] > pLastNonZeroRow)
+                  break;
+
+                U32 pp = pNonZeroMap[ai[q] - pFirstNonZeroRow];
+                if (pp)
+                {
+                  rowIndexPairs.PushBack(Point2D<I32>(pp-1,q));
+
+                  if (pp == pEnd || ai[pp-1] == ai[qEnd - 1])
+                    break;
+
+                  p = pp;
+                }
+              }
+              q++;
             }
+
+            if (rowIndexPairs.Size() > 0)
+            {
+              RowIndexPairsStart_[i].PushBack((I32)RowIndexPairs_[i].Size());
+              RowIndexPairs_[i].AddBack(rowIndexPairs);
+              RowIndexPairsEnd_[i].PushBack((I32)RowIndexPairs_[i].Size());
+              ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+            }
+          }
+        }
+        else if (pRows != rows)
+        {
+          SizeType addSize = pEnd - p;
+          I32 startIndex = (I32)RowIndexPairs_[i].Size();
+          RowIndexPairsStart_[i].PushBack(startIndex);
+          RowIndexPairs_[i].Resize(startIndex + addSize);
+
+          Point2D<I32>* pPairs = &RowIndexPairs_[i][startIndex];
+          for (I32 k = 0; k < addSize; k++)
+          {
+            pPairs[k].x(p);
+            pPairs[k].y(q + ai[p]);
+            p++;
+          }
+
+          RowIndexPairsEnd_[i].PushBack((I32)RowIndexPairs_[i].Size());
+          ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+        }
+        else if (qRows != rows)
+        {
+          SizeType addSize = qEnd - q;
+          I32 startIndex = (I32)RowIndexPairs_[i].Size();
+          RowIndexPairsStart_[i].PushBack(startIndex);
+          RowIndexPairs_[i].Resize(startIndex + addSize);
+
+          Point2D<I32>* pPairs = &RowIndexPairs_[i][startIndex];
+          for (I32 k = 0; k < addSize; k++)
+          {
+            pPairs[k].x(p + ai[q]);
+            pPairs[k].y(q);
             q++;
           }
 
-          if (rowIndexPairs.Size() > 0)
+          RowIndexPairsEnd_[i].PushBack((I32)RowIndexPairs_[i].Size());
+          ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+        }
+        else
+        {
+          I32 startIndex = (I32)RowIndexPairs_[i].Size();
+          RowIndexPairsStart_[i].PushBack(startIndex);
+          RowIndexPairs_[i].Resize(startIndex + rows);
+
+          Point2D<I32>* pPairs = &RowIndexPairs_[i][startIndex];
+          for (I32 k = 0; k < rows; k++)
           {
-            RowIndexPairs_[i].PushBack(rowIndexPairs);
-            ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
+            pPairs[k].x(p++);
+            pPairs[k].y(q++);
           }
+
+          RowIndexPairsEnd_[i].PushBack((I32)RowIndexPairs_[i].Size());
+          ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
         }
       }
-      else if (pRows != rows)
-      {
-        RowIndexPairs_[i].Resize(RowIndexPairs_[i].Size() + 1);
-        RowIndexPairs_[i].Back().Resize(pEnd - p);
-        Point2D<I32>* pPairs = RowIndexPairs_[i].Back().Begin();
-        for (I32 k = 0; k < RowIndexPairs_[i].Back().Size(); k++)
-        {
-          pPairs[k].x(p);
-          pPairs[k].y(q + ai[p]);
-          p++;
-        }
 
-        ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
-      }
-      else if (qRows != rows)
-      {
-        RowIndexPairs_[i].Resize(RowIndexPairs_[i].Size() + 1);
-        RowIndexPairs_[i].Back().Resize(qEnd - q);
-        Point2D<I32>* pPairs = RowIndexPairs_[i].Back().Begin();
-        for (I32 k = 0; k < RowIndexPairs_[i].Back().Size(); k++)
-        {
-          pPairs[k].x(p + ai[q]);
-          pPairs[k].y(q);
-          q++;
-        }
-
-        ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
-      }
-      else
-      {
-        RowIndexPairs_[i].Resize(RowIndexPairs_[i].Size() + 1);
-        RowIndexPairs_[i].Back().Resize(rows);
-        Point2D<I32>* pPairs = RowIndexPairs_[i].Back().Begin();
-        for (I32 k = 0; k < RowIndexPairs_[i].Back().Size(); k++)
-        {
-          pPairs[k].x(p++);
-          pPairs[k].y(q++);
-        }
-
-        ColumnPairs_[i].PushBack(Point2D<I32>(i,j));
-      }
-    }
-
-    ColumnPairs_[i].PushBack(Point2D<I32>(i,i));
+      ColumnPairs_[i].PushBack(Point2D<I32>(i,i));
     }
   }
 
