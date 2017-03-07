@@ -77,13 +77,13 @@ public:
 
   virtual void Run() = 0;
 
-  void RunTest()
+  static void RunAll()
   {
 #if defined(WIN32) || defined(WIN64)
     __try
     {
 #endif
-      Run();
+      Run_All();
 #if defined(WIN32) || defined(WIN64)
     }
     __except(EXCEPTION_EXECUTE_HANDLER)  
@@ -92,48 +92,6 @@ public:
       TotalNumberOfFailures_++;
     }
 #endif
-  }
-
-  static void RunAll()
-  {
-    Out() << std::endl;
-    for (U32 i = 0; i < List_.Size(); i++)
-    {
-      Out() << "[" << List_[i]->Name_ << "]" << " Begins..." << std::endl;
-
-      try
-      {
-        Timer timer(true);
-        List_[i]->RunTest();
-        timer.Stop();
-        List_[i]->TimeElapsed_ = timer.Seconds();
-      }
-      catch(const Exception& e)
-      {
-        List_[i]->TotalNumberOfFailures_++;
-        Out() << "ERROR: " << e.Message() << std::endl;
-      }
-      catch(const std::exception& e)
-      {
-        List_[i]->TotalNumberOfFailures_++;
-        Out() << "std::exception: " << e.what() << std::endl;
-      }
-      catch(...)
-      {
-        List_[i]->TotalNumberOfFailures_++;
-        Out() << "UNEXPECTED ERROR!" << std::endl;
-      }
-
-      Out() << "[" << List_[i]->Name_ << "]" << " Ends.";
-
-      Out() << "  Time: " << float(List_[i]->TimeElapsed_) << " seconds."
-            << std::endl << std::endl;
-
-      TotalTimeElapsed_ += List_[i]->TimeElapsed_;
-    }
-
-    Out() << "Total number of errors: " << TotalNumberOfFailures() << std::endl;
-    Out() << "Total time: " << TotalTimeElapsed_ << " seconds." << std::endl;
   }
 
   static OutputStream& Out()
@@ -272,6 +230,48 @@ private:
 
   static U64 TotalNumberOfFailures_;
   static double TotalTimeElapsed_;  // In seconds.
+
+  static void Run_All()
+  {
+    Out() << std::endl;
+    for (U32 i = 0; i < List_.Size(); i++)
+    {
+      Out() << "[" << List_[i]->Name_ << "]" << " Begins..." << std::endl;
+
+      try
+      {
+        Timer timer(true);
+        List_[i]->Run();
+        timer.Stop();
+        List_[i]->TimeElapsed_ = timer.Seconds();
+      }
+      catch(const Exception& e)
+      {
+        List_[i]->TotalNumberOfFailures_++;
+        Out() << "ERROR: " << e.Message() << std::endl;
+      }
+      catch(const std::exception& e)
+      {
+        List_[i]->TotalNumberOfFailures_++;
+        Out() << "std::exception: " << e.what() << std::endl;
+      }
+      catch(...)
+      {
+        List_[i]->TotalNumberOfFailures_++;
+        Out() << "UNEXPECTED ERROR!" << std::endl;
+      }
+
+      Out() << "[" << List_[i]->Name_ << "]" << " Ends.";
+
+      Out() << "  Time: " << float(List_[i]->TimeElapsed_) << " seconds."
+            << std::endl << std::endl;
+
+      TotalTimeElapsed_ += List_[i]->TimeElapsed_;
+    }
+
+    Out() << "Total number of errors: " << TotalNumberOfFailures() << std::endl;
+    Out() << "Total time: " << TotalTimeElapsed_ << " seconds." << std::endl;
+  }
 };
 
 String Test::FilePath_;
