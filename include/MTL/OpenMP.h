@@ -277,13 +277,22 @@ MTL_INLINE static void ParallelReduction_2Src(ReductionT* subResults, SizeType& 
 
 }  // namespace MTL
 
+
+#if MTL_ENABLE_OPENMP
 #ifdef WIN32
 #define MTL_PARALLEL_FOR_BLOCKS(Size)                                                 \
   int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();                  \
   int blockSize = (int)MTL::ComputeParallelSubSizesBlockSize(Size, numberOfThreads);  \
   __pragma(omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize))
+#define MTL_PARALLEL_FOR_BLOCKS_THREADS(Size, NumberOfThreads)                        \
+  int blockSize = (int)MTL::ComputeParallelSubSizesBlockSize(Size, NumberOfThreads);  \
+  __pragma(omp parallel for num_threads(NumberOfThreads) schedule(dynamic, blockSize))
 #else
   // Not sure what compilers support C++11 _Pragma. VS2012 does seem to support it.
 #endif
+#else  // MTL_ENABLE_OPENMP
+#define MTL_PARALLEL_FOR_BLOCKS(Size)
+#define MTL_PARALLEL_FOR_BLOCKS_THREADS(Size, NumberOfThreads)
+#endif // MTL_ENABLE_OPENMP
 
 #endif  // MTL_OPENMP_H

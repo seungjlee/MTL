@@ -36,12 +36,7 @@ template<class T>
 MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
                                            I32 rowSizeP, I32 rowSizeM)
 {
-#if MTL_ENABLE_OPENMP
-  I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
-  SizeType blockSize = ComputeParallelSubSizesBlockSize(rows, numberOfThreads);
-
-  #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-#endif
+  MTL_PARALLEL_FOR_BLOCKS(rows)
   for (I32 i = 0; i < rows; i++)
   {
     for (I32 j = i; j < rows; j++)
@@ -73,12 +68,7 @@ template<class T>
 MTL_INLINE static void MultiplyByTranspose_LowerMatrix(T* P, const T* M, I32 rows, I32 cols,
                                                        I32 rowSizeP, I32 rowSizeM)
 {
-#if MTL_ENABLE_OPENMP
-  I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
-  SizeType blockSize = ComputeParallelSubSizesBlockSize(rows, numberOfThreads);
-
-  #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-#endif
+  MTL_PARALLEL_FOR_BLOCKS(rows)
   for (I32 i = 0; i < rows; i++)
   {
     for (I32 j = i; j < rows; j++)

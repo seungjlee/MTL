@@ -473,12 +473,7 @@ public:
 
     if (RowIndexPairs_.Size() > 0)
     {
-#if MTL_ENABLE_OPENMP
-      SizeType blockSize = ComputeParallelSubSizesBlockSize(ColumnPairs_.Size(), numberOfThreads);
-      assert(blockSize > 0);
-
-      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-#endif
+      MTL_PARALLEL_FOR_BLOCKS(ColumnPairs_.Size())
       for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
       {
         I32 pairIndex = 0;
@@ -519,12 +514,7 @@ public:
     }
     else
     {
-#if MTL_ENABLE_OPENMP
-      SizeType blockSize = ComputeParallelSubSizesBlockSize(N, numberOfThreads);
-      assert(blockSize > 0);
-
-      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-#endif
+      MTL_PARALLEL_FOR_BLOCKS(N)
       for (I32 i = 0; i < N; i++)
       {
         for (I32 j = 0; j < i+1; j++)
@@ -701,12 +691,7 @@ public:
 
     if (RowIndexPairs_.Size() > 0)
     {
-#if MTL_ENABLE_OPENMP
-      SizeType blockSize = ComputeParallelSubSizesBlockSize(ColumnPairs_.Size(), numberOfThreads);
-      assert(blockSize > 0);
-
-      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-#endif
+      MTL_PARALLEL_FOR_BLOCKS(ColumnPairs_.Size())
       for (I32 index0 = 0; index0 < (I32)ColumnPairs_.Size(); index0++)
       {
         I32 pairIndex = 0;
@@ -750,12 +735,7 @@ public:
     }
     else
     {
-#if MTL_ENABLE_OPENMP
-      SizeType blockSize = ComputeParallelSubSizesBlockSize(N, numberOfThreads);
-      assert(blockSize > 0);
-
-      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-#endif
+      MTL_PARALLEL_FOR_BLOCKS(N)
       for (I32 i = 0; i < N; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -826,12 +806,7 @@ public:
     //
     // Attempting to balance the load for the threads.
     //
-#if MTL_ENABLE_OPENMP
-    SizeType blockSize = ComputeParallelSubSizesBlockSize(N/2, numberOfThreads);
-    assert(blockSize > 0);
-
-    #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-#endif
+    MTL_PARALLEL_FOR_BLOCKS_THREADS(N/2, numberOfThreads)
     for (I32 i = 1; i < N/2+1; i++)
     {
       I32 threadNumber = omp_get_thread_num();

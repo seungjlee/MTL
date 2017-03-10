@@ -130,10 +130,7 @@ public:
 #if MTL_ENABLE_OPENMP
     if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
     {
-      I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
-      SizeType blockSize = ComputeParallelSubSizesBlockSize(size, numberOfThreads);
-
-      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+      MTL_PARALLEL_FOR_BLOCKS(size)
       for (I32 k = 0; k < (I32)size; k++)
         pDst[k] = T(pSrc[k]);
     }
@@ -372,10 +369,7 @@ protected:
     SizeType size = SizeType(pEnd - p);
     if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
     {
-      I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
-      SizeType blockSize = ComputeParallelSubSizesBlockSize(size, numberOfThreads);
-
-      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+      MTL_PARALLEL_FOR_BLOCKS(size)
       for (I32 k = 0; k < (I32)size; k++)
         p[k] = val;
     }
@@ -535,10 +529,7 @@ template <class T> MTL_INLINE static void OptimizedAssignAll(T* p, const T& val,
   #if MTL_ENABLE_OPENMP
     if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
     {
-      I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
-      SizeType blockSize = ComputeParallelSubSizesBlockSize(size, numberOfThreads);
-
-      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+      MTL_PARALLEL_FOR_BLOCKS(size)
       for (I32 k = 0; k < (I32)size; k++)
         p[k] = val;
     }
