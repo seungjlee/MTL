@@ -369,39 +369,39 @@ public:
 };
 
 // Minimum and maximum.
-template <> MTL_INLINE static X256<F32> Min(const X256<F32>& a, const X256<F32>& b)
+template <> MTL_INLINE X256<F32> Min(const X256<F32>& a, const X256<F32>& b)
 {
   return _mm256_min_ps(a.Data(), b.Data());
 }
-template <> MTL_INLINE static X256<F64> Min(const X256<F64>& a, const X256<F64>& b)
+template <> MTL_INLINE X256<F64> Min(const X256<F64>& a, const X256<F64>& b)
 {
   return _mm256_min_pd(a.Data(), b.Data());
 }
-template <> MTL_INLINE static X256<F32> Max(const X256<F32>& a, const X256<F32>& b)
+template <> MTL_INLINE X256<F32> Max(const X256<F32>& a, const X256<F32>& b)
 {
   return _mm256_max_ps(a.Data(), b.Data());
 }
-template <> MTL_INLINE static X256<F64> Max(const X256<F64>& a, const X256<F64>& b)
+template <> MTL_INLINE X256<F64> Max(const X256<F64>& a, const X256<F64>& b)
 {
   return _mm256_max_pd(a.Data(), b.Data());
 }
 
 // Absolute value.
-MTL_INLINE static X256<F64> Abs(const X256<F64>& a)
+MTL_INLINE X256<F64> Abs(const X256<F64>& a)
 {
   return a & kX256_NoSignF64;
 }
-MTL_INLINE static X256<F32> Abs(const X256<F32>& a)
+MTL_INLINE X256<F32> Abs(const X256<F32>& a)
 {
   return a & kX256_NoSignF32;
 }
 
-template <> MTL_INLINE static
+template <> MTL_INLINE
 X256<F64> MultiplyAndAdd(const X256<F64>& a, const X256<F64>& b, const X256<F64>& c)
 {
   return _mm256_fmadd_pd(a.Data(), b.Data(), c.Data());
 }
-template <> MTL_INLINE static
+template <> MTL_INLINE
 X256<F32> MultiplyAndAdd(const X256<F32>& a, const X256<F32>& b, const X256<F32>& c)
 {
   return _mm256_fmadd_ps(a.Data(), b.Data(), c.Data());

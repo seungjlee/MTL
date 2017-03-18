@@ -372,48 +372,29 @@ public:
 };
 
 // Minimum and maximum.
-#ifdef WIN32
-template <> MTL_INLINE static X128<F32> Min(const X128<F32>& a, const X128<F32>& b)
+template <> MTL_INLINE X128<F32> Min(const X128<F32>& a, const X128<F32>& b)
 {
   return _mm_min_ps(a.Data(), b.Data());
 }
-template <> MTL_INLINE static X128<F64> Min(const X128<F64>& a, const X128<F64>& b)
+template <> MTL_INLINE X128<F64> Min(const X128<F64>& a, const X128<F64>& b)
 {
   return _mm_min_pd(a.Data(), b.Data());
 }
-template <> MTL_INLINE static X128<F32> Max(const X128<F32>& a, const X128<F32>& b)
+template <> MTL_INLINE X128<F32> Max(const X128<F32>& a, const X128<F32>& b)
 {
   return _mm_max_ps(a.Data(), b.Data());
 }
-template <> MTL_INLINE static X128<F64> Max(const X128<F64>& a, const X128<F64>& b)
+template <> MTL_INLINE X128<F64> Max(const X128<F64>& a, const X128<F64>& b)
 {
   return _mm_max_pd(a.Data(), b.Data());
 }
-#else
-template <> inline X128<F32> Min(const X128<F32>& a, const X128<F32>& b)
-{
-  return _mm_min_ps(a.Data(), b.Data());
-}
-template <> inline X128<F64> Min(const X128<F64>& a, const X128<F64>& b)
-{
-  return _mm_min_pd(a.Data(), b.Data());
-}
-template <> inline X128<F32> Max(const X128<F32>& a, const X128<F32>& b)
-{
-  return _mm_max_ps(a.Data(), b.Data());
-}
-template <> inline X128<F64> Max(const X128<F64>& a, const X128<F64>& b)
-{
-  return _mm_max_pd(a.Data(), b.Data());
-}
-#endif
 
 // Absolute value.
-MTL_INLINE static X128<F64> Abs(const X128<F64>& a)
+MTL_INLINE X128<F64> Abs(const X128<F64>& a)
 {
   return a & kX128_NoSignF64;
 }
-MTL_INLINE static X128<F32> Abs(const X128<F32>& a)
+MTL_INLINE X128<F32> Abs(const X128<F32>& a)
 {
   return a & kX128_NoSignF32;
 }
