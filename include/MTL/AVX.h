@@ -451,6 +451,18 @@ MTL_INLINE X256<double> Conditional(const X256<F64>& condition,
                       _mm256_andnot_pd(condition.Data(), b.Data()));;
 }
 
+// Permute values in registers.
+template<int PermutationBits>
+MTL_INLINE X256<F32> Shuffle(const X256<F32>& a, const X256<F32>& b)
+{
+  return _mm256_shuffle_ps(a.Data(), b.Data(), PermutationBits);
+}
+template<int PermutationBits>
+MTL_INLINE X256<F64> Shuffle(const X256<F64>& a, const X256<F64>& b)
+{
+  return _mm256_shuffle_pd(a.Data(), b.Data(), PermutationBits);
+}
+
 }  // namespace MTL
 
 #endif  // MTL_ENABLE_AVX

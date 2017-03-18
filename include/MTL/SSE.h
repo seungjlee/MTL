@@ -442,6 +442,19 @@ MTL_INLINE X128<double> Conditional(const X128<F64>& condition,
   return _mm_or_pd(_mm_and_pd(condition.Data(), a.Data()),
                    _mm_andnot_pd(condition.Data(), b.Data()));;
 }
+
+// Permute values in registers.
+template<int PermutationBits>
+MTL_INLINE X128<F32> Shuffle(const X128<F32>& a, const X128<F32>& b)
+{
+  return _mm_shuffle_ps(a.Data(), b.Data(), PermutationBits);
+}
+template<int PermutationBits>
+MTL_INLINE X128<F64> Shuffle(const X128<F64>& a, const X128<F64>& b)
+{
+  return _mm_shuffle_pd(a.Data(), b.Data(), PermutationBits);
+}
+
 }  // namespace MTL
 
 #endif  // MTL_SSE_H
