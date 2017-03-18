@@ -27,8 +27,11 @@
 #define MTL_CPU_H
 
 #include "Definitions.h"
+#include "Lock.h"
 #include <bitset>
 #include <array>
+#include <map>
+#include <thread>
 #include <vector>
 #include <omp.h>
 
@@ -57,8 +60,17 @@ public:
     return *Instance_;
   }
 
-  U64 NumberOfThreads() const         { return NumberOfThreads_;        }
-  void NumberOfThreads(U64 n)         { NumberOfThreads_ = n;           }
+  // Gets/Sets number of threads for OpenMP.
+  // Note that this is configured for each user thread.
+  U64 NumberOfThreads() const
+  {
+    return const_cast<CPU*>(this)->Number_Of_Threads();
+  }
+  void NumberOfThreads(U64 n)
+  {
+    Lock lock(NumberOfThreadsMutex_);
+    NumberOfThreads_[std::this_thread::get_id().hash()] = n;
+  }
 
   U64 NumberOfCores() const           { return NumberOfCores_;          }
 
@@ -74,7 +86,7 @@ public:
   bool Multithreading() const  { return CPU_Rep_.multithreading_; }
 
 private:
-  CPU() : NumberOfThreads_(1)
+  CPU()
   {
     NumberOfCores_ = omp_get_num_procs();
     omp_set_num_threads((int)NumberOfCores_);
@@ -232,10 +244,21 @@ private:
     bool multithreading_;
   };
 
-  U64 NumberOfThreads_;
+  std::recursive_mutex NumberOfThreadsMutex_;
+  std::map<size_t,U64> NumberOfThreads_;
   U64 NumberOfCores_;
   U64 NumberOfLogicalCores_;
   const InstructionSet_Internal CPU_Rep_;
+
+  U64 Number_Of_Threads()
+  {
+    Lock lock(NumberOfThreadsMutex_);
+    if (NumberOfThreads_.find(std::this_thread::get_id().hash()) == NumberOfThreads_.end())
+    {
+      NumberOfThreads_[std::this_thread::get_id().hash()] = NumberOfCores_;
+    }
+    return NumberOfThreads_[std::this_thread::get_id().hash()];
+  }
 };
 
 }  // namespace MTL
