@@ -115,6 +115,8 @@ public:
   MTL_INLINE X256(I8 val)          { Data_ = X256_SetPacked(val); }
   MTL_INLINE X256(const I8 *ptr)   { LoadPackedUnaligned(ptr);    }
 
+  MTL_INLINE void Load(const I8* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(I8* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const I8* pSrc)
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(I8* pDst) const
@@ -134,6 +136,8 @@ public:
   MTL_INLINE X256(U8 val)          { Data_ = X256_SetPacked(val); }
   MTL_INLINE X256(const U8 *ptr)   { LoadPackedUnaligned(ptr);    }
 
+  MTL_INLINE void Load(const U8* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(U8* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const U8* pSrc)
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(U8* pDst) const
@@ -153,6 +157,8 @@ public:
   MTL_INLINE X256(I16 val)         { Data_ = X256_SetPacked(val); }
   MTL_INLINE X256(const I16 *ptr)  { LoadPackedUnaligned(ptr);    }
 
+  MTL_INLINE void Load(const I16* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(I16* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const I16* pSrc)
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(I16* pDst) const
@@ -172,6 +178,8 @@ public:
   MTL_INLINE X256(U16 val)         { Data_ = X256_SetPacked(val); }
   MTL_INLINE X256(const U16 *ptr)  { LoadPackedUnaligned(ptr);    }
 
+  MTL_INLINE void Load(const U16* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(U16* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const U16* pSrc)
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(U16* pDst) const
@@ -191,6 +199,8 @@ public:
   MTL_INLINE X256(I32 val)         { Data_ = X256_SetPacked(val); }
   MTL_INLINE X256(const I32 *ptr)  { LoadPackedUnaligned(ptr);    }
 
+  MTL_INLINE void Load(const I32* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(I32* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const I32* pSrc)
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(I32* pDst) const
@@ -210,6 +220,8 @@ public:
   MTL_INLINE X256(U32 val)         { Data_ = X256_SetPacked(val); }
   MTL_INLINE X256(const U32 *ptr)  { LoadPackedUnaligned(ptr);    }
 
+  MTL_INLINE void Load(const U32* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(U32* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const U32* pSrc)
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(U32* pDst) const
@@ -229,6 +241,8 @@ public:
   MTL_INLINE X256(I64 val)         { Data_ = X256_SetPacked(val); }
   MTL_INLINE X256(const I64 *ptr)  { LoadPackedUnaligned(ptr);    }
 
+  MTL_INLINE void Load(const I64* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(I64* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const I64* pSrc)
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(I64* pDst) const
@@ -248,6 +262,8 @@ public:
   MTL_INLINE X256(U64 val)         { Data_ = X256_SetPacked(val); }
   MTL_INLINE X256(const U64 *ptr)  { LoadPackedUnaligned(ptr);    }
 
+  MTL_INLINE void Load(const U64* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(U64* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const U64* pSrc)
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(U64* pDst) const
@@ -286,6 +302,8 @@ public:
   MTL_INLINE static X256 Halves()  { return kX256_HalvesF32; }
   MTL_INLINE static X256 Twos()    { return kX256_TwosF32;   }
 
+  MTL_INLINE void Load(const F32* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(F32* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const F32* pSrc)   { Data_ = _mm256_loadu_ps(pSrc); }
   MTL_INLINE void StorePackedUnaligned(F32* pDst) const  { _mm256_storeu_ps(pDst, Data_); }
   MTL_INLINE void LoadPackedAligned(const F32* pSrc)     { Data_ = _mm256_load_ps(pSrc);  }
@@ -326,6 +344,8 @@ public:
   MTL_INLINE static X256 Halves()  { return kX256_HalvesF64; }
   MTL_INLINE static X256 Twos()    { return kX256_TwosF64;   }
 
+  MTL_INLINE void Load(const F64* pSrc)   { LoadPackedUnaligned(pSrc);  }
+  MTL_INLINE void Store(F64* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const F64* pSrc)   { Data_ = _mm256_loadu_pd(pSrc); }
   MTL_INLINE void StorePackedUnaligned(F64* pDst) const  { _mm256_storeu_pd(pDst, Data_); }
   MTL_INLINE void LoadPackedAligned(const F64* pSrc)     { Data_ = _mm256_load_pd(pSrc);  }
