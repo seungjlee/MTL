@@ -407,6 +407,50 @@ X256<F32> MultiplyAndAdd(const X256<F32>& a, const X256<F32>& b, const X256<F32>
   return _mm256_fmadd_ps(a.Data(), b.Data(), c.Data());
 }
 
+// Conditional equivalent to "condition ? a : b" in C/C++.
+MTL_INLINE X256<I8> Conditional(const X256<I8>& condition, const X256<I8>& a, const X256<I8>& b)
+{
+  return _mm256_or_si256(_mm256_and_si256(condition.Data(), a.Data()),
+                         _mm256_andnot_si256(condition.Data(), b.Data()));;
+}
+MTL_INLINE X256<U8> Conditional(const X256<U8>& condition, const X256<U8>& a, const X256<U8>& b)
+{
+  return _mm256_or_si256(_mm256_and_si256(condition.Data(), a.Data()),
+                         _mm256_andnot_si256(condition.Data(), b.Data()));;
+}
+MTL_INLINE X256<I16> Conditional(const X256<I16>& condition, const X256<I16>& a, const X256<I16>& b)
+{
+  return _mm256_or_si256(_mm256_and_si256(condition.Data(), a.Data()),
+                         _mm256_andnot_si256(condition.Data(), b.Data()));;
+}
+MTL_INLINE X256<U16> Conditional(const X256<U16>& condition, const X256<U16>& a, const X256<U16>& b)
+{
+  return _mm256_or_si256(_mm256_and_si256(condition.Data(), a.Data()),
+                         _mm256_andnot_si256(condition.Data(), b.Data()));;
+}
+MTL_INLINE X256<I32> Conditional(const X256<I32>& condition, const X256<I32>& a, const X256<I32>& b)
+{
+  return _mm256_or_si256(_mm256_and_si256(condition.Data(), a.Data()),
+                         _mm256_andnot_si256(condition.Data(), b.Data()));;
+}
+MTL_INLINE X256<U32> Conditional(const X256<U32>& condition, const X256<U32>& a, const X256<U32>& b)
+{
+  return _mm256_or_si256(_mm256_and_si256(condition.Data(), a.Data()),
+                         _mm256_andnot_si256(condition.Data(), b.Data()));;
+}
+MTL_INLINE X256<F32> Conditional(const X256<F32>& condition,
+                                 const X256<F32>& a, const X256<F32>& b)
+{
+  return _mm256_or_ps(_mm256_and_ps(condition.Data(), a.Data()),
+                      _mm256_andnot_ps(condition.Data(), b.Data()));;
+}
+MTL_INLINE X256<double> Conditional(const X256<F64>& condition,
+                                    const X256<F64>& a, const X256<F64>& b)
+{
+  return _mm256_or_pd(_mm256_and_pd(condition.Data(), a.Data()),
+                      _mm256_andnot_pd(condition.Data(), b.Data()));;
+}
+
 }  // namespace MTL
 
 #endif  // MTL_ENABLE_AVX

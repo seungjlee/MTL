@@ -399,6 +399,49 @@ MTL_INLINE X128<F32> Abs(const X128<F32>& a)
   return a & kX128_NoSignF32;
 }
 
+// Conditional equivalent to "condition ? a : b" in C/C++.
+MTL_INLINE X128<I8> Conditional(const X128<I8>& condition, const X128<I8>& a, const X128<I8>& b)
+{
+  return _mm_or_si128(_mm_and_si128(condition.Data(), a.Data()),
+                      _mm_andnot_si128(condition.Data(), b.Data()));;
+}
+MTL_INLINE X128<U8> Conditional(const X128<U8>& condition, const X128<U8>& a, const X128<U8>& b)
+{
+  return _mm_or_si128(_mm_and_si128(condition.Data(), a.Data()),
+                      _mm_andnot_si128(condition.Data(), b.Data()));;
+}
+MTL_INLINE X128<I16> Conditional(const X128<I16>& condition, const X128<I16>& a, const X128<I16>& b)
+{
+  return _mm_or_si128(_mm_and_si128(condition.Data(), a.Data()),
+                      _mm_andnot_si128(condition.Data(), b.Data()));;
+}
+MTL_INLINE X128<U16> Conditional(const X128<U16>& condition, const X128<U16>& a, const X128<U16>& b)
+{
+  return _mm_or_si128(_mm_and_si128(condition.Data(), a.Data()),
+                      _mm_andnot_si128(condition.Data(), b.Data()));;
+}
+MTL_INLINE X128<I32> Conditional(const X128<I32>& condition, const X128<I32>& a, const X128<I32>& b)
+{
+  return _mm_or_si128(_mm_and_si128(condition.Data(), a.Data()),
+                      _mm_andnot_si128(condition.Data(), b.Data()));;
+}
+MTL_INLINE X128<U32> Conditional(const X128<U32>& condition, const X128<U32>& a, const X128<U32>& b)
+{
+  return _mm_or_si128(_mm_and_si128(condition.Data(), a.Data()),
+                      _mm_andnot_si128(condition.Data(), b.Data()));;
+}
+MTL_INLINE X128<F32> Conditional(const X128<F32>& condition,
+                                 const X128<F32>& a, const X128<F32>& b)
+{
+  return _mm_or_ps(_mm_and_ps(condition.Data(), a.Data()),
+                   _mm_andnot_ps(condition.Data(), b.Data()));;
+}
+MTL_INLINE X128<double> Conditional(const X128<F64>& condition,
+                                    const X128<F64>& a, const X128<F64>& b)
+{
+  return _mm_or_pd(_mm_and_pd(condition.Data(), a.Data()),
+                   _mm_andnot_pd(condition.Data(), b.Data()));;
+}
 }  // namespace MTL
 
 #endif  // MTL_SSE_H
