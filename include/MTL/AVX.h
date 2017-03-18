@@ -119,6 +119,11 @@ public:
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(I8* pDst) const
   { _mm256_storeu_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE void LoadPackedAligned(const I8* pSrc)
+  { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
+  MTL_INLINE void StorePackedAligned(I8* pDst) const
+  { _mm256_store_si256((__m256i*)pDst, Data_);       }
 };
 
 template<> class X256<U8> : public X256_Base<U8>
@@ -133,6 +138,11 @@ public:
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(U8* pDst) const
   { _mm256_storeu_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE void LoadPackedAligned(const U8* pSrc)
+  { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
+  MTL_INLINE void StorePackedAligned(U8* pDst) const
+  { _mm256_store_si256((__m256i*)pDst, Data_);       }
 };
 
 template<> class X256<I16> : public X256_Base<I16>
@@ -147,6 +157,11 @@ public:
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(I16* pDst) const
   { _mm256_storeu_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE void LoadPackedAligned(const I16* pSrc)
+  { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
+  MTL_INLINE void StorePackedAligned(I16* pDst) const
+  { _mm256_store_si256((__m256i*)pDst, Data_);       }
 };
 
 template<> class X256<U16> : public X256_Base<U16>
@@ -161,6 +176,11 @@ public:
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(U16* pDst) const
   { _mm256_storeu_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE void LoadPackedAligned(const U16* pSrc)
+  { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
+  MTL_INLINE void StorePackedAligned(U16* pDst) const
+  { _mm256_store_si256((__m256i*)pDst, Data_);       }
 };
 
 template<> class X256<I32> : public X256_Base<I32>
@@ -175,6 +195,11 @@ public:
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(I32* pDst) const
   { _mm256_storeu_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE void LoadPackedAligned(const I32* pSrc)
+  { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
+  MTL_INLINE void StorePackedAligned(I32* pDst) const
+  { _mm256_store_si256((__m256i*)pDst, Data_);       }
 };
 
 template<> class X256<U32> : public X256_Base<U32>
@@ -189,6 +214,11 @@ public:
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(U32* pDst) const
   { _mm256_storeu_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE void LoadPackedAligned(const U32* pSrc)
+  { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
+  MTL_INLINE void StorePackedAligned(U32* pDst) const
+  { _mm256_store_si256((__m256i*)pDst, Data_);       }
 };
 
 template<> class X256<I64> : public X256_Base<I64>
@@ -203,6 +233,11 @@ public:
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(I64* pDst) const
   { _mm256_storeu_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE void LoadPackedAligned(const I64* pSrc)
+  { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
+  MTL_INLINE void StorePackedAligned(I64* pDst) const
+  { _mm256_store_si256((__m256i*)pDst, Data_);       }
 };
 
 template<> class X256<U64> : public X256_Base<U64>
@@ -217,6 +252,11 @@ public:
   { Data_ = _mm256_loadu_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedUnaligned(U64* pDst) const
   { _mm256_storeu_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE void LoadPackedAligned(const U64* pSrc)
+  { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
+  MTL_INLINE void StorePackedAligned(U64* pDst) const
+  { _mm256_store_si256((__m256i*)pDst, Data_);       }
 };
 
 template<> class X256<F32> : public X256_Base<F32>
