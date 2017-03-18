@@ -118,8 +118,8 @@ template<> class X128<I8> : public X128_Base<I8>
 public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<I8>(data) {}
-  MTL_INLINE X128(I8 val)         { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(I8 *ptr)        { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(I8 val)          { Data_ = X128_SetPacked(val); }
+  MTL_INLINE X128(const I8 *ptr)   { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void LoadPackedUnaligned(const I8* pSrc)
   { Data_ = _mm_loadu_si128((const __m128i*)pSrc); }
@@ -132,8 +132,8 @@ template<> class X128<U8> : public X128_Base<U8>
 public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<U8>(data) {}
-  MTL_INLINE X128(U8 val)         { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(U8 *ptr)        { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(U8 val)          { Data_ = X128_SetPacked(val); }
+  MTL_INLINE X128(const U8 *ptr)   { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void LoadPackedUnaligned(const U8* pSrc)
   { Data_ = _mm_loadu_si128((const __m128i*)pSrc); }
@@ -146,8 +146,8 @@ template<> class X128<I16> : public X128_Base<I16>
 public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<I16>(data) {}
-  MTL_INLINE X128(I16 val)        { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(I16 *ptr)       { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(I16 val)         { Data_ = X128_SetPacked(val); }
+  MTL_INLINE X128(const I16 *ptr)  { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void LoadPackedUnaligned(const I16* pSrc)
   { Data_ = _mm_loadu_si128((const __m128i*)pSrc); }
@@ -160,8 +160,8 @@ template<> class X128<U16> : public X128_Base<U16>
 public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<U16>(data) {}
-  MTL_INLINE X128(U16 val)        { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(U16 *ptr)       { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(U16 val)         { Data_ = X128_SetPacked(val); }
+  MTL_INLINE X128(const U16 *ptr)  { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void LoadPackedUnaligned(const U16* pSrc)
   { Data_ = _mm_loadu_si128((const __m128i*)pSrc); }
@@ -174,8 +174,8 @@ template<> class X128<I32> : public X128_Base<I32>
 public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<I32>(data) {}
-  MTL_INLINE X128(I32 val)        { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(I32 *ptr)       { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(I32 val)         { Data_ = X128_SetPacked(val); }
+  MTL_INLINE X128(const I32 *ptr)  { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void LoadPackedUnaligned(const I32* pSrc)
   { Data_ = _mm_loadu_si128((const __m128i*)pSrc); }
@@ -188,8 +188,8 @@ template<> class X128<U32> : public X128_Base<U32>
 public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<U32>(data) {}
-  MTL_INLINE X128(U32 val)        { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(U32 *ptr)       { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(U32 val)         { Data_ = X128_SetPacked(val); }
+  MTL_INLINE X128(const U32 *ptr)  { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void LoadPackedUnaligned(const U32* pSrc)
   { Data_ = _mm_loadu_si128((const __m128i*)pSrc); }
@@ -202,8 +202,8 @@ template<> class X128<I64> : public X128_Base<I64>
 public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<I64>(data) {}
-  MTL_INLINE X128(I64 val)        { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(I64 *ptr)       { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(I64 val)         { Data_ = X128_SetPacked(val); }
+  MTL_INLINE X128(const I64 *ptr)  { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void LoadPackedUnaligned(const I64* pSrc)
   { Data_ = _mm_loadu_si128((const __m128i*)pSrc); }
@@ -216,8 +216,8 @@ template<> class X128<U64> : public X128_Base<U64>
 public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<U64>(data) {}
-  MTL_INLINE X128(U64 val)        { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(U64 *ptr)       { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(U64 val)         { Data_ = X128_SetPacked(val); }
+  MTL_INLINE X128(const U64 *ptr)  { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void LoadPackedUnaligned(const U64* pSrc)
   { Data_ = _mm_loadu_si128((const __m128i*)pSrc); }
@@ -232,7 +232,7 @@ public:
   MTL_INLINE X128(const DataType& data) : X128_Base<F32>(data) {}
   MTL_INLINE X128(F32 val)                                 { Set(val);                    }
   MTL_INLINE X128(F32 val0, F32 val1, F32 val2, F32 val3)  { Set(val0, val1, val2, val3); }
-  MTL_INLINE X128(F32 *ptr)                                { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(const F32 *ptr)                          { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void Set(F32 val)                             { Data_ = X128_SetPacked(val); }
   MTL_INLINE void Set(F32 val0, F32 val1, F32 val2, F32 val3)
@@ -278,7 +278,7 @@ public:
   MTL_INLINE X128(const DataType& data) : X128_Base<double>(data) {}
   MTL_INLINE X128(F64 val)             { Set(val);                 }
   MTL_INLINE X128(F64 val0, F64 val1)  { Set(val0, val1);          }
-  MTL_INLINE X128(F64 *ptr)            { LoadPackedUnaligned(ptr); }
+  MTL_INLINE X128(const F64 *ptr)      { LoadPackedUnaligned(ptr); }
 
   MTL_INLINE void Set(F64 val)             { Data_ = X128_SetPacked(val);     }
   MTL_INLINE void Set(F64 val0, F64 val1)  { Data_ = _mm_setr_pd(val0, val1); }
