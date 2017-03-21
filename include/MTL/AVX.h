@@ -126,6 +126,12 @@ public:
   { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedAligned(I8* pDst) const
   { _mm256_store_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
+
+  MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
+  MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
 };
 
 template<> class X256<U8> : public X256_Base<U8>
@@ -147,6 +153,12 @@ public:
   { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedAligned(U8* pDst) const
   { _mm256_store_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
+
+  MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
+  MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
 };
 
 template<> class X256<I16> : public X256_Base<I16>
@@ -168,6 +180,12 @@ public:
   { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedAligned(I16* pDst) const
   { _mm256_store_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
+
+  MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
+  MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
 };
 
 template<> class X256<U16> : public X256_Base<U16>
@@ -189,6 +207,12 @@ public:
   { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedAligned(U16* pDst) const
   { _mm256_store_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
+
+  MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
+  MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
 };
 
 template<> class X256<I32> : public X256_Base<I32>
@@ -210,6 +234,12 @@ public:
   { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedAligned(I32* pDst) const
   { _mm256_store_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
+
+  MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
+  MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
 };
 
 template<> class X256<U32> : public X256_Base<U32>
@@ -231,6 +261,12 @@ public:
   { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedAligned(U32* pDst) const
   { _mm256_store_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
+
+  MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
+  MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
 };
 
 template<> class X256<I64> : public X256_Base<I64>
@@ -252,6 +288,12 @@ public:
   { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedAligned(I64* pDst) const
   { _mm256_store_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
+
+  MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
+  MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
 };
 
 template<> class X256<U64> : public X256_Base<U64>
@@ -273,6 +315,12 @@ public:
   { Data_ = _mm256_load_si256((const __m256i*)pSrc); }
   MTL_INLINE void StorePackedAligned(U64* pDst) const
   { _mm256_store_si256((__m256i*)pDst, Data_);       }
+
+  MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
+
+  MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
+  MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
 };
 
 template<> class X256<F32> : public X256_Base<F32>
@@ -321,6 +369,7 @@ public:
   MTL_INLINE X256 operator/(const X256& y) const  { return _mm256_div_ps(Data_, y.Data_);         }
   MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_ps(Data_, y.Data_);         }
   MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_ps(Data_, y.Data_);          }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_ps(Data_, y.Data_);         }
   MTL_INLINE X256 Sqrt()                  const   { return _mm256_sqrt_ps(Data_);                 }
 
   MTL_STREAM_EXTRA_OPERATORS(256);
@@ -363,6 +412,7 @@ public:
   MTL_INLINE X256 operator/(const X256& y) const  { return _mm256_div_pd(Data_, y.Data_);         }
   MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_pd(Data_, y.Data_);         }
   MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_pd(Data_, y.Data_);          }
+  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_pd(Data_, y.Data_);         }
   MTL_INLINE X256 Sqrt()                  const   { return _mm256_sqrt_pd(Data_);                 }
 
   MTL_STREAM_EXTRA_OPERATORS(256);

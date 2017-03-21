@@ -132,6 +132,12 @@ public:
   { Data_ = _mm_load_si128((const __m128i*)pSrc); }
   MTL_INLINE void StorePackedAligned(I8* pDst) const
   { _mm_store_si128((__m128i*)pDst, Data_);       }
+
+  MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
+
+  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
+  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
 };
 
 template<> class X128<U8> : public X128_Base<U8>
@@ -153,6 +159,12 @@ public:
   { Data_ = _mm_load_si128((const __m128i*)pSrc); }
   MTL_INLINE void StorePackedAligned(U8* pDst) const
   { _mm_store_si128((__m128i*)pDst, Data_);       }
+
+  MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
+
+  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
+  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
 };
 
 template<> class X128<I16> : public X128_Base<I16>
@@ -174,6 +186,12 @@ public:
   { Data_ = _mm_load_si128((const __m128i*)pSrc); }
   MTL_INLINE void StorePackedAligned(I16* pDst) const
   { _mm_store_si128((__m128i*)pDst, Data_);       }
+
+  MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
+
+  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
+  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
 };
 
 template<> class X128<U16> : public X128_Base<U16>
@@ -195,6 +213,12 @@ public:
   { Data_ = _mm_load_si128((const __m128i*)pSrc); }
   MTL_INLINE void StorePackedAligned(U16* pDst) const
   { _mm_store_si128((__m128i*)pDst, Data_);       }
+
+  MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
+
+  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
+  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
 };
 
 template<> class X128<I32> : public X128_Base<I32>
@@ -216,6 +240,12 @@ public:
   { Data_ = _mm_load_si128((const __m128i*)pSrc); }
   MTL_INLINE void StorePackedAligned(I32* pDst) const
   { _mm_store_si128((__m128i*)pDst, Data_);       }
+
+  MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
+
+  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
+  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
 };
 
 template<> class X128<U32> : public X128_Base<U32>
@@ -237,6 +267,12 @@ public:
   { Data_ = _mm_load_si128((const __m128i*)pSrc); }
   MTL_INLINE void StorePackedAligned(U32* pDst) const
   { _mm_store_si128((__m128i*)pDst, Data_);       }
+
+  MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
+
+  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
+  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
 };
 
 template<> class X128<I64> : public X128_Base<I64>
@@ -258,6 +294,12 @@ public:
   { Data_ = _mm_loadu_si128((const __m128i*)pSrc); }
   MTL_INLINE void StorePackedAligned(I64* pDst) const
   { _mm_storeu_si128((__m128i*)pDst, Data_);       }
+
+  MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
+
+  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
+  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
 };
 
 template<> class X128<U64> : public X128_Base<U64>
@@ -279,6 +321,12 @@ public:
   { Data_ = _mm_load_si128((const __m128i*)pSrc); }
   MTL_INLINE void StorePackedAligned(U64* pDst) const
   { _mm_store_si128((__m128i*)pDst, Data_);       }
+
+  MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
+
+  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
+  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
 };
 
 template<> class X128<F32> : public X128_Base<F32>
@@ -323,6 +371,7 @@ public:
   MTL_INLINE X128 operator/(const X128& y) const  { return _mm_div_ps(Data_, y.Data_);         }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_ps(Data_, y.Data_);         }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_ps(Data_, y.Data_);          }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_ps(Data_, y.Data_);         }
   MTL_INLINE X128 Sqrt()                  const   { return _mm_sqrt_ps(Data_);                 }
   MTL_INLINE X128 SqrtSingle()            const   { return _mm_sqrt_ss(Data_);                 }
 
@@ -365,6 +414,7 @@ public:
   MTL_INLINE X128 operator/(const X128& y) const  { return _mm_div_pd(Data_, y.Data_);         }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_pd(Data_, y.Data_);         }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_pd(Data_, y.Data_);          }
+  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_pd(Data_, y.Data_);         }
   MTL_INLINE X128 Sqrt()                  const   { return _mm_sqrt_pd(Data_);                 }
   MTL_INLINE X128 SqrtSingle()            const   { return _mm_sqrt_sd(kX128_ZerosF64, Data_); }
 

@@ -33,7 +33,7 @@ TEST(TestShuffle)
   X128<F32> x1234(1.f,2.f,3.f,4.f);
   X128<F32> x5678(5.f,6.f,7.f,8.f);
 
-  X128<F32> x2468 = Shuffle<1|12|16|192>(x1234,x5678);
+  X128<F32> x2468 = Shuffle<1|3<<2|1<<4|3<<6>(x1234,x5678);
   MTL_EQUAL(x2468[0],2.f);
   MTL_EQUAL(x2468[1],4.f);
   MTL_EQUAL(x2468[2],6.f);
@@ -41,5 +41,15 @@ TEST(TestShuffle)
 #endif
 
 #if MTL_ENABLE_AVX
+#endif
+}
+
+TEST(TestXOR)
+{
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+  XX<I32> xx = XX<I32>(1) ^ XX<I32>(-1);
+
+  for (int k = 0; k < XX<I32>::Increment; k++)
+    MTL_EQUAL(xx[k], -2);
 #endif
 }
