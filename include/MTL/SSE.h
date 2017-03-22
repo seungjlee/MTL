@@ -362,18 +362,19 @@ public:
   MTL_INLINE void LoadSingle(const F32* pSrc)   { Data_ = _mm_load_ss(pSrc);  }
   MTL_INLINE void StoreSingle(F32* pDst) const  { _mm_store_ss(pDst, Data_);  }
 
-  MTL_INLINE X128 operator<(const X128& y) const  { return _mm_cmplt_ps(Data_, y.Data_);       }
-  MTL_INLINE X128 operator>(const X128& y) const  { return _mm_cmpgt_ps(Data_, y.Data_);       }
-  MTL_INLINE X128 operator-() const               { return _mm_xor_ps(Data_, kX128_SignF32);   }
-  MTL_INLINE X128 operator+(const X128& y) const  { return _mm_add_ps(Data_, y.Data_);         }
-  MTL_INLINE X128 operator-(const X128& y) const  { return _mm_sub_ps(Data_, y.Data_);         }
-  MTL_INLINE X128 operator*(const X128& y) const  { return _mm_mul_ps(Data_, y.Data_);         }
-  MTL_INLINE X128 operator/(const X128& y) const  { return _mm_div_ps(Data_, y.Data_);         }
-  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_ps(Data_, y.Data_);         }
-  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_ps(Data_, y.Data_);          }
-  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_ps(Data_, y.Data_);         }
-  MTL_INLINE X128 Sqrt()                  const   { return _mm_sqrt_ps(Data_);                 }
-  MTL_INLINE X128 SqrtSingle()            const   { return _mm_sqrt_ss(Data_);                 }
+  MTL_INLINE X128 operator==(const X128& y) const  { return _mm_cmpeq_ps(Data_, y.Data_);       }
+  MTL_INLINE X128 operator<(const X128& y)  const  { return _mm_cmplt_ps(Data_, y.Data_);       }
+  MTL_INLINE X128 operator>(const X128& y)  const  { return _mm_cmpgt_ps(Data_, y.Data_);       }
+  MTL_INLINE X128 operator-() const                { return _mm_xor_ps(Data_, kX128_SignF32);   }
+  MTL_INLINE X128 operator+(const X128& y)  const  { return _mm_add_ps(Data_, y.Data_);         }
+  MTL_INLINE X128 operator-(const X128& y)  const  { return _mm_sub_ps(Data_, y.Data_);         }
+  MTL_INLINE X128 operator*(const X128& y)  const  { return _mm_mul_ps(Data_, y.Data_);         }
+  MTL_INLINE X128 operator/(const X128& y)  const  { return _mm_div_ps(Data_, y.Data_);         }
+  MTL_INLINE X128 operator&(const X128& y)  const  { return _mm_and_ps(Data_, y.Data_);         }
+  MTL_INLINE X128 operator|(const X128& y)  const  { return _mm_or_ps(Data_, y.Data_);          }
+  MTL_INLINE X128 operator^(const X128& y)  const  { return _mm_xor_ps(Data_, y.Data_);         }
+  MTL_INLINE X128 SquareRoot()              const  { return _mm_sqrt_ps(Data_);                 }
+  MTL_INLINE X128 SquareRootSingle()        const  { return _mm_sqrt_ss(Data_);                 }
 
   MTL_STREAM_EXTRA_OPERATORS(128);
 };
@@ -405,18 +406,19 @@ public:
   MTL_INLINE void LoadSingle(const F64* pSrc)   { Data_ = _mm_load_sd(pSrc);  }
   MTL_INLINE void StoreSingle(F64* pDst) const  { _mm_store_sd(pDst, Data_);  }
 
-  MTL_INLINE X128 operator<(const X128& y) const  { return _mm_cmplt_pd(Data_, y.Data_);       }
-  MTL_INLINE X128 operator>(const X128& y) const  { return _mm_cmpgt_pd(Data_, y.Data_);       }
-  MTL_INLINE X128 operator-() const               { return _mm_xor_pd(Data_, kX128_SignF64);   }
-  MTL_INLINE X128 operator+(const X128& y) const  { return _mm_add_pd(Data_, y.Data_);         }
-  MTL_INLINE X128 operator-(const X128& y) const  { return _mm_sub_pd(Data_, y.Data_);         }
-  MTL_INLINE X128 operator*(const X128& y) const  { return _mm_mul_pd(Data_, y.Data_);         }
-  MTL_INLINE X128 operator/(const X128& y) const  { return _mm_div_pd(Data_, y.Data_);         }
-  MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_pd(Data_, y.Data_);         }
-  MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_pd(Data_, y.Data_);          }
-  MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_pd(Data_, y.Data_);         }
-  MTL_INLINE X128 Sqrt()                  const   { return _mm_sqrt_pd(Data_);                 }
-  MTL_INLINE X128 SqrtSingle()            const   { return _mm_sqrt_sd(kX128_ZerosF64, Data_); }
+  MTL_INLINE X128 operator==(const X128& y) const  { return _mm_cmpeq_pd(Data_, y.Data_);       }
+  MTL_INLINE X128 operator<(const X128& y)  const  { return _mm_cmplt_pd(Data_, y.Data_);       }
+  MTL_INLINE X128 operator>(const X128& y)  const  { return _mm_cmpgt_pd(Data_, y.Data_);       }
+  MTL_INLINE X128 operator-() const                { return _mm_xor_pd(Data_, kX128_SignF64);   }
+  MTL_INLINE X128 operator+(const X128& y)  const  { return _mm_add_pd(Data_, y.Data_);         }
+  MTL_INLINE X128 operator-(const X128& y)  const  { return _mm_sub_pd(Data_, y.Data_);         }
+  MTL_INLINE X128 operator*(const X128& y)  const  { return _mm_mul_pd(Data_, y.Data_);         }
+  MTL_INLINE X128 operator/(const X128& y)  const  { return _mm_div_pd(Data_, y.Data_);         }
+  MTL_INLINE X128 operator&(const X128& y)  const  { return _mm_and_pd(Data_, y.Data_);         }
+  MTL_INLINE X128 operator|(const X128& y)  const  { return _mm_or_pd(Data_, y.Data_);          }
+  MTL_INLINE X128 operator^(const X128& y)  const  { return _mm_xor_pd(Data_, y.Data_);         }
+  MTL_INLINE X128 SquareRoot()              const  { return _mm_sqrt_pd(Data_);                 }
+  MTL_INLINE X128 SquareRootSingle()        const  { return _mm_sqrt_sd(kX128_ZerosF64, Data_); }
 
   MTL_STREAM_EXTRA_OPERATORS(128);
 };

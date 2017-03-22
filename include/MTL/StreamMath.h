@@ -52,7 +52,7 @@ MTL_INLINE static T Sqrt(const T& a)
 {
   X128<T> X;
   X.LoadSingle(&a);
-  return X.SqrtSingle()[0];
+  return X.SquareRootSingle()[0];
 }
 
 }  // namespace MTL

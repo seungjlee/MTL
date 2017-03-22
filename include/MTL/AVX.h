@@ -357,11 +357,12 @@ public:
   MTL_INLINE void LoadPackedAligned(const F32* pSrc)     { Data_ = _mm256_load_ps(pSrc);  }
   MTL_INLINE void StorePackedAligned(F32* pDst) const    { _mm256_store_ps(pDst, Data_);  }
 
-  //MTL_INLINE void LoadSingle(const F32* pSrc)   { Data_ = _mm256_load_ss(pSrc);  }
-  //MTL_INLINE void StoreSingle(F32* pDst) const  { _mm256_store_ss(pDst, Data_);  }
-
-  //MTL_INLINE X256 operator<(const X256& y) const  { return _mm256_cmplt_ps(Data_, y.Data_);       }
-  //MTL_INLINE X256 operator>(const X256& y) const  { return _mm256_cmpgt_ps(Data_, y.Data_);       }
+  MTL_INLINE X256 operator==(const X256& y) const 
+  { return _mm256_cmp_ps(Data_, y.Data_, _CMP_EQ_OQ); }
+  MTL_INLINE X256 operator<(const X256& y) const 
+  { return _mm256_cmp_ps(Data_, y.Data_, _CMP_LT_OQ); }
+  MTL_INLINE X256 operator>(const X256& y) const
+  { return _mm256_cmp_ps(Data_, y.Data_, _CMP_GT_OQ); }
   MTL_INLINE X256 operator-() const               { return _mm256_xor_ps(Data_, kX256_SignF32);   }
   MTL_INLINE X256 operator+(const X256& y) const  { return _mm256_add_ps(Data_, y.Data_);         }
   MTL_INLINE X256 operator-(const X256& y) const  { return _mm256_sub_ps(Data_, y.Data_);         }
@@ -400,11 +401,12 @@ public:
   MTL_INLINE void LoadPackedAligned(const F64* pSrc)     { Data_ = _mm256_load_pd(pSrc);  }
   MTL_INLINE void StorePackedAligned(F64* pDst) const    { _mm256_store_pd(pDst, Data_);  }
 
-  //MTL_INLINE void LoadSingle(const F64* pSrc)   { Data_ = _mm256_load_sd(pSrc);  }
-  //MTL_INLINE void StoreSingle(F64* pDst) const  { _mm256_store_sd(pDst, Data_);  }
-
-  //MTL_INLINE X256 operator<(const X256& y) const  { return _mm256_cmplt_pd(Data_, y.Data_);       }
-  //MTL_INLINE X256 operator>(const X256& y) const  { return _mm256_cmpgt_pd(Data_, y.Data_);       }
+  MTL_INLINE X256 operator==(const X256& y) const 
+  { return _mm256_cmp_pd(Data_, y.Data_, _CMP_EQ_OQ); }
+  MTL_INLINE X256 operator<(const X256& y) const 
+  { return _mm256_cmp_pd(Data_, y.Data_, _CMP_LT_OQ); }
+  MTL_INLINE X256 operator>(const X256& y) const
+  { return _mm256_cmp_pd(Data_, y.Data_, _CMP_GT_OQ); }
   MTL_INLINE X256 operator-() const               { return _mm256_xor_pd(Data_, kX256_SignF64);   }
   MTL_INLINE X256 operator+(const X256& y) const  { return _mm256_add_pd(Data_, y.Data_);         }
   MTL_INLINE X256 operator-(const X256& y) const  { return _mm256_sub_pd(Data_, y.Data_);         }
@@ -413,7 +415,7 @@ public:
   MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_pd(Data_, y.Data_);         }
   MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_pd(Data_, y.Data_);          }
   MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_pd(Data_, y.Data_);         }
-  MTL_INLINE X256 Sqrt()                  const   { return _mm256_sqrt_pd(Data_);                 }
+  MTL_INLINE X256 SquareRoot()             const  { return _mm256_sqrt_pd(Data_);                 }
 
   MTL_STREAM_EXTRA_OPERATORS(256);
 };
