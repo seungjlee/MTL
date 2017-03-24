@@ -48,20 +48,21 @@ MTL_INLINE static __m256i X256_SetPacked(I64 val)    { return (__m256i&)X256_Set
 MTL_INLINE static __m256i X256_SetPacked(U64 val)    { return (__m256i&)X256_SetPacked((F64&)val); }
 
 // Common constants.
-static const __m256  kX256_OnesF32    = X256_SetPacked(1.0f);
-static const __m256  kX256_TwosF32    = X256_SetPacked(2.0f);
-static const __m256  kX256_ZerosF32   = _mm256_setzero_ps();
-static const __m256  kX256_HalvesF32  = X256_SetPacked((F32)kHalf);
-static const __m256d kX256_OnesF64    = X256_SetPacked(1.0 );
-static const __m256d kX256_TwosF64    = X256_SetPacked(2.0 );
-static const __m256d kX256_ZerosF64   = _mm256_setzero_pd();
-static const __m256d kX256_HalvesF64  = X256_SetPacked(kHalf);
-static const __m256  kX256_SignF32    = X256_SetPacked(*((F32*)&kSign32)  );
-static const __m256  kX256_NoSignF32  = X256_SetPacked(*((F32*)&kNoSign32));
-static const __m256d kX256_SignF64    = X256_SetPacked(*((F64*)&kSign64  ));
-static const __m256d kX256_NoSignF64  = X256_SetPacked(*((F64*)&kNoSign64));
-static const __m256i kX256_ZerosI     = _mm256_setzero_si256();
-static const __m256i kX256_NoZerosI   = X256_SetPacked(I32(-1));
+static const __m256  kX256_OnesF32       = X256_SetPacked(1.0f);
+static const __m256  kX256_ThreeHalves32 = X256_SetPacked(1.5f);
+static const __m256  kX256_TwosF32       = X256_SetPacked(2.0f);
+static const __m256  kX256_ZerosF32      = _mm256_setzero_ps();
+static const __m256  kX256_HalvesF32     = X256_SetPacked((F32)kHalf);
+static const __m256d kX256_OnesF64       = X256_SetPacked(1.0 );
+static const __m256d kX256_TwosF64       = X256_SetPacked(2.0 );
+static const __m256d kX256_ZerosF64      = _mm256_setzero_pd();
+static const __m256d kX256_HalvesF64     = X256_SetPacked(kHalf);
+static const __m256  kX256_SignF32       = X256_SetPacked(*((F32*)&kSign32)  );
+static const __m256  kX256_NoSignF32     = X256_SetPacked(*((F32*)&kNoSign32));
+static const __m256d kX256_SignF64       = X256_SetPacked(*((F64*)&kSign64  ));
+static const __m256d kX256_NoSignF64     = X256_SetPacked(*((F64*)&kNoSign64));
+static const __m256i kX256_ZerosI        = _mm256_setzero_si256();
+static const __m256i kX256_NoZerosI      = X256_SetPacked(I32(-1));
 
 template <class T> struct X256_Type {};
 template <> struct X256_Type<F64>  { typedef __m256d Type; };
@@ -345,10 +346,11 @@ public:
                            F32 val4, F32 val5, F32 val6, F32 val7)
   { Set((F32)val0, (F32)val1, (F32)val2, (F32)val3, (F32)val4, (F32)val5, (F32)val6, (F32)val7); }
 
-  MTL_INLINE static X256 Zeros()   { return kX256_ZerosF32;  }
-  MTL_INLINE static X256 Ones()    { return kX256_OnesF32;   }
-  MTL_INLINE static X256 Halves()  { return kX256_HalvesF32; }
-  MTL_INLINE static X256 Twos()    { return kX256_TwosF32;   }
+  MTL_INLINE static X256 Zeros()        { return kX256_ZerosF32;      }
+  MTL_INLINE static X256 Ones()         { return kX256_OnesF32;       }
+  MTL_INLINE static X256 Halves()       { return kX256_HalvesF32;     }
+  MTL_INLINE static X256 ThreeHalves()  { return kX256_ThreeHalves32; }
+  MTL_INLINE static X256 Twos()         { return kX256_TwosF32;       }
 
   MTL_INLINE void Load(const F32* pSrc)   { LoadPackedUnaligned(pSrc);  }
   MTL_INLINE void Store(F32* pDst) const  { StorePackedUnaligned(pDst); }
@@ -371,7 +373,25 @@ public:
   MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_ps(Data_, y.Data_);         }
   MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_ps(Data_, y.Data_);          }
   MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_ps(Data_, y.Data_);         }
-  MTL_INLINE X256 Sqrt()                  const   { return _mm256_sqrt_ps(Data_);                 }
+  MTL_INLINE X256 SquareRoot()             const  { return _mm256_sqrt_ps(Data_);                 }
+
+  // Precision of about 11-bits.
+  MTL_INLINE X256 Reciprocal()                  const  { return _mm256_rcp_ps(Data_);   }
+  MTL_INLINE X256 ReciprocalSquareRoot()        const  { return _mm256_rsqrt_ps(Data_); }
+
+  // Precision of about 22-bits. Doing a Newton iteration to improve precision.
+  MTL_INLINE X256 ReciprocalPrecise() const
+  {
+    X256 r = Reciprocal();
+    return r * (Twos() - *this * r);
+  }
+
+  // Accuracy of about 22-bits. Doing a Newton iteration to improve precision.
+  MTL_INLINE X256 ReciprocalSquareRootPrecise() const
+  {
+    X256 r = ReciprocalSquareRoot();
+    return r * (ThreeHalves() - Halves() * *this * r * r);
+  }
 
   MTL_STREAM_EXTRA_OPERATORS(256);
 };
