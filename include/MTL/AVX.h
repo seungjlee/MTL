@@ -238,9 +238,22 @@ public:
 
   MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
 
-  MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
-  MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
-  MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
+  MTL_INLINE X256 operator-() const                { return _mm256_sub_epi32(kX256_ZerosI, Data_); }
+  MTL_INLINE X256 operator==(const X256& y) const  { return _mm256_cmpeq_epi32(Data_, y.Data_);    }
+  MTL_INLINE X256 operator<(const X256& y) const   { return _mm256_cmpgt_epi32(y.Data_, Data_);    }
+  MTL_INLINE X256 operator>(const X256& y) const   { return _mm256_cmpgt_epi32(Data_, y.Data_);    }
+  MTL_INLINE X256 operator+(const X256& y) const   { return _mm256_add_epi32(Data_, y.Data_);      }
+  MTL_INLINE X256 operator-(const X256& y) const   { return _mm256_sub_epi32(Data_, y.Data_);      }
+  MTL_INLINE X256 operator&(const X256& y) const   { return _mm256_and_si256(Data_, y.Data_);      }
+  MTL_INLINE X256 operator|(const X256& y) const   { return _mm256_or_si256(Data_, y.Data_);       }
+  MTL_INLINE X256 operator^(const X256& y) const   { return _mm256_xor_si256(Data_, y.Data_);      }
+
+  MTL_INLINE X256 operator>>(int shift) const      { return _mm256_srai_epi32(Data_, shift);       }
+  MTL_INLINE X256 operator<<(int shift) const      { return _mm256_slli_epi32(Data_, shift);       }
+  MTL_INLINE X256& operator>>=(int shift)          { return *this = *this >> shift;                }
+  MTL_INLINE X256& operator<<=(int shift)          { return *this = *this << shift;                }
+
+  MTL_STREAM_EXTRA_INTEGER_OPERATORS(256);
 };
 
 template<> class X256<U32> : public X256_Base<U32>

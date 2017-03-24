@@ -60,11 +60,12 @@
 #define XX_SetPacked X_X_SetPacked(MTL_STREAM_BITS)
 
 
-#define MTL_STREAM_EXTRA_INTEGER_OPERATORS(Bits)                                       \
-MTL_INLINE X__X(Bits)& operator+=(const X__X(Bits)& y)  { return *this = *this + y; }  \
-MTL_INLINE X__X(Bits)& operator-=(const X__X(Bits)& y)  { return *this = *this - y; }  \
-MTL_INLINE X__X(Bits)& operator&=(const X__X(Bits)& y)  { return *this = *this & y; }  \
-MTL_INLINE X__X(Bits)& operator|=(const X__X(Bits)& y)  { return *this = *this | y; }  \
+#define MTL_STREAM_EXTRA_INTEGER_OPERATORS(Bits)                                        \
+MTL_INLINE X__X(Bits)& operator+=(const X__X(Bits)& y)   { return *this = *this + y; }  \
+MTL_INLINE X__X(Bits)& operator-=(const X__X(Bits)& y)   { return *this = *this - y; }  \
+MTL_INLINE X__X(Bits)& operator&=(const X__X(Bits)& y)   { return *this = *this & y; }  \
+MTL_INLINE X__X(Bits)& operator|=(const X__X(Bits)& y)   { return *this = *this | y; }  \
+MTL_INLINE X__X(Bits)& operator^=(const X__X(Bits)& y)   { return *this = *this ^ y; }  \
 
 #define MTL_STREAM_EXTRA_OPERATORS(Bits)                                               \
 MTL_STREAM_EXTRA_INTEGER_OPERATORS(Bits)                                               \
