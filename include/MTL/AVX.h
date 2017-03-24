@@ -353,6 +353,10 @@ public:
                       F32 val4, F32 val5, F32 val6, F32 val7)
   { Data_ = _mm256_setr_ps(val0, val1, val2, val3, val4, val5, val6, val7); }
 
+  MTL_INLINE explicit X256(const X256<I32>& x)    { Data_ = _mm256_cvtepi32_ps(x.Data());         }
+  MTL_INLINE X256<I32> RoundedIntegers() const    { return X256<I32>(_mm256_cvtps_epi32(Data_));  }
+  MTL_INLINE X256<I32> TruncatedIntegers() const  { return X256<I32>(_mm256_cvttps_epi32(Data_)); }
+
   // Conversion helpers.
   MTL_INLINE explicit X256(F64 val)  { Set((F32)val); }
   MTL_INLINE explicit X256(F64 val0, F64 val1, F64 val2, F64 val3,
@@ -421,6 +425,10 @@ public:
   MTL_INLINE void Set(F64 val)             { Data_ = X256_SetPacked(val);     }
   MTL_INLINE void Set(F64 val0, F64 val1, F64 val2, F64 val3)
   { Data_ = _mm256_setr_pd(val0, val1, val2, val3); }
+
+  MTL_INLINE explicit X256(const X128<I32>& x)    { Data_ = _mm256_cvtepi32_pd(x.Data());         }
+  MTL_INLINE X128<I32> RoundedIntegers() const    { return X128<I32>(_mm256_cvtpd_epi32(Data_));  }
+  MTL_INLINE X128<I32> TruncatedIntegers() const  { return X128<I32>(_mm256_cvttpd_epi32(Data_)); }
 
   MTL_INLINE static X256 Zeros()   { return kX256_ZerosF64;  }
   MTL_INLINE static X256 Ones()    { return kX256_OnesF64;   }
