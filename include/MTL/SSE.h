@@ -54,20 +54,21 @@ MTL_INLINE static __m128i X128_SetPacked(U64 val)
 }
 
 // Common constants.
-static const __m128  kX128_OnesF32    = X128_SetPacked(1.0f);
-static const __m128  kX128_TwosF32    = X128_SetPacked(2.0f);
-static const __m128  kX128_ZerosF32   = _mm_setzero_ps();
-static const __m128  kX128_HalvesF32  = X128_SetPacked((F32)kHalf);
-static const __m128d kX128_OnesF64    = X128_SetPacked(1.0 );
-static const __m128d kX128_TwosF64    = X128_SetPacked(2.0 );
-static const __m128d kX128_ZerosF64   = _mm_setzero_pd();
-static const __m128d kX128_HalvesF64  = X128_SetPacked(kHalf);
-static const __m128  kX128_SignF32    = X128_SetPacked(( F32&)kSign32  );
-static const __m128  kX128_NoSignF32  = X128_SetPacked(( F32&)kNoSign32);
-static const __m128d kX128_SignF64    = X128_SetPacked((double&)kSign64  );
-static const __m128d kX128_NoSignF64  = X128_SetPacked((double&)kNoSign64);
-static const __m128i kX128_ZerosI     = _mm_setzero_si128();
-static const __m128i kX128_NoZerosI   = X128_SetPacked(I32(-1));
+static const __m128  kX128_OnesF32       = X128_SetPacked(1.0f);
+static const __m128  kX128_ThreeHalves32 = X128_SetPacked(1.5f);
+static const __m128  kX128_TwosF32       = X128_SetPacked(2.0f);
+static const __m128  kX128_ZerosF32      = _mm_setzero_ps();
+static const __m128  kX128_HalvesF32     = X128_SetPacked((F32)kHalf);
+static const __m128d kX128_OnesF64       = X128_SetPacked(1.0 );
+static const __m128d kX128_TwosF64       = X128_SetPacked(2.0 );
+static const __m128d kX128_ZerosF64      = _mm_setzero_pd();
+static const __m128d kX128_HalvesF64     = X128_SetPacked(kHalf);
+static const __m128  kX128_SignF32       = X128_SetPacked(( F32&)kSign32  );
+static const __m128  kX128_NoSignF32     = X128_SetPacked(( F32&)kNoSign32);
+static const __m128d kX128_SignF64       = X128_SetPacked((double&)kSign64  );
+static const __m128d kX128_NoSignF64     = X128_SetPacked((double&)kNoSign64);
+static const __m128i kX128_ZerosI        = _mm_setzero_si128();
+static const __m128i kX128_NoZerosI      = X128_SetPacked(I32(-1));
 
 template <class T> struct X128_Type {};
 template <> struct X128_Type<F64>  { typedef __m128d Type; };
@@ -347,10 +348,11 @@ public:
   MTL_INLINE explicit X128(F64 val0, F64 val1, F64 val2, F64 val3)
   { Set((F32)val0, (F32)val1, (F32)val2, (F32)val3); }
 
-  MTL_INLINE static X128 Zeros()   { return kX128_ZerosF32;  }
-  MTL_INLINE static X128 Ones()    { return kX128_OnesF32;   }
-  MTL_INLINE static X128 Halves()  { return kX128_HalvesF32; }
-  MTL_INLINE static X128 Twos()    { return kX128_TwosF32;   }
+  MTL_INLINE static X128 Zeros()        { return kX128_ZerosF32 ;     }
+  MTL_INLINE static X128 Ones()         { return kX128_OnesF32;       }
+  MTL_INLINE static X128 Halves()       { return kX128_HalvesF32;     }
+  MTL_INLINE static X128 ThreeHalves()  { return kX128_ThreeHalves32; }
+  MTL_INLINE static X128 Twos()         { return kX128_TwosF32;       }
 
   MTL_INLINE void Load(const F32* pSrc)   { LoadPackedUnaligned(pSrc);  }
   MTL_INLINE void Store(F32* pDst) const  { StorePackedUnaligned(pDst); }
@@ -375,6 +377,30 @@ public:
   MTL_INLINE X128 operator^(const X128& y)  const  { return _mm_xor_ps(Data_, y.Data_);         }
   MTL_INLINE X128 SquareRoot()              const  { return _mm_sqrt_ps(Data_);                 }
   MTL_INLINE X128 SquareRootSingle()        const  { return _mm_sqrt_ss(Data_);                 }
+
+  // Precision of about 11-bits.
+  MTL_INLINE X128 Reciprocal()                  const  { return _mm_rcp_ps(Data_);   }
+  MTL_INLINE X128 ReciprocalSquareRoot()        const  { return _mm_rsqrt_ps(Data_); }
+  MTL_INLINE X128 ReciprocalSquareRootSingle()  const  { return _mm_rsqrt_ss(Data_); }
+
+  // Precision of about 22-bits. Doing a Newton iteration to improve precision.
+  MTL_INLINE X128 ReciprocalPrecise() const
+  {
+    X128 r = Reciprocal();
+    return r * (Twos() - *this * r);
+  }
+
+  // Accuracy of about 22-bits. Doing a Newton iteration to improve precision.
+  MTL_INLINE X128 ReciprocalSquareRootPrecise() const
+  {
+    X128 r = ReciprocalSquareRoot();
+    return r * (ThreeHalves() - Halves() * *this * r * r);
+  }
+  MTL_INLINE X128 ReciprocalSquareRootSinglePrecise() const
+  {
+    X128 r = ReciprocalSquareRootSingle();
+    return r * (ThreeHalves() - Halves() * *this * r * r);
+  }
 
   MTL_STREAM_EXTRA_OPERATORS(128);
 };
