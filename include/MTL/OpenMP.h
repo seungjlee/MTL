@@ -38,11 +38,6 @@
 // is better for your system.
 //
 
-// Note that I have not really tested the code with OpenMP disabled.
-#ifndef MTL_ENABLE_OPENMP
-  #define MTL_ENABLE_OPENMP 1
-#endif
-
 #ifndef MTL_MAX_THREADS
   #define MTL_MAX_THREADS 1024
 #endif

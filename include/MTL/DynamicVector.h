@@ -127,10 +127,13 @@ public:
     T* pDst = First_;
     const T2* pSrc = rhs.Begin();
 
+    int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
+
 #if MTL_ENABLE_OPENMP
-    if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
+    if (DoOpenMP<T>(size, numberOfThreads))
     {
-      MTL_PARALLEL_FOR_BLOCKS(size)
+      int blockSize = (int)MTL::ComputeParallelSubSizesBlockSize(size, numberOfThreads);
+      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
       for (I32 k = 0; k < (I32)size; k++)
         pDst[k] = T(pSrc[k]);
     }
@@ -198,7 +201,8 @@ public:
       // User can enable this feature with the macro MTL_DYNAMIC_VECTOR_ZERO_INIT.
       FastZeroInit(pFirst, newBufferSize);
 
-      OptimizedCopy(pFirst, First_, Size_);  // Assuming no overlap in buffers.
+      if (Size_ > 0)
+        OptimizedCopy(pFirst, First_, Size_);  // Assuming no overlap in buffers.
 
       // Destroy old elements.
       DestroyAndDelete();
@@ -365,11 +369,14 @@ protected:
 
   MTL_INLINE static void AssignAll(T* p, const T* pEnd, const T& val)
   {
+    int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
+
 #if MTL_ENABLE_OPENMP
     SizeType size = SizeType(pEnd - p);
-    if (DoOpenMP<T>(size, MTL::CPU::Instance().NumberOfThreads()))
+    if (DoOpenMP<T>(size, numberOfThreads))
     {
-      MTL_PARALLEL_FOR_BLOCKS(size)
+      int blockSize = (int)MTL::ComputeParallelSubSizesBlockSize(size, numberOfThreads);
+      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
       for (I32 k = 0; k < (I32)size; k++)
         p[k] = val;
     }

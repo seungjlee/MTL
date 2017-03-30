@@ -57,6 +57,11 @@ typedef std::wostream OutputStream;
 #define MTL_FILE(x)  TOWCHAR(x)
 #define MTL__FILE__  MTL_FILE(__FILE__)
 
+// Note that I have not really tested the code with OpenMP disabled.
+#ifndef MTL_ENABLE_OPENMP
+  #define MTL_ENABLE_OPENMP 1
+#endif
+
 }  // namespace MTL
 
 
