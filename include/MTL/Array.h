@@ -113,6 +113,14 @@ public:
     Array<N-1,T>::Set(ptr, newVal);
     ptr[N-1] = newVal;
   }
+
+  // Copies or converts.
+  template<class SrcT>
+  MTL_INLINE static void Set(T* dst, const SrcT* src)
+  {
+    Array<N-1,T>::Set(dst, src);
+    dst[N-1] = (T)src[N-1];
+  }
 };
 template <class T> class Array<1,T>
 {
@@ -138,6 +146,9 @@ public:
   MTL_INLINE static T MaxNorm(const T* a)                       { return Abs(a[0]);     }
 
   MTL_INLINE static void Set(T* ptr, const T& newVal)           { ptr[0] = newVal;      }
+
+  template<class SrcT>
+  MTL_INLINE static void Set(T* dst, const SrcT* src)           { dst[0] = (T)src[0];   }
 };
 
 template <int N, class T, int Q> class Array_2D

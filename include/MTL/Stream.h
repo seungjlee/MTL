@@ -26,20 +26,7 @@
 #ifndef MTL_STREAM_H
 #define MTL_STREAM_H
 
-#if !defined(MTL_ENABLE_SSE) && !defined(MTL_ENABLE_AVX)
-#define MTL_ENABLE_SSE 1
-#define MTL_ENABLE_AVX 0
-#endif
-
-#if defined(MTL_ENABLE_AVX) && MTL_ENABLE_AVX
-  #ifndef MTL_ENABLE_SSE
-    #define MTL_ENABLE_SSE 1
-  #endif
-#endif
-
-#if !defined(MTL_ENABLE_AVX)
-#define MTL_ENABLE_AVX 0
-#endif
+#include <MTL/Definitions.h>
 
 #if MTL_ENABLE_AVX
   #define MTL_STREAM_BITS 256

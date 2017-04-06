@@ -57,6 +57,22 @@ typedef std::wostream OutputStream;
 #define MTL_FILE(x)  TOWCHAR(x)
 #define MTL__FILE__  MTL_FILE(__FILE__)
 
+// Default definitions for stream instructions.
+#if !defined(MTL_ENABLE_SSE) && !defined(MTL_ENABLE_AVX)
+#define MTL_ENABLE_SSE 1
+#define MTL_ENABLE_AVX 0
+#endif
+
+#if defined(MTL_ENABLE_AVX) && MTL_ENABLE_AVX
+  #ifndef MTL_ENABLE_SSE
+    #define MTL_ENABLE_SSE 1
+  #endif
+#endif
+
+#if !defined(MTL_ENABLE_AVX)
+#define MTL_ENABLE_AVX 0
+#endif
+
 // Note that I have not really tested the code with OpenMP disabled.
 #ifndef MTL_ENABLE_OPENMP
   #define MTL_ENABLE_OPENMP 1

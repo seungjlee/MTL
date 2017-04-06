@@ -23,17 +23,15 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Test.h>
-#include <MTL/SSE.h>
-
-using namespace MTL;
+#include <MTL/StreamArray.h>
 
 TEST(TestShuffle)
 {
 #if MTL_ENABLE_SSE
-  X128<F32> x1234(1.f,2.f,3.f,4.f);
-  X128<F32> x5678(5.f,6.f,7.f,8.f);
+  MTL::X128<MTL::F32> x1234(1.f,2.f,3.f,4.f);
+  MTL::X128<MTL::F32> x5678(5.f,6.f,7.f,8.f);
 
-  X128<F32> x2468 = Shuffle<1|3<<2|1<<4|3<<6>(x1234,x5678);
+  MTL::X128<MTL::F32> x2468 = MTL::Shuffle<1|3<<2|1<<4|3<<6>(x1234,x5678);
   MTL_EQUAL(x2468[0],2.f);
   MTL_EQUAL(x2468[1],4.f);
   MTL_EQUAL(x2468[2],6.f);
@@ -47,9 +45,30 @@ TEST(TestShuffle)
 TEST(TestXOR)
 {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-  XX<I32> xx = XX<I32>(1) ^ XX<I32>(-1);
+  MTL::XX<MTL::I32> xx = MTL::XX<MTL::I32>(1) ^ MTL::XX<MTL::I32>(-1);
 
-  for (int k = 0; k < XX<I32>::Increment; k++)
+  for (int k = 0; k < MTL::XX<MTL::I32>::Increment; k++)
     MTL_EQUAL(xx[k], -2);
 #endif
+}
+
+TEST(TestToFloat)
+{
+  const int size = 111;
+
+  std::vector<MTL::U8>  u(size);
+  std::vector<MTL::F32> v32(size);
+  std::vector<MTL::F64> v64(size);
+
+  for (int i = 0; i < 111; i++)
+    u[i] = i;
+
+  MTL::Convert_StreamUnaligned_Sequential(&v32[0], &u[0], size);
+  MTL::Convert_StreamUnaligned_Sequential(&v64[0], &u[0], size);
+
+  for (int i = 0; i < 111; i++)
+  {
+    MTL_EQUAL(v32[i], u[i]);
+    MTL_EQUAL(v64[i], u[i]);
+  }
 }
