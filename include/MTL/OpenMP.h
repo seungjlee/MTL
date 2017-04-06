@@ -148,18 +148,18 @@ MTL_INLINE static void Parallel_1Dst(T* p, SizeType size)
     Func(p, size);
 }
 
-template <class T, void (*Func)(T*, const T*, SizeType)>
-MTL_INLINE static void Parallel_1Dst_1Src(T* pDst, const T* pSrc, SizeType size)
+template <class DstT, class SrcT, void (*Func)(DstT*, const SrcT*, SizeType)>
+MTL_INLINE static void Parallel_1Dst_1Src(DstT* pDst, const SrcT* pSrc, SizeType size)
 {
 #if MTL_ENABLE_OPENMP
   I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
-  if (DoOpenMP<T>(size, numberOfThreads))
+  if (DoOpenMP<DstT>(size, numberOfThreads))
   {
     SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
-    ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
+    ComputeParallelSubSizes<DstT>(subSizes, offsets, size, numberOfThreads);
 
     #pragma omp parallel for
     for (I32 i = 0; i < numberOfThreads; i++)

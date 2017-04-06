@@ -477,7 +477,7 @@ MTL_INLINE static void OptimizedCopy_Sequential(T* pDst, const T* pSrc, SizeType
 }
 template <class T> MTL_INLINE static void OptimizedCopy(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, OptimizedCopy_Sequential >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, OptimizedCopy_Sequential >(pDst, pSrc, size);
 }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX

@@ -54,19 +54,19 @@ TEST(TestXOR)
 
 TEST(TestToFloat)
 {
-  const int size = 111;
+  const int size = 1111111;
 
-  std::vector<MTL::U8>  u(size);
+  std::vector<MTL::I32>  u(size);
   std::vector<MTL::F32> v32(size);
   std::vector<MTL::F64> v64(size);
 
-  for (int i = 0; i < 111; i++)
+  for (int i = 0; i < size; i++)
     u[i] = i;
 
-  MTL::Convert_StreamUnaligned_Sequential(&v32[0], &u[0], size);
-  MTL::Convert_StreamUnaligned_Sequential(&v64[0], &u[0], size);
+  MTL::Convert_StreamUnaligned_Parallel(&v32[0], &u[0], size);
+  MTL::Convert_StreamUnaligned_Parallel(&v64[0], &u[0], size);
 
-  for (int i = 0; i < 111; i++)
+  for (int i = 0; i < size; i++)
   {
     MTL_EQUAL(v32[i], u[i]);
     MTL_EQUAL(v64[i], u[i]);

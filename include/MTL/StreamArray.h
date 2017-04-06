@@ -445,6 +445,7 @@ Max_StreamUnaligned_Sequential(T* pDst, const T* pSrc, SizeType size)
   }
   Max_Sequential(pDst, pSrc, pDstEnd);
 }
+
 template <class T, class SrcT> void
 Convert_StreamAligned_Sequential(T* pDst, const SrcT* pSrc, SizeType size)
 {
@@ -1018,73 +1019,84 @@ UnaryMinus_StreamAligned_Parallel(T* pDst, SizeType size)
 template <class T> MTL_INLINE void
 UnaryMinus_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, UnaryMinus_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, UnaryMinus_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
 }
 
 template <class T> MTL_INLINE void
 Addition_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Addition_StreamAligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Addition_StreamAligned_Sequential<T> >(pDst, pSrc, size);
 }
 template <class T> MTL_INLINE void
 Addition_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Addition_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Addition_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
 }
 
 template <class T> MTL_INLINE void
 Subtraction_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Subtraction_StreamAligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Subtraction_StreamAligned_Sequential<T> >(pDst, pSrc, size);
 }
 template <class T> MTL_INLINE void
 Subtraction_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Subtraction_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Subtraction_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
 }
 
 template <class T> MTL_INLINE void
 Multiplication_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Multiplication_StreamAligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Multiplication_StreamAligned_Sequential<T> >(pDst, pSrc, size);
 }
 template <class T> MTL_INLINE void
 Multiplication_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Multiplication_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Multiplication_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
 }
 
 template <class T> MTL_INLINE void
 Division_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Division_StreamAligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Division_StreamAligned_Sequential<T> >(pDst, pSrc, size);
 }
 template <class T> MTL_INLINE void
 Division_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Division_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Division_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
 }
 
 template <class T> MTL_INLINE void
 Min_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Min_StreamAligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Min_StreamAligned_Sequential<T> >(pDst, pSrc, size);
 }
 template <class T> MTL_INLINE void
 Min_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Min_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Min_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
 }
 
 template <class T> MTL_INLINE void
 Max_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Max_StreamAligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Max_StreamAligned_Sequential<T> >(pDst, pSrc, size);
 }
 template <class T> MTL_INLINE void
 Max_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, Max_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Max_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+}
+
+template <class DstT, class SrcT> void
+Convert_StreamAligned_Parallel(DstT* pDst, const SrcT* pSrc, SizeType size)
+{
+  Parallel_1Dst_1Src<DstT, SrcT, Convert_StreamAligned_Sequential<DstT,SrcT>>(pDst, pSrc, size);
+}
+template <class DstT, class SrcT> void
+Convert_StreamUnaligned_Parallel(DstT* pDst, const SrcT* pSrc, SizeType size)
+{
+  Parallel_1Dst_1Src<DstT, SrcT, Convert_StreamUnaligned_Sequential<DstT,SrcT>>(pDst, pSrc, size);
 }
 
 template <class T> MTL_INLINE void
