@@ -26,6 +26,7 @@
 #define MTL_OPENMP_H
 
 #include "CPU.h"
+#include <assert.h>
 
 //
 // Microsoft Visual Studio's OpenMP implementation by default sets the environment variable
