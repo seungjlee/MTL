@@ -185,6 +185,18 @@ public:
       (*this)[i][i] += value;
   }
 
+  MTL_INLINE void SetDiagonals(const T& value)
+  {
+    for (I32 i = 0; i < Min(Rows(), Cols()); i++)
+      (*this)[i][i] = value;
+  }
+
+  MTL_INLINE void SetDiagonals(const DynamicVector<T>& values)
+  {
+    for (I32 i = 0; i < Min(Rows(), Cols()); i++)
+      (*this)[i][i] = values[i];
+  }
+
   MTL_INLINE void SetAll(const T& newVal)
   {
     for (I32 i = 0; i < Rows(); i++)

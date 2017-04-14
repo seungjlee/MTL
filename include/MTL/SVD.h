@@ -375,6 +375,155 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
     W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M));
 #endif
 
+  for (I32 i = 0; i < N; i++)
+  {
+    if (W[i] > 0)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+      ScalarMultiplication_StreamAligned_Parallel(At + i*rowSizeA, T(1)/W[i], M);
+#else
+      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
+#endif
+  }
+
+  return iteration < maxIterations;
+}
+template<class T>
+static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
+{
+  T epsilon = Epsilon<T>();
+  T epsilon2 = Square(epsilon);
+
+  I32 maxIterations = Max(M, 30);
+
+  for (I32 i = 0; i < N; i++)
+  {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+    W[i] = SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M);
+#else
+    W[i] = SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M);
+#endif
+  }
+
+  I32 iteration;
+  for (iteration = 0; iteration < maxIterations; iteration++)
+  {
+    bool changed = false;
+
+    for (I32 i = 0; i < N-1; i++)
+    {
+      for (I32 j = i+1; j < N; j++)
+      {
+        T* Ai = At + i*rowSizeA;
+        T* Aj = At + j*rowSizeA;
+        T a = W[i];
+        T b = W[j];
+        
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+        T p = DotProduct_StreamAligned_Parallel(Ai, Aj, M);
+#else
+        T p = DotProduct_Sequential(Ai, Aj, Ai + M);
+#endif
+        T pp = p*p;
+
+        if (pp <= epsilon2*a*b)
+          continue;
+
+        T beta = a - b;
+        T gamma = Sqrt(T(4)*pp + beta*beta);
+        T delta;
+        T c, s;
+        if (beta < 0)
+        {
+          delta = (gamma - beta) * 0.5;
+          s = Sqrt(delta/gamma);
+          c = p / (gamma*s);
+        }
+        else
+        {
+          T meanGammaBeta = 0.5 * (gamma + beta);
+          delta = pp / meanGammaBeta;
+          c = Sqrt(meanGammaBeta / gamma);
+          s = p / (gamma*c);
+        }
+
+        if (delta <= 0)
+          continue;
+
+        changed = true;
+
+        if (iteration < 10)
+        {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+          GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M);
+#else
+          GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
+#endif
+          W[i] += delta;
+          W[j] -= delta;
+        }
+        else
+        {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+          GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M, W[i], W[j]);
+#else
+          GivensRotation_Sequential(Ai, Aj, c, s, Ai + M, W[i], W[j]);
+#endif
+          W[i] += delta * T(0.5);
+          W[j] -= delta * T(0.5);
+        }
+      }
+    }
+
+    if (!changed)
+      break;
+  }
+
+  for (I32 i = 0; i < N; i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+    W[i] = Sqrt(SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M));
+#else
+    W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M));
+#endif
+
+  for (I32 i = 0; i < N; i++)
+  {
+    if (W[i] > 0)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+      ScalarMultiplication_StreamAligned_Parallel(At + i*rowSizeA, T(1)/W[i], M);
+#else
+      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
+#endif
+  }
+
+  return iteration < maxIterations;
+}
+
+template<class T>
+static void SortSingularValuesAscending(T* At, T* W, T* Vt, I32 M, I32 N,
+                                        I32 rowSizeA, I32 rowSizeV)
+{
+  // Selection sort of singular values.
+  for (I32 i = 0; i < N-1; i++)
+  {
+    I32 minIndex = i;
+    for (I32 k = i+1; k < N; k++)
+    {
+      if (W[minIndex] > W[k])
+        minIndex = k;
+    }
+
+    if (i != minIndex)
+    {
+      Swap(W[i], W[minIndex]);
+      SwapRows(At, i, minIndex, M, rowSizeA);
+      SwapRows(Vt, i, minIndex, N, rowSizeV);
+    }
+  }
+}
+template<class T>
+static void SortSingularValuesDescending(T* At, T* W, T* Vt, I32 M, I32 N,
+                                         I32 rowSizeA, I32 rowSizeV)
+{
   // Selection sort of singular values.
   for (I32 i = 0; i < N-1; i++)
   {
@@ -392,28 +541,99 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
       SwapRows(Vt, i, maxIndex, N, rowSizeV);
     }
   }
-
-  for (I32 i = 0; i < N; i++)
-  {
-    if (W[i] > 0)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      ScalarMultiplication_StreamAligned_Parallel(At + i*rowSizeA, T(1)/W[i], M);
-#else
-      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
-#endif
-  }
-
-  return iteration < maxIterations;
 }
+
+template<class T>
+static void SortSingularValuesAscending(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
+{
+  // Selection sort of singular values.
+  for (I32 i = 0; i < N-1; i++)
+  {
+    I32 minIndex = i;
+    for (I32 k = i+1; k < N; k++)
+    {
+      if (W[minIndex] > W[k])
+        minIndex = k;
+    }
+
+    if (i != minIndex)
+    {
+      Swap(W[i], W[minIndex]);
+      SwapRows(At, i, minIndex, M, rowSizeA);
+    }
+  }
+}
+template<class T>
+static void SortSingularValuesDescending(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
+{
+  // Selection sort of singular values.
+  for (I32 i = 0; i < N-1; i++)
+  {
+    I32 maxIndex = i;
+    for (I32 k = i+1; k < N; k++)
+    {
+      if (W[maxIndex] < W[k])
+        maxIndex = k;
+    }
+
+    if (i != maxIndex)
+    {
+      Swap(W[i], W[maxIndex]);
+      SwapRows(At, i, maxIndex, M, rowSizeA);
+    }
+  }
+}
+
 template <class T>
 MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
                                            DynamicVector<T>& D,
-                                           DynamicMatrix<T>& Vt)
+                                           DynamicMatrix<T>& Vt,
+                                           bool sortAscending = false)
 {
   Vt.Resize(Ut.Rows(), Ut.Rows());
   D.Resize(Ut.Rows());
-  return JacobiSVDTransposed(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
-                             Ut.RowSize(), Vt.RowSize());
+  bool converged = JacobiSVDTransposed(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
+                                       Ut.RowSize(), Vt.RowSize());
+
+  if (sortAscending)
+  {
+    SortSingularValuesAscending(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
+                                Ut.RowSize(), Vt.RowSize());
+  }
+  else
+  {
+    SortSingularValuesDescending(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
+                                 Ut.RowSize(), Vt.RowSize());
+  }
+  return converged;
+}
+
+template <class T>
+MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
+                                           DynamicVector<T>& D,
+                                           bool sortAscending = false)
+{
+  D.Resize(Ut.Rows());
+  bool converged = JacobiSVDTransposed(Ut[0], D.Begin(), Ut.Cols(), Ut.Rows(), Ut.RowSize());
+
+  if (sortAscending)
+  {
+    SortSingularValuesAscending(Ut[0], D.Begin(), Ut.Cols(), Ut.Rows(), Ut.RowSize());
+  }
+  else
+  {
+    SortSingularValuesDescending(Ut[0], D.Begin(), Ut.Cols(), Ut.Rows(), Ut.RowSize());
+  }
+  return converged;
+}
+
+// Eigen value decomposition for positive definite matrices.
+template <class T>
+MTL_INLINE static bool JacobiEigenTransposed(DynamicMatrix<T>& Ut,
+                                             DynamicVector<T>& D,
+                                             bool sortAscending = true)
+{
+  return JacobiSVDTransposed(Ut, D, sortAscending);
 }
 
 template <class T>

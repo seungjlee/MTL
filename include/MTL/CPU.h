@@ -72,6 +72,11 @@ public:
     NumberOfThreads_[std::this_thread::get_id().hash()] = n;
   }
 
+  void SetDefaultNumberOfThreads(U64 n)
+  {
+    DefaultNumberOfThreads_ = n;
+  }
+
   U64 NumberOfCores() const           { return NumberOfCores_;          }
 
   bool SSE()  const  { return CPU_Rep_.f_1_EDX_[25] || false; }
@@ -95,7 +100,7 @@ private:
     if (IsIntel() && Multithreading())
       NumberOfCores_ /= 2;
 
-    NumberOfThreads(NumberOfCores_);
+    DefaultNumberOfThreads_ = NumberOfCores_;
   }
 
   ~CPU() {}
@@ -250,14 +255,17 @@ private:
   U64 NumberOfLogicalCores_;
   const InstructionSet_Internal CPU_Rep_;
 
+  U64 DefaultNumberOfThreads_;
+
   U64 Number_Of_Threads()
   {
     Lock lock(NumberOfThreadsMutex_);
-    if (NumberOfThreads_.find(std::this_thread::get_id().hash()) == NumberOfThreads_.end())
+    size_t threadHash = std::this_thread::get_id().hash();
+    if (NumberOfThreads_.find(threadHash) == NumberOfThreads_.end())
     {
-      NumberOfThreads_[std::this_thread::get_id().hash()] = NumberOfCores_;
+      NumberOfThreads_[threadHash] = DefaultNumberOfThreads_;
     }
-    return NumberOfThreads_[std::this_thread::get_id().hash()];
+    return NumberOfThreads_[threadHash];
   }
 };
 
