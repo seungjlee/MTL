@@ -212,6 +212,41 @@ public:
       memcpy((*this)[row], matrix[row], N*sizeof(T));
   }
 
+  MTL_INLINE DynamicMatrix(I32 rows, I32 cols, I32 rowSize, T* pData)
+  {
+    Rows_    = rows;
+    Cols_    = cols;
+    RowSize_ = rowSize;
+    pData_   = pData;
+  }
+
+  // Copy constructor.
+  MTL_INLINE DynamicMatrix(const DynamicMatrix& rhs)
+  {
+    *this = rhs;
+  }
+
+  MTL_INLINE DynamicMatrix& operator=(const DynamicMatrix& rhs) 
+  {
+    if (this != &rhs)
+    {
+      Rows_    = rhs.Rows_;
+      Cols_    = rhs.Cols_;
+      RowSize_ = rhs.RowSize_;
+      Data_    = rhs.Data_;
+
+      if (Data_.Size() == 0 && Rows_ > 0)
+      {
+        Data_.Resize(Cols_ * RowSize_);
+        OptimizedCopy(Data_.Begin(), rhs.pData_, Data_.Size());
+      }
+      pData_ = Data_.Begin();
+    }
+
+    return *this;
+  }
+
+
   MTL_INLINE void Resize(I32 rows, I32 cols, I32 byteAlignment = MTL_STREAM_BYTES)
   {
     Rows_ = rows;
@@ -221,6 +256,7 @@ public:
       ((Cols_ * sizeof(T) + byteAlignment - 1) / byteAlignment) * byteAlignment / sizeof(T);
 
     Data_.Resize(Rows_ * RowSize_);
+    pData_ = Data_.Begin();
   }
 
   MTL_INLINE void Identity()
@@ -573,18 +609,19 @@ public:
     return Data() + row * RowSize();
   }
 
-  MTL_INLINE I32 Rows() const              { return Rows_;         }
-  MTL_INLINE I32 Cols() const              { return Cols_;         }
-  MTL_INLINE I32 RowSize() const           { return RowSize_;      }
+  MTL_INLINE I32 Rows() const              { return Rows_;    }
+  MTL_INLINE I32 Cols() const              { return Cols_;    }
+  MTL_INLINE I32 RowSize() const           { return RowSize_; }
 
-  MTL_INLINE const T* Data() const         { return Data_.begin(); }
-  MTL_INLINE T* Data()                     { return Data_.begin(); }
+  MTL_INLINE const T* Data() const         { return pData_;   }
+  MTL_INLINE T* Data()                     { return pData_;   }
 
 private:
   I32 Rows_;
   I32 Cols_;
   I32 RowSize_;
   DynamicVector<T> Data_;
+  T* pData_;
 
   int ComputeMultiplicationBlockSize() const
   {
