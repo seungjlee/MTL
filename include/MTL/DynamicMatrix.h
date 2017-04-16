@@ -39,29 +39,54 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
   MTL_PARALLEL_FOR_BLOCKS(rows)
   for (I32 i = 0; i < rows; i++)
   {
-    for (I32 j = i; j < rows; j++)
-    {
-      if (i == j)
-      {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        P[i*rowSizeP + j] = SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
+    P[i*rowSizeP + i] = SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
 #else
-        P[i*rowSizeP + j] = SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
+    P[i*rowSizeP + j] = SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
 #endif
-      }
-      else
-      {
+
+    for (I32 j = i + 1; j < rows; j++)
+    {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        P[i*rowSizeP + j] = DotProduct_StreamAligned_Sequential(M + i*rowSizeM,
+      P[i*rowSizeP + j] = DotProduct_StreamAligned_Sequential(M + i*rowSizeM,
                                                               M + j*rowSizeM, cols);
 #else
-        P[i*rowSizeP + j] = DotProduct_Sequential(M + i*rowSizeM,
-                                                  M + j*rowSizeM, M + i*rowSizeM + cols);
+      P[i*rowSizeP + j] = DotProduct_Sequential(M + i*rowSizeM,
+                                                M + j*rowSizeM, M + i*rowSizeM + cols);
 #endif
-        P[j*rowSizeP + i] = P[i*rowSizeP + j];
-      }
+      P[j*rowSizeP + i] = P[i*rowSizeP + j];
     }
   }
+}
+// P += M * Mt.
+template<class T>
+MTL_INLINE static void AddMultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
+                                              I32 rowSizeP, I32 rowSizeM)
+{
+  MTL_PARALLEL_FOR_BLOCKS(rows)
+  for (I32 i = 0; i < rows; i++)
+  {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+    P[i*rowSizeP + i] += SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
+#else
+    P[i*rowSizeP + j] += SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
+#endif
+
+    for (I32 j = i + 1; j < rows; j++)
+    {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+      P[i*rowSizeP + j] += DotProduct_StreamAligned_Sequential(M + i*rowSizeM,
+                                                               M + j*rowSizeM, cols);
+#else
+      P[i*rowSizeP + j] += DotProduct_Sequential(M + i*rowSizeM,
+                                                 M + j*rowSizeM, M + i*rowSizeM + cols);
+#endif
+    }
+  }
+
+  for (I32 i = 0; i < rows; i++)
+    for (I32 j = i; j < rows; j++)
+      P[j*rowSizeP + i] = P[i*rowSizeP + j];
 }
 // Only fills lower part of matrix.
 template<class T>
@@ -85,7 +110,7 @@ MTL_INLINE static void MultiplyByTranspose_LowerMatrix(T* P, const T* M, I32 row
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         P[j*rowSizeP + i] = DotProduct_StreamAligned_Sequential(M + i*rowSizeM,
-                                                              M + j*rowSizeM, cols);
+                                                                M + j*rowSizeM, cols);
 #else
         P[j*rowSizeP + i] = DotProduct_Sequential(M + i*rowSizeM,
                                                   M + j*rowSizeM, M + i*rowSizeM + cols);
@@ -99,13 +124,45 @@ template<class T>
 MTL_INLINE static void Multiply(T* P, const T* A, const T* B, I32 rows, I32 N, I32 cols,
                                 I32 rowSizeP, I32 rowSizeA, I32 rowSizeB)
 {
+  MTL_PARALLEL_FOR_BLOCKS(rows)
   for (I32 row = 0; row < rows; row++)
   {
     for (I32 col = 0; col < cols; col++)
     {
+      P[row*rowSizeP + col] =
       P[row*rowSizeP + col] = A[row*rowSizeA] * B[col];
       for (I32 i = 1; i < N; i++)
         P[row*rowSizeP + col] += A[row*rowSizeA + i] * B[i*rowSizeB + col];
+    }
+  }
+}
+template<class T>
+MTL_INLINE static void MultiplyTransposed(T* P, const T* A, const T* Bt,
+                                          I32 rows, I32 N, I32 cols,
+                                          I32 rowSizeP, I32 rowSizeA, I32 rowSizeBt)
+{
+  MTL_PARALLEL_FOR_BLOCKS(rows)
+  for (I32 row = 0; row < rows; row++)
+  {
+    for (I32 col = 0; col < cols; col++)
+    {
+      P[row*rowSizeP + col] = DotProduct_StreamAligned_Sequential(A + row*rowSizeA,
+                                                                  Bt + col*rowSizeBt, N);
+    }
+  }
+}
+template<class T>
+MTL_INLINE static void AddMultiplyTransposed(T* P, const T* A, const T* Bt,
+                                            I32 rows, I32 N, I32 cols,
+                                            I32 rowSizeP, I32 rowSizeA, I32 rowSizeBt)
+{
+  MTL_PARALLEL_FOR_BLOCKS(rows)
+  for (I32 row = 0; row < rows; row++)
+  {
+    for (I32 col = 0; col < cols; col++)
+    {
+      P[row*rowSizeP + col] += DotProduct_StreamAligned_Sequential(A + row*rowSizeA,
+                                                                   Bt + col*rowSizeBt, N);
     }
   }
 }
@@ -175,6 +232,7 @@ public:
 
   MTL_INLINE void Zeros()
   {
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
       memset((*this)[i], 0, Cols() * sizeof(T));
   }
@@ -199,19 +257,9 @@ public:
 
   MTL_INLINE void SetAll(const T& newVal)
   {
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-      OptimizedAssignAll((*this)[i], newVal, Cols());
-  }
-
-  MTL_INLINE DynamicMatrix operator*(const DynamicMatrix& B) const
-  {
-    assert(Cols() == B.Rows());
-
-    DynamicMatrix result(Rows(), B.Cols());
-    Multiply(result[0], (*this)[0], B[0], Rows(), Cols(), B.Cols(),
-             result.RowSize(), RowSize(), B.RowSize());
-
-    return result;
+      AssignAll_Stream((*this)[i], newVal, Cols());
   }
 
   MTL_INLINE DynamicVector<T> operator*(const DynamicVector<T>& v) const
@@ -219,6 +267,8 @@ public:
     assert(Cols() == (I32)v.Size());
 
     DynamicVector<T> result(Rows());
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       result[i] = DotProduct_StreamAligned_Sequential((*this)[i], v.Begin(), Cols());
@@ -227,6 +277,36 @@ public:
 #endif
 
     return result;
+  }
+
+  MTL_INLINE DynamicMatrix operator*(const DynamicMatrix& B) const
+  {
+    assert(Cols() == B.Rows());
+
+    DynamicMatrix result;
+    MultiplyTransposed(result, B.ComputeTranspose());
+
+    return result;
+  }
+
+  MTL_INLINE void MultiplyTransposed(DynamicMatrix& product, const DynamicMatrix& Bt) const
+  {
+    assert(Cols() == Bt.Cols());
+
+    product.Resize(Rows(), Bt.Rows());
+    //MTL::MultiplyTransposed(product[0], (*this)[0], Bt[0], Rows(), Cols(), Bt.Rows(),
+    //                        product.RowSize(), RowSize(), Bt.RowSize());
+    product.Zeros();
+    int blockSize = ComputeMultiplicationBlockSize();
+    int offset = 0;
+    while (offset < Cols())
+    {
+      int columnsToMultiply = Min(blockSize, Cols() - offset);
+      AddMultiplyTransposed(product[0], (*this)[0] + offset, Bt[0] + offset, Rows(),
+                            columnsToMultiply, Bt.Rows(),
+                            product.RowSize(), RowSize(), Bt.RowSize());
+      offset += columnsToMultiply;
+    }
   }
 
   // Computes (*this) * this->getTranspose().
@@ -239,8 +319,17 @@ public:
   MTL_INLINE void MultiplyByTranspose(DynamicMatrix& squareSymmetricMatrix) const
   {
     squareSymmetricMatrix.Resize(Rows(), Rows());
-    MTL::MultiplyByTranspose(squareSymmetricMatrix[0], (*this)[0], Rows(), Cols(),
+    squareSymmetricMatrix.Zeros();
+    int blockSize = ComputeMultiplicationBlockSize();
+    int offset = 0;
+    while (offset < Cols())
+    {
+      int columnsToMultiply = Min(blockSize, Cols() - offset);
+      AddMultiplyByTranspose(squareSymmetricMatrix[0], Data() + offset,
+                             Rows(), columnsToMultiply,
                              squareSymmetricMatrix.RowSize(), RowSize());
+      offset += columnsToMultiply;
+    }
   }
 
   MTL_INLINE DynamicMatrix operator+=(const DynamicMatrix& B)
@@ -248,6 +337,7 @@ public:
     assert(Cols() == B.Cols());
     assert(Rows() == B.Rows());
 
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       Addition_StreamAligned_Sequential((*this)[i], B[i], Cols());
@@ -272,6 +362,7 @@ public:
     assert(Cols() == B.Cols());
     assert(Rows() == B.Rows());
 
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       Subtraction_StreamAligned_Sequential((*this)[i], B[i], Cols());
@@ -294,6 +385,8 @@ public:
   MTL_INLINE DynamicMatrix operator-() const
   {
     DynamicMatrix A = *this;
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < A.Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       UnaryMinus_StreamAligned_Sequential(A[i], A.Cols());
@@ -307,6 +400,8 @@ public:
   MTL_INLINE DynamicMatrix& operator+=(const T& scalar)
   {
     DynamicMatrix& A = *this;
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarAddition_StreamAligned_Sequential(A[i], scalar, A.Cols());
@@ -326,6 +421,8 @@ public:
   MTL_INLINE DynamicMatrix& operator-=(const T& scalar)
   {
     DynamicMatrix& A = *this;
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarSubtraction_StreamAligned_Sequential(A[i], scalar, A.Cols());
@@ -345,6 +442,8 @@ public:
   MTL_INLINE DynamicMatrix& operator*=(const T& scalar)
   {
     DynamicMatrix& A = *this;
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarMultiplication_StreamAligned_Sequential(A[i], scalar, A.Cols());
@@ -364,6 +463,8 @@ public:
   MTL_INLINE DynamicMatrix& operator/=(const T& scalar)
   {
     DynamicMatrix& A = *this;
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarDivision_StreamAligned_Sequential(A[i], scalar, A.Cols());
@@ -385,6 +486,8 @@ public:
   MTL_INLINE T Sum() const
   {
     T sum = T(0);
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       sum += Sum_StreamAligned_Parallel((*this)[i], Cols());
@@ -398,6 +501,8 @@ public:
   MTL_INLINE T SumOfSquares() const
   {
     T sum = T(0);
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       sum += SumOfSquares_StreamAligned_Parallel((*this)[i], Cols());
@@ -416,6 +521,8 @@ public:
   MTL_INLINE T MaxNorm() const
   {
     T max = T(0);
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
     {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -437,7 +544,9 @@ public:
 
   MTL_INLINE DynamicMatrix ComputeTranspose() const
   {
-    DynamicMatrix t(Cols(),Rows());
+    DynamicMatrix t(Cols(), Rows());
+
+    MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
       for (I32 j = 0; j < Cols(); j++)
         t[j][i] = (*this)[i][j];
@@ -456,12 +565,12 @@ public:
   MTL_INLINE const T* operator[](I32 row) const
   {
     assert(row >= 0 && row < Rows());
-    return Data_.Begin() + row * RowSize();
+    return Data() + row * RowSize();
   }
   MTL_INLINE T* operator[](I32 row)
   {
     assert(row >= 0 && row < Rows());
-    return Data_.Begin() + row * RowSize();
+    return Data() + row * RowSize();
   }
 
   MTL_INLINE I32 Rows() const              { return Rows_;         }
@@ -476,6 +585,11 @@ private:
   I32 Cols_;
   I32 RowSize_;
   DynamicVector<T> Data_;
+
+  int ComputeMultiplicationBlockSize() const
+  {
+    return 256 * (Square(1024)/Square(Rows()) + 1);
+  }
 };
 
 }  // namespace MTL

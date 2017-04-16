@@ -83,6 +83,7 @@ public:
       StartTimeMilliseconds_ = getCurrentTimeInMilliseconds();
   }
 
+  void Restart()        { ResetAndStart();  }
   void ResetAndStart()  { Reset(); Start(); }
 
   double Seconds() const  { return Milliseconds() * 1e-3; }

@@ -31,7 +31,7 @@
 
 using namespace MTL;
 
-static const double kTol = 1e-12;
+static const double kTol = 1e-9;
 
 TEST(TestMatrixMultiplication)
 {
@@ -330,20 +330,58 @@ TEST(TestMultiplyByTranspose)
 {
   enum
   {
-    M =  200,
-    N = 2000
+    M = 639,
+    N = 32003
   };
 
   Timer t;
   Random random;
 
-  t.ResetAndStart();
-  DynamicMatrix<F64> A = random.DynamicMatrix<F64>(N,N, -1, 1);
+  t.Restart();
+  DynamicMatrix<F64> A = random.DynamicMatrix<F64>(M,N, -1, 1);
   t.Stop();
-  printf("  Random matrix creation time: %.3f msecs\n", t.Milliseconds());
+  printf("  Random matrix creation time (%dx%d):  %9.3f msecs\n",
+         A.Rows(), A.Cols(), t.Milliseconds());
 
-  t.ResetAndStart();
-  A = A.MultiplyByTranspose();
+  DynamicMatrix<F64> P0(A.Rows(), A.Rows());
+  t.Restart();
+  MultiplyByTranspose(P0[0], A[0], A.Rows(), A.Cols(), P0.RowSize(), A.RowSize());
   t.Stop();
-  printf("  Multiply by transpose time: %.3f msecs\n", t.Milliseconds());
+  printf("  MultiplyByTranspose function time:        %9.3f msecs\n", t.Milliseconds());
+
+  DynamicMatrix<F64> P1(A.Rows(), A.Rows());
+  t.Restart();
+  P1.Zeros();
+  int blockSize = 256 * (Square(1024)/Square(A.Rows()) + 1);
+  int offset = 0;
+  while (offset < A.Cols())
+  {
+    int columnsToMultiply = Min(blockSize, A.Cols() - offset);
+    AddMultiplyByTranspose(P1[0], A[0] + offset, A.Rows(), columnsToMultiply,
+                           P1.RowSize(), A.RowSize());
+    offset += columnsToMultiply;
+  }
+  t.Stop();
+  printf("  Multiple AddMultiplyByTranspose time:     %9.3f msecs, blockSize = %d\n",
+         t.Milliseconds(), blockSize);
+
+  t.Restart();
+  DynamicMatrix<F64> X = A.MultiplyByTranspose();
+  t.Stop();
+  printf("  MultiplyByTranspose method time:          %9.3f msecs\n", t.Milliseconds());
+
+  t.Restart();
+  DynamicMatrix<F64> P2 = A * A.ComputeTranspose();
+  t.Stop();
+  printf("  Multiply with computed transpose time:    %9.3f msecs\n", t.Milliseconds());
+
+  for (I32 row = 0; row < X.Rows(); row++)
+  {
+    for (I32 col = 0; col < X.Cols(); col++)
+    {
+      MTL_EQUAL_FLOAT(P0[row][col], X[row][col], kTol);
+      MTL_EQUAL_FLOAT(P1[row][col], X[row][col], kTol);
+      MTL_EQUAL_FLOAT(P2[row][col], X[row][col], kTol);
+    }
+  }
 }
