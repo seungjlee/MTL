@@ -34,54 +34,54 @@
 namespace MTL
 {
 
-static inline void SetToLowerCase(std::wstring& str)
+static MTL_INLINE void SetToLowerCase(std::wstring& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), towlower);
 }
-static inline void SetToLowerCase(std::string& str)
+static MTL_INLINE void SetToLowerCase(std::string& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), tolower);
 }
-static inline void SetToUpperCase(std::wstring& str)
+static MTL_INLINE void SetToUpperCase(std::wstring& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), towupper);
 }
-static inline void SetToUpperCase(std::string& str)
+static MTL_INLINE void SetToUpperCase(std::string& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), toupper);
 }
 
-static inline std::wstring ToLowerCase(const std::wstring& input)
+static MTL_INLINE std::wstring ToLowerCase(const std::wstring& input)
 {
   std::wstring output = input;
   SetToLowerCase(output);
   return output;
 }
-static inline std::string ToLowerCase(const std::string& input)
+static MTL_INLINE std::string ToLowerCase(const std::string& input)
 {
   std::string output = input;
   SetToLowerCase(output);
   return output;
 }
-static inline std::wstring ToUpperCase(const std::wstring& input)
+static MTL_INLINE std::wstring ToUpperCase(const std::wstring& input)
 {
   std::wstring output = input;
   SetToUpperCase(output);
   return output;
 }
-static inline std::string ToUpperCase(const std::string& input)
+static MTL_INLINE std::string ToUpperCase(const std::string& input)
 {
   std::string output = input;
   SetToUpperCase(output);
   return output;
 }
 
-static inline std::string ToUTF8(const std::wstring& str)
+static MTL_INLINE std::string ToUTF8(const std::wstring& str)
 {
   std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
   return converter.to_bytes(str);
 }
-static inline std::wstring ToUTF16(const std::string& str)
+static MTL_INLINE std::wstring ToUTF16(const std::string& str)
 {
   std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
   return converter.from_bytes(str);
