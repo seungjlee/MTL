@@ -55,6 +55,7 @@ TEST(TestMatrixMultiplication)
   DynamicMatrix<F64> Q1 = A1 .MultiplyByTranspose();
 }
 
+#if 0
 TEST(TestHouseholderQR)
 {
   static const double kHouseholderTol = 1e-12;
@@ -269,63 +270,6 @@ TEST(TestHouseholderQR_Speed)
   MTL_LESS_THAN(maxRMS_SVD, 1.001);
 }
 
-TEST(TestLDLt)
-{
-  enum
-  {
-    N = 37,
-    kRepeats = 100
-  };
-
-  DynamicMatrix<F64> A;
-  DynamicVector<F64> b;
-
-  Timer t_SVD;
-  Timer t_LDLt;
-  Timer t_QR;
-
-  Random random;
-
-  for (I32 i = 0; i < kRepeats; i++)
-  {
-    A = random.DynamicMatrix<F64>(N,N, -1, 1);
-    A = A.MultiplyByTranspose();
-    b = random.DynamicVector<F64>(N, -1, 1);
-
-    for (I32 row = 0; row < A.Rows(); row++)
-      A[row][row] += 10.0;
-
-    DynamicVector<F64> qrX = b;
-    t_QR.Start();
-    DynamicMatrix<F64> temp(A);
-    SolveHouseholderQRTransposed(qrX, temp);
-    t_QR.Stop();
-
-    DynamicVector<F64> ldlX = b;
-    t_LDLt.Start();
-    temp = A;
-    SolveLDLt(ldlX, temp);
-    t_LDLt.Stop();
- 
-    DynamicVector<F64> svdX;
-    I32 rank;
-    F64 conditionNumber;
-    t_SVD.Start();
-    SolveJacobiSVDTransposed(svdX, rank, conditionNumber, A, b);
-    t_SVD.Stop();
-
-    for (I32 k = 0; k < N; k++)
-    {
-      MTL_EQUAL_FLOAT(ldlX[k], qrX[k], kTol);
-      MTL_EQUAL_FLOAT(svdX[k], qrX[k], kTol);
-    }
-  }
-
-  printf("  QR   solver: %9.3f msecs (%d times)\n", t_QR.Milliseconds(), kRepeats);
-  printf("  LDLt solver: %9.3f msecs (%d times)\n", t_LDLt.Milliseconds(), kRepeats);
-  printf("  SVD  solver: %9.3f msecs (%d times)\n", t_SVD.Milliseconds(), kRepeats);
-}
-
 TEST(TestMultiplyByTranspose)
 {
   enum
@@ -384,4 +328,76 @@ TEST(TestMultiplyByTranspose)
       MTL_EQUAL_FLOAT(P2[row][col], X[row][col], kTol);
     }
   }
+}
+#endif
+
+TEST(TestSolvers)
+{
+  enum
+  {
+    N = 639,
+    kRepeats = 1
+  };
+
+  DynamicMatrix<F64> A;
+  DynamicVector<F64> b;
+
+  Timer t_SVD;
+  Timer t_LDLt;
+  Timer t_QR;
+  Timer t_Eigen;
+
+  Random random;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    A = random.DynamicMatrix<F64>(N,N, -1, 1);
+    A = A.MultiplyByTranspose();
+    b = random.DynamicVector<F64>(N, -1, 1);
+
+    for (I32 row = 0; row < A.Rows(); row++)
+      A[row][row] += 10.0;
+
+    DynamicVector<F64> qrX = b;
+    t_QR.Start();
+    DynamicMatrix<F64> temp(A);
+    SolveHouseholderQRTransposed(qrX, temp);
+    t_QR.Stop();
+
+    DynamicVector<F64> ldlX = b;
+    t_LDLt.Start();
+    temp = A;
+    SolveLDLt(ldlX, temp);
+    t_LDLt.Stop();
+ 
+    DynamicVector<F64> svdX;
+    {
+      I32 rank;
+      F64 conditionNumber;
+      t_SVD.Start();
+      SolveJacobiSVDTransposed(svdX, rank, conditionNumber, A, b);
+      t_SVD.Stop();
+    }
+ 
+    DynamicVector<F64> eigenX;
+    {
+      I32 rank;
+      F64 conditionNumber;
+      t_Eigen.Start();
+      SolveJacobiEigenTransposed(eigenX, rank, conditionNumber, A, b);
+      t_Eigen.Stop(); 
+    }
+
+    for (I32 k = 0; k < N; k++)
+    {
+      MTL_EQUAL_FLOAT(  ldlX[k], qrX[k], kTol);
+      MTL_EQUAL_FLOAT(  svdX[k], qrX[k], kTol);
+      MTL_EQUAL_FLOAT(eigenX[k], qrX[k], kTol);
+    }
+  }
+
+  printf("  QR    solver: %9.3f msecs (%d times)\n",    t_QR.Milliseconds(), kRepeats);
+  printf("  LDLt  solver: %9.3f msecs (%d times)\n",  t_LDLt.Milliseconds(), kRepeats);
+  printf("  SVD   solver: %9.3f msecs (%d times)\n",   t_SVD.Milliseconds(), kRepeats);
+  printf("  Eigen solver: %9.3f msecs (%d times)\n", t_Eigen.Milliseconds(), kRepeats);
 }

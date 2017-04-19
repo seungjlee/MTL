@@ -526,7 +526,7 @@ public:
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      sum += Sum_StreamAligned_Parallel((*this)[i], Cols());
+      sum += Sum_StreamAligned_Sequential((*this)[i], Cols());
 #else
       sum += Sum_Sequential((*this)[i], (*this)[i] + Cols());
 #endif
@@ -541,7 +541,7 @@ public:
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      sum += SumOfSquares_StreamAligned_Parallel((*this)[i], Cols());
+      sum += SumOfSquares_StreamAligned_Sequential((*this)[i], Cols());
 #else
       sum += SumOfSquares_Sequential((*this)[i], (*this)[i] + Cols());
 #endif
@@ -562,7 +562,7 @@ public:
     for (I32 i = 0; i < Rows(); i++)
     {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      T sum = SumOfAbsolutes_StreamAligned_Parallel((*this)[i], Cols());
+      T sum = SumOfAbsolutes_StreamAligned_Sequential((*this)[i], Cols());
 #else
       T sum = SumOfAbsolutes_Sequential((*this)[i], (*this)[i] + Cols());
 #endif

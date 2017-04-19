@@ -282,7 +282,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
   {
     Vt[i*rowSizeV + i] = T(1);
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-    W[i] = SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M);
+    W[i] = SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M);
 #else
     W[i] = SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M);
 #endif
@@ -303,7 +303,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
         T b = W[j];
         
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        T p = DotProduct_StreamAligned_Parallel(Ai, Aj, M);
+        T p = DotProduct_StreamAligned_Sequential(Ai, Aj, M);
 #else
         T p = DotProduct_Sequential(Ai, Aj, Ai + M);
 #endif
@@ -338,7 +338,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
         if (iteration < 10)
         {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-          GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M);
+          GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
 #else
           GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
 #endif
@@ -348,7 +348,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
         else
         {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-          GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M, W[i], W[j]);
+          GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M, W[i], W[j]);
 #else
           GivensRotation_Sequential(Ai, Aj, c, s, Ai + M, W[i], W[j]);
 #endif
@@ -357,7 +357,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
         }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        GivensRotation_StreamAligned_Parallel(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
+        GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
 #else
         GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
 #endif
@@ -370,7 +370,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 
   for (I32 i = 0; i < N; i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-    W[i] = Sqrt(SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M));
+    W[i] = Sqrt(SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M));
 #else
     W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M));
 #endif
@@ -379,7 +379,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
   {
     if (W[i] > 0)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      ScalarMultiplication_StreamAligned_Parallel(At + i*rowSizeA, T(1)/W[i], M);
+      ScalarMultiplication_StreamAligned_Sequential(At + i*rowSizeA, T(1)/W[i], M);
 #else
       ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
 #endif
@@ -393,12 +393,14 @@ static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
   T epsilon = Epsilon<T>();
   T epsilon2 = Square(epsilon);
 
+  I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfCores();
   I32 maxIterations = Max(M, 30);
 
+  //MTL_PARALLEL_FOR_BLOCKS_THREADS(N, numberOfThreads)
   for (I32 i = 0; i < N; i++)
   {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-    W[i] = SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M);
+    W[i] = SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M);
 #else
     W[i] = SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M);
 #endif
@@ -408,7 +410,8 @@ static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
   for (iteration = 0; iteration < maxIterations; iteration++)
   {
     bool changed = false;
-
+    
+    //MTL_PARALLEL_FOR_BLOCKS_THREADS(N-1, numberOfThreads)
     for (I32 i = 0; i < N-1; i++)
     {
       for (I32 j = i+1; j < N; j++)
@@ -419,7 +422,7 @@ static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
         T b = W[j];
         
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        T p = DotProduct_StreamAligned_Parallel(Ai, Aj, M);
+        T p = DotProduct_StreamAligned_Sequential(Ai, Aj, M);
 #else
         T p = DotProduct_Sequential(Ai, Aj, Ai + M);
 #endif
@@ -454,7 +457,7 @@ static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
         if (iteration < 10)
         {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-          GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M);
+          GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
 #else
           GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
 #endif
@@ -464,7 +467,7 @@ static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
         else
         {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-          GivensRotation_StreamAligned_Parallel(Ai, Aj, c, s, M, W[i], W[j]);
+          GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M, W[i], W[j]);
 #else
           GivensRotation_Sequential(Ai, Aj, c, s, Ai + M, W[i], W[j]);
 #endif
@@ -478,18 +481,18 @@ static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
       break;
   }
 
+  //#pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
   for (I32 i = 0; i < N; i++)
+  {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-    W[i] = Sqrt(SumOfSquares_StreamAligned_Parallel(At + i*rowSizeA, M));
+    W[i] = Sqrt(SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M));
 #else
     W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M));
 #endif
 
-  for (I32 i = 0; i < N; i++)
-  {
     if (W[i] > 0)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      ScalarMultiplication_StreamAligned_Parallel(At + i*rowSizeA, T(1)/W[i], M);
+      ScalarMultiplication_StreamAligned_Sequential(At + i*rowSizeA, T(1)/W[i], M);
 #else
       ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
 #endif
@@ -663,6 +666,31 @@ MTL_INLINE static T SolveSVDTransposed(DynamicVector<T>& x,
   return D[0] / D[rank-1];
 }
 
+template <class T>
+MTL_INLINE static T SolveEigenTransposed(DynamicVector<T>& x,
+                                         DynamicMatrix<T>& Ut,
+                                         DynamicVector<T>& D,
+                                         I32& rank,
+                                         const DynamicVector<T>& b,
+                                         const T& tol = T(-1.0))
+{
+  T tolerance = tol;
+  if (tolerance < 0)
+    tolerance = Ut.Cols() * Epsilon<T>() * D[0];
+
+  rank = (I32)D.Size();
+  for (; rank > 0 && D[rank-1] < tolerance; rank--);
+
+  Ut.Resize(rank, Ut.Cols());
+  D.Resize(rank);
+
+  DynamicVector<T> X = Ut * b;
+  X /= D;
+  x = Ut.ComputeTranspose() * X;
+
+  return D[0] / D[rank-1];
+}
+
 //
 // Solves system of linear equations using SVD (Singular Value Decomposition).
 // Solves A * x = b. A is an MxN matrix. At is A transposed.
@@ -684,6 +712,23 @@ MTL_INLINE static bool SolveJacobiSVDTransposed(DynamicVector<T>& x, I32& rank,
 
   bool fullyConverged = JacobiSVDTransposed(Ut, D, Vt);
   conditionNumber = SolveSVDTransposed(x, Ut, D, Vt, rank, b, tolerance);
+
+  return fullyConverged;
+}
+template <class T>
+MTL_INLINE static bool SolveJacobiEigenTransposed(DynamicVector<T>& x, I32& rank,
+                                                  T& conditionNumber,
+                                                  const DynamicMatrix<T>& At,
+                                                  const DynamicVector<T>& b,
+                                                  const T& tolerance = T(-1.0))
+{
+  assert(At.Cols() == b.Size());
+
+  DynamicMatrix<T> Ut = At;
+  DynamicVector<T> D;
+
+  bool fullyConverged = JacobiSVDTransposed(Ut, D);
+  conditionNumber = SolveEigenTransposed(x, Ut, D, rank, b, tolerance);
 
   return fullyConverged;
 }
