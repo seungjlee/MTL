@@ -266,14 +266,150 @@ static Matrix<N,M,T> ComputePseudoinverseJacobiSVD(const Matrix<M,N,T>& A,
   return pinv;
 }
 
+template<class T>
+static bool JacobiRotationsTransposed(I32 i, I32 j, I32 iteration, T* At, T* W, T* Vt,
+                                      I32 M, I32 N, I32 rowSizeA, I32 rowSizeV)
+{
+  const T epsilon = Epsilon<T>();
+  const T epsilon2 = Square(epsilon);
+
+  T* Ai = At + i*rowSizeA;
+  T* Aj = At + j*rowSizeA;
+  T a = W[i];
+  T b = W[j];
+        
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+  T p = DotProduct_StreamAligned_Sequential(Ai, Aj, M);
+#else
+  T p = DotProduct_Sequential(Ai, Aj, Ai + M);
+#endif
+  T pp = p*p;
+
+  if (pp <= epsilon2*a*b)
+    return false;
+
+  T beta = a - b;
+  T gamma = Sqrt(T(4)*pp + beta*beta);
+  T delta;
+  T c, s;
+  if (beta < 0)
+  {
+    delta = (gamma - beta) * 0.5;
+    s = Sqrt(delta/gamma);
+    c = p / (gamma*s);
+  }
+  else
+  {
+    T meanGammaBeta = 0.5 * (gamma + beta);
+    delta = pp / meanGammaBeta;
+    c = Sqrt(meanGammaBeta / gamma);
+    s = p / (gamma*c);
+  }
+
+  if (delta <= 0)
+    return false;
+
+  if (iteration < 10)
+  {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+    GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
+#else
+    GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
+#endif
+    W[i] += delta;
+    W[j] -= delta;
+  }
+  else
+  {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+    GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M, W[i], W[j]);
+#else
+    GivensRotation_Sequential(Ai, Aj, c, s, Ai + M, W[i], W[j]);
+#endif
+    W[i] += delta * T(0.5);
+    W[j] -= delta * T(0.5);
+  }
+
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+  GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
+#else
+  GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
+#endif
+
+  return true;
+}
+template<class T>
+static bool JacobiRotationsTransposed(I32 i, I32 j, I32 iteration, T* At, T* W,
+                                      I32 M, I32 N, I32 rowSizeA)
+{
+  const T epsilon = Epsilon<T>();
+  const T epsilon2 = Square(epsilon);
+
+  T* Ai = At + i*rowSizeA;
+  T* Aj = At + j*rowSizeA;
+  T a = W[i];
+  T b = W[j];
+        
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+  T p = DotProduct_StreamAligned_Sequential(Ai, Aj, M);
+#else
+  T p = DotProduct_Sequential(Ai, Aj, Ai + M);
+#endif
+  T pp = p*p;
+
+  if (pp <= epsilon2*a*b)
+    return false;
+
+  T beta = a - b;
+  T gamma = Sqrt(T(4)*pp + beta*beta);
+  T delta;
+  T c, s;
+  if (beta < 0)
+  {
+    delta = (gamma - beta) * 0.5;
+    s = Sqrt(delta/gamma);
+    c = p / (gamma*s);
+  }
+  else
+  {
+    T meanGammaBeta = 0.5 * (gamma + beta);
+    delta = pp / meanGammaBeta;
+    c = Sqrt(meanGammaBeta / gamma);
+    s = p / (gamma*c);
+  }
+
+  if (delta <= 0)
+    return false;
+
+  if (iteration < 10)
+  {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+    GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
+#else
+    GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
+#endif
+    W[i] += delta;
+    W[j] -= delta;
+  }
+  else
+  {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+    GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M, W[i], W[j]);
+#else
+    GivensRotation_Sequential(Ai, Aj, c, s, Ai + M, W[i], W[j]);
+#endif
+    W[i] += delta * T(0.5);
+    W[j] -= delta * T(0.5);
+  }
+
+  return true;
+}
+
 // Dynamic matrix version of SVD. Note that it takes A transposed. It expects At and Vt to be
 // memory aligned.
 template<class T>
 static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, I32 rowSizeV)
 {
-  T epsilon = Epsilon<T>();
-  T epsilon2 = Square(epsilon);
-
   I32 maxIterations = Max(M, 30);
 
   OptimizedZeros(Vt, N*rowSizeV);
@@ -297,70 +433,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
     {
       for (I32 j = i+1; j < N; j++)
       {
-        T* Ai = At + i*rowSizeA;
-        T* Aj = At + j*rowSizeA;
-        T a = W[i];
-        T b = W[j];
-        
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        T p = DotProduct_StreamAligned_Sequential(Ai, Aj, M);
-#else
-        T p = DotProduct_Sequential(Ai, Aj, Ai + M);
-#endif
-        T pp = p*p;
-
-        if (pp <= epsilon2*a*b)
-          continue;
-
-        T beta = a - b;
-        T gamma = Sqrt(T(4)*pp + beta*beta);
-        T delta;
-        T c, s;
-        if (beta < 0)
-        {
-          delta = (gamma - beta) * 0.5;
-          s = Sqrt(delta/gamma);
-          c = p / (gamma*s);
-        }
-        else
-        {
-          T meanGammaBeta = 0.5 * (gamma + beta);
-          delta = pp / meanGammaBeta;
-          c = Sqrt(meanGammaBeta / gamma);
-          s = p / (gamma*c);
-        }
-
-        if (delta <= 0)
-          continue;
-
-        changed = true;
-
-        if (iteration < 10)
-        {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-          GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
-#else
-          GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
-#endif
-          W[i] += delta;
-          W[j] -= delta;
-        }
-        else
-        {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-          GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M, W[i], W[j]);
-#else
-          GivensRotation_Sequential(Ai, Aj, c, s, Ai + M, W[i], W[j]);
-#endif
-          W[i] += delta * T(0.5);
-          W[j] -= delta * T(0.5);
-        }
-
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
-#else
-        GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
-#endif
+        changed |= JacobiRotationsTransposed(i, j, iteration, At, W, Vt, M, N, rowSizeA, rowSizeV);
       }
     }
 
@@ -411,69 +484,12 @@ static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
   {
     bool changed = false;
     
-    //MTL_PARALLEL_FOR_BLOCKS_THREADS(N-1, numberOfThreads)
+
     for (I32 i = 0; i < N-1; i++)
     {
       for (I32 j = i+1; j < N; j++)
       {
-        T* Ai = At + i*rowSizeA;
-        T* Aj = At + j*rowSizeA;
-        T a = W[i];
-        T b = W[j];
-        
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        T p = DotProduct_StreamAligned_Sequential(Ai, Aj, M);
-#else
-        T p = DotProduct_Sequential(Ai, Aj, Ai + M);
-#endif
-        T pp = p*p;
-
-        if (pp <= epsilon2*a*b)
-          continue;
-
-        T beta = a - b;
-        T gamma = Sqrt(T(4)*pp + beta*beta);
-        T delta;
-        T c, s;
-        if (beta < 0)
-        {
-          delta = (gamma - beta) * 0.5;
-          s = Sqrt(delta/gamma);
-          c = p / (gamma*s);
-        }
-        else
-        {
-          T meanGammaBeta = 0.5 * (gamma + beta);
-          delta = pp / meanGammaBeta;
-          c = Sqrt(meanGammaBeta / gamma);
-          s = p / (gamma*c);
-        }
-
-        if (delta <= 0)
-          continue;
-
-        changed = true;
-
-        if (iteration < 10)
-        {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-          GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
-#else
-          GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
-#endif
-          W[i] += delta;
-          W[j] -= delta;
-        }
-        else
-        {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-          GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M, W[i], W[j]);
-#else
-          GivensRotation_Sequential(Ai, Aj, c, s, Ai + M, W[i], W[j]);
-#endif
-          W[i] += delta * T(0.5);
-          W[j] -= delta * T(0.5);
-        }
+        changed |= JacobiRotationsTransposed(i, j, iteration, At, W, M, N, rowSizeA);
       }
     }
 
