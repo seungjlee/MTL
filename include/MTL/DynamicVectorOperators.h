@@ -246,7 +246,7 @@ public:                                                                         
   {                                                                                              \
     MTL::DynamicVector<T> negated = v;                                                           \
     MTL::UnaryMinus_StreamAligned_Parallel((CastT*)negated.Begin(),                              \
-                                           negated.Size()*sizeof(T)/sizeof(CastT));              \
+                                           negated.Size()*sizeof(T)/sizeof(CastT), 0);           \
     return negated;                                                                              \
   }                                                                                              \
   MTL_INLINE static void Addition(MTL::DynamicVector<T>& v1,                                     \
@@ -254,48 +254,48 @@ public:                                                                         
   {                                                                                              \
     assert(v1.Size() == v2.Size());                                                              \
     MTL::Addition_StreamAligned_Parallel((CastT*)v1.Begin(), (CastT*)v2.Begin(),                 \
-                                         v2.Size()*sizeof(T)/sizeof(CastT));                     \
+                                         v2.Size()*sizeof(T)/sizeof(CastT), 0);                  \
   }                                                                                              \
   MTL_INLINE static void Subtraction(MTL::DynamicVector<T>& v1,                                  \
                                      const MTL::DynamicVector<T>& v2)                            \
   {                                                                                              \
     assert(v1.Size() == v2.Size());                                                              \
     MTL::Subtraction_StreamAligned_Parallel((CastT*)v1.Begin(), (CastT*)v2.Begin(),              \
-                                            v2.Size()*sizeof(T)/sizeof(CastT));                  \
+                                            v2.Size()*sizeof(T)/sizeof(CastT), 0);               \
   }                                                                                              \
   MTL_INLINE static void Multiplication(MTL::DynamicVector<T>& v1,                               \
                                         const MTL::DynamicVector<T>& v2)                         \
   {                                                                                              \
     assert(v1.Size() == v2.Size());                                                              \
     MTL::Multiplication_StreamAligned_Parallel((CastT*)v1.Begin(), (CastT*)v2.Begin(),           \
-                                                v2.Size()*sizeof(T)/sizeof(CastT));              \
+                                                v2.Size()*sizeof(T)/sizeof(CastT), 0);           \
   }                                                                                              \
   MTL_INLINE static void Division(MTL::DynamicVector<T>& v1,                                     \
                                   const MTL::DynamicVector<T>& v2)                               \
   {                                                                                              \
     assert(v1.Size() == v2.Size());                                                              \
     MTL::Division_StreamAligned_Parallel((CastT*)v1.Begin(), (CastT*)v2.Begin(),                 \
-                                         v2.Size()*sizeof(T)/sizeof(CastT));                     \
+                                         v2.Size()*sizeof(T)/sizeof(CastT), 0);                  \
   }                                                                                              \
   MTL_INLINE static void ScalarAddition(MTL::DynamicVector<T>& v, double s)                      \
   {                                                                                              \
     MTL::ScalarAddition_StreamAligned_Parallel((CastT*)v.Begin(), (CastT)s,                      \
-                                               v.Size()*sizeof(T)/sizeof(CastT));                \
+                                               v.Size()*sizeof(T)/sizeof(CastT), 0);             \
   }                                                                                              \
   MTL_INLINE static void ScalarSubtraction(MTL::DynamicVector<T>& v, double s)                   \
   {                                                                                              \
     MTL::ScalarSubtraction_StreamAligned_Parallel((CastT*)v.Begin(), (CastT)s,                   \
-                                                  v.Size()*sizeof(T)/sizeof(CastT));             \
+                                                  v.Size()*sizeof(T)/sizeof(CastT), 0);          \
   }                                                                                              \
   MTL_INLINE static void ScalarMultiplication(MTL::DynamicVector<T>& v, double s)                \
   {                                                                                              \
     MTL::ScalarMultiplication_StreamAligned_Parallel((CastT*)v.Begin(), (CastT)s,                \
-                                                     v.Size()*sizeof(T)/sizeof(CastT));          \
+                                                     v.Size()*sizeof(T)/sizeof(CastT), 0);       \
   }                                                                                              \
   MTL_INLINE static void ScalarDivision(MTL::DynamicVector<T>& v, double s)                      \
   {                                                                                              \
     MTL::ScalarDivision_StreamAligned_Parallel((CastT*)v.Begin(), (CastT)s,                      \
-                                                v.Size()*sizeof(T)/sizeof(CastT));               \
+                                                v.Size()*sizeof(T)/sizeof(CastT), 0);            \
   }                                                                                              \
 };                                                                                               \
 }
@@ -396,7 +396,7 @@ namespace MTL                                                                   
 {                                                                                                 \
 MTL_INLINE static T Sum(const MTL::DynamicVector<T>& v)                                           \
 {                                                                                                 \
-  return MTL::Sum_StreamAligned_Parallel(v.Begin(), v.Size());                                    \
+  return MTL::Sum_StreamAligned_Parallel(v.Begin(), v.Size(), 0);                                 \
 }                                                                                                 \
 }
 
@@ -405,7 +405,7 @@ namespace MTL                                                                   
 {                                                                                                 \
 MTL_INLINE static T SumOfAbsolutes(const MTL::DynamicVector<T>& v)                                \
 {                                                                                                 \
-  return MTL::SumOfAbsolutes_StreamAligned_Parallel(v.Begin(), v.Size());                         \
+  return MTL::SumOfAbsolutes_StreamAligned_Parallel(v.Begin(), v.Size(), 0);                      \
 }                                                                                                 \
 }
 
@@ -414,7 +414,7 @@ namespace MTL                                                                   
 {                                                                                                 \
 MTL_INLINE static T SumOfSquares(const MTL::DynamicVector<T>& v)                                  \
 {                                                                                                 \
-  return MTL::SumOfSquares_StreamAligned_Parallel(v.Begin(), v.Size());                           \
+  return MTL::SumOfSquares_StreamAligned_Parallel(v.Begin(), v.Size(), 0);                        \
 }                                                                                                 \
 }
 
@@ -423,7 +423,7 @@ namespace MTL                                                                   
 {                                                                                                 \
 MTL_INLINE static T Min(const MTL::DynamicVector<T>& v)                                           \
 {                                                                                                 \
-  return MTL::Min_StreamAligned_Parallel(v.Begin(), v.Size());                                    \
+  return MTL::Min_StreamAligned_Parallel(v.Begin(), v.Size(), 0);                                 \
 }                                                                                                 \
 }
 
@@ -432,7 +432,7 @@ namespace MTL                                                                   
 {                                                                                                 \
 MTL_INLINE static T Max(const MTL::DynamicVector<T>& v)                                           \
 {                                                                                                 \
-  return MTL::Max_StreamAligned_Parallel(v.Begin(), v.Size());                                    \
+  return MTL::Max_StreamAligned_Parallel(v.Begin(), v.Size(), 0);                                 \
 }                                                                                                 \
 }
 
@@ -441,7 +441,7 @@ namespace MTL                                                                   
 {                                                                                                 \
 MTL_INLINE static T MinOfAbsolutes(const MTL::DynamicVector<T>& v)                                \
 {                                                                                                 \
-  return MTL::MinOfAbsolutes_StreamAligned_Parallel(v.Begin(), v.Size());                         \
+  return MTL::MinOfAbsolutes_StreamAligned_Parallel(v.Begin(), v.Size(), 0);                      \
 }                                                                                                 \
 }
 
@@ -450,7 +450,7 @@ namespace MTL                                                                   
 {                                                                                                 \
 MTL_INLINE static T MaxOfAbsolutes(const MTL::DynamicVector<T>& v)                                \
 {                                                                                                 \
-  return MTL::MaxOfAbsolutes_StreamAligned_Parallel(v.Begin(), v.Size());                         \
+  return MTL::MaxOfAbsolutes_StreamAligned_Parallel(v.Begin(), v.Size(), 0);                      \
 }                                                                                                 \
 }
 
@@ -469,7 +469,7 @@ namespace MTL                                                                   
 MTL_INLINE static T DotProduct(const MTL::DynamicVector<T>& v1, const MTL::DynamicVector<T>& v2)  \
 {                                                                                                 \
   assert(v1.Size() == v2.Size());                                                                 \
-  return MTL::DotProduct_StreamAligned_Parallel(v1.Begin(), v2.Begin(), v2.Size());               \
+  return MTL::DotProduct_StreamAligned_Parallel(v1.Begin(), v2.Begin(), v2.Size(), 0);            \
 }                                                                                                 \
 }
 
@@ -480,7 +480,8 @@ MTL_INLINE static T SumOfSquaredDifferences(const MTL::DynamicVector<T>& v1,    
                                             const MTL::DynamicVector<T>& v2)                      \
 {                                                                                                 \
   assert(v1.Size() == v2.Size());                                                                 \
-  return MTL::SumOfSquaredDifferences_StreamAligned_Parallel(v1.Begin(), v2.Begin(), v2.Size());  \
+  return                                                                                          \
+    MTL::SumOfSquaredDifferences_StreamAligned_Parallel(v1.Begin(), v2.Begin(), v2.Size(), 0);    \
 }                                                                                                 \
 }
 

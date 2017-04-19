@@ -1012,334 +1012,362 @@ void AdditionScaled_StreamUnaligned_Sequential(T* pDst, const T* pSrc, const T& 
 // Multi-threaded operations.
 //
 template <class T> MTL_INLINE void
-UnaryMinus_StreamAligned_Parallel(T* pDst, SizeType size)
+UnaryMinus_StreamAligned_Parallel(T* pDst, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst< T, UnaryMinus_StreamAligned_Sequential<T> >(pDst, size);
+  Parallel_1Dst< T, UnaryMinus_StreamAligned_Sequential<T> >(pDst, size, numberOfThreads);
 }
 template <class T> MTL_INLINE void
-UnaryMinus_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
+UnaryMinus_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src< T, T, UnaryMinus_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
-}
-
-template <class T> MTL_INLINE void
-Addition_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
-{
-  Parallel_1Dst_1Src< T, T, Addition_StreamAligned_Sequential<T> >(pDst, pSrc, size);
-}
-template <class T> MTL_INLINE void
-Addition_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
-{
-  Parallel_1Dst_1Src< T, T, Addition_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, UnaryMinus_StreamUnaligned_Sequential<T> >(pDst, pSrc, size,
+                                                                       numberOfThreads);
 }
 
 template <class T> MTL_INLINE void
-Subtraction_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
+Addition_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src< T, T, Subtraction_StreamAligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Addition_StreamAligned_Sequential<T> >(pDst, pSrc, size,
+                                                                   numberOfThreads);
 }
 template <class T> MTL_INLINE void
-Subtraction_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
+Addition_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src< T, T, Subtraction_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
-}
-
-template <class T> MTL_INLINE void
-Multiplication_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
-{
-  Parallel_1Dst_1Src< T, T, Multiplication_StreamAligned_Sequential<T> >(pDst, pSrc, size);
-}
-template <class T> MTL_INLINE void
-Multiplication_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
-{
-  Parallel_1Dst_1Src< T, T, Multiplication_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Addition_StreamUnaligned_Sequential<T> >(pDst, pSrc, size,
+                                                                     numberOfThreads);
 }
 
 template <class T> MTL_INLINE void
-Division_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
+Subtraction_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src< T, T, Division_StreamAligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Subtraction_StreamAligned_Sequential<T> >(pDst, pSrc, size,
+                                                                      numberOfThreads);
 }
 template <class T> MTL_INLINE void
-Division_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
+Subtraction_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src< T, T, Division_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
-}
-
-template <class T> MTL_INLINE void
-Min_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
-{
-  Parallel_1Dst_1Src< T, T, Min_StreamAligned_Sequential<T> >(pDst, pSrc, size);
-}
-template <class T> MTL_INLINE void
-Min_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
-{
-  Parallel_1Dst_1Src< T, T, Min_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Subtraction_StreamUnaligned_Sequential<T> >(pDst, pSrc, size,
+                                                                        numberOfThreads);
 }
 
 template <class T> MTL_INLINE void
-Max_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size)
+Multiplication_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src< T, T, Max_StreamAligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Multiplication_StreamAligned_Sequential<T> >(pDst, pSrc, size,
+                                                                         numberOfThreads);
 }
 template <class T> MTL_INLINE void
-Max_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size)
+Multiplication_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src< T, T, Max_StreamUnaligned_Sequential<T> >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, Multiplication_StreamUnaligned_Sequential<T> >(pDst, pSrc, size,
+                                                                           numberOfThreads);
+}
+
+template <class T> MTL_INLINE void
+Division_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
+{
+  Parallel_1Dst_1Src< T, T, Division_StreamAligned_Sequential<T> >(pDst, pSrc, size,
+                                                                   numberOfThreads);
+}
+template <class T> MTL_INLINE void
+Division_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
+{
+  Parallel_1Dst_1Src< T, T, Division_StreamUnaligned_Sequential<T> >(pDst, pSrc, size
+                                                                     numberOfThreads);
+}
+
+template <class T> MTL_INLINE void
+Min_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
+{
+  Parallel_1Dst_1Src< T, T, Min_StreamAligned_Sequential<T> >(pDst, pSrc, size, numberOfThreads);
+}
+template <class T> MTL_INLINE void
+Min_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
+{
+  Parallel_1Dst_1Src< T, T, Min_StreamUnaligned_Sequential<T> >(pDst, pSrc, size, numberOfThreads);
+}
+
+template <class T> MTL_INLINE void
+Max_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
+{
+  Parallel_1Dst_1Src< T, T, Max_StreamAligned_Sequential<T> >(pDst, pSrc, size, numberOfThreads);
+}
+template <class T> MTL_INLINE void
+Max_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
+{
+  Parallel_1Dst_1Src< T, T, Max_StreamUnaligned_Sequential<T> >(pDst, pSrc, size, numberOfThreads);
 }
 
 template <class DstT, class SrcT> void
-Convert_StreamAligned_Parallel(DstT* pDst, const SrcT* pSrc, SizeType size)
+Convert_StreamAligned_Parallel(DstT* pDst, const SrcT* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src<DstT, SrcT, Convert_StreamAligned_Sequential<DstT,SrcT>>(pDst, pSrc, size);
+  Parallel_1Dst_1Src<DstT, SrcT, Convert_StreamAligned_Sequential<DstT,SrcT>>(pDst, pSrc, size,
+                                                                              numberOfThreads);
 }
 template <class DstT, class SrcT> void
-Convert_StreamUnaligned_Parallel(DstT* pDst, const SrcT* pSrc, SizeType size)
+Convert_StreamUnaligned_Parallel(DstT* pDst, const SrcT* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src<DstT, SrcT, Convert_StreamUnaligned_Sequential<DstT,SrcT>>(pDst, pSrc, size);
+  Parallel_1Dst_1Src<DstT, SrcT, Convert_StreamUnaligned_Sequential<DstT,SrcT>>(pDst, pSrc, size,
+                                                                                numberOfThreads);
 }
 
 template <class T> MTL_INLINE void
-ScalarAddition_StreamAligned_Parallel(T* pDst, const T& scalar, SizeType size)
+ScalarAddition_StreamAligned_Parallel(T* pDst, const T& scalar, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Val< T, ScalarAddition_StreamAligned_Sequential<T> >(pDst, scalar, size);
+  Parallel_1Dst_1Val< T, ScalarAddition_StreamAligned_Sequential<T> >(pDst, scalar, size,
+                                                                      numberOfThreads);
 }
 template <class T> MTL_INLINE void
-ScalarAddition_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size)
+ScalarAddition_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size,
+                                        int numberOfThreads)
 {
-  Parallel_1Dst_1Val< T, ScalarAddition_StreamUnaligned_Sequential<T> >(pDst, scalar, size);
-}
-
-template <class T> MTL_INLINE void
-ScalarSubtraction_StreamAligned_Parallel(T* pDst, const T& scalar, SizeType size)
-{
-  Parallel_1Dst_1Val< T, ScalarSubtraction_StreamAligned_Sequential<T> >(pDst, scalar, size);
-}
-template <class T> MTL_INLINE void
-ScalarSubtraction_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size)
-{
-  Parallel_1Dst_1Val< T, ScalarSubtraction_StreamUnaligned_Sequential<T> >(pDst, scalar, size);
+  Parallel_1Dst_1Val< T, ScalarAddition_StreamUnaligned_Sequential<T> >(pDst, scalar, size,
+                                                                        numberOfThreads);
 }
 
 template <class T> MTL_INLINE void
-ScalarMultiplication_StreamAligned_Parallel(T* pDst, const T& scalar, SizeType size)
+ScalarSubtraction_StreamAligned_Parallel(T* pDst, const T& scalar, SizeType size,
+                                         int numberOfThreads)
 {
-  Parallel_1Dst_1Val< T, ScalarMultiplication_StreamAligned_Sequential<T> >(pDst, scalar, size);
+  Parallel_1Dst_1Val< T, ScalarSubtraction_StreamAligned_Sequential<T> >(pDst, scalar, size,
+                                                                         numberOfThreads);
 }
 template <class T> MTL_INLINE void
-ScalarMultiplication_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size)
+ScalarSubtraction_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size,
+                                           int numberOfThreads)
 {
-  Parallel_1Dst_1Val< T, ScalarMultiplication_StreamUnaligned_Sequential<T> >(pDst, scalar, size);
+  Parallel_1Dst_1Val< T, ScalarSubtraction_StreamUnaligned_Sequential<T> >(pDst, scalar, size,
+                                                                           numberOfThreads);
 }
 
 template <class T> MTL_INLINE void
-ScalarDivision_StreamAligned_Parallel(T* pDst, const T& scalar, SizeType size)
+ScalarMultiplication_StreamAligned_Parallel(T* pDst, const T& scalar, SizeType size,
+                                            int numberOfThreads)
 {
-  Parallel_1Dst_1Val< T, ScalarDivision_StreamAligned_Sequential<T> >(pDst, scalar, size);
+  Parallel_1Dst_1Val< T, ScalarMultiplication_StreamAligned_Sequential<T> >(pDst, scalar, size,
+                                                                            numberOfThreads);
 }
 template <class T> MTL_INLINE void
-ScalarDivision_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size)
+ScalarMultiplication_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size,
+                                              int numberOfThreads)
 {
-  Parallel_1Dst_1Val< T, ScalarDivision_StreamUnaligned_Sequential<T> >(pDst, scalar, size);
+  Parallel_1Dst_1Val< T, ScalarMultiplication_StreamUnaligned_Sequential<T> >(pDst, scalar, size,
+                                                                              numberOfThreads);
+}
+
+template <class T> MTL_INLINE void
+ScalarDivision_StreamAligned_Parallel(T* pDst, const T& scalar, SizeType size, int numberOfThreads)
+{
+  Parallel_1Dst_1Val< T, ScalarDivision_StreamAligned_Sequential<T> >(pDst, scalar, size,
+                                                                      numberOfThreads);
+}
+template <class T> MTL_INLINE void
+ScalarDivision_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size, int numberOfThreads)
+{
+  Parallel_1Dst_1Val< T, ScalarDivision_StreamUnaligned_Sequential<T> >(pDst, scalar, size,
+                                                                        numberOfThreads);
 }
 
 template <class T> MTL_INLINE T
-Sum_StreamAligned_Parallel(const T* p, SizeType size)
+Sum_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Sum_StreamAligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE T
-Sum_StreamUnaligned_Parallel(const T* p, SizeType size)
+Sum_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Sum_StreamUnaligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResults.Size);
 }
 
 template <class T> MTL_INLINE T
-SumOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size)
+SumOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamAligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE T
-SumOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size)
+SumOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamUnaligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE T
-SumOfSquares_StreamAligned_Parallel(const T* p, SizeType size)
+SumOfSquares_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, SumOfSquares_StreamAligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE T
-SumOfSquares_StreamUnaligned_Parallel(const T* p, SizeType size)
+SumOfSquares_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, SumOfSquares_StreamUnaligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE T
-SumOfSquaredDifferences_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size)
+SumOfSquaredDifferences_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size,
+                                               int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_2Src<T, T, SumOfSquaredDifferences_StreamAligned_Sequential<T> >
-    (subResults, subResultsSize, p1, p2, size);
+    (subResults, subResultsSize, p1, p2, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE T
-SumOfSquaredDifferences_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeType size)
+SumOfSquaredDifferences_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeType size,
+                                                 int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_2Src<T, T, SumOfSquaredDifferences_StreamUnaligned_Sequential<T> >
-    (subResults, subResultsSize, p1, p2, size);
+    (subResults, subResultsSize, p1, p2, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE T
-Min_StreamAligned_Parallel(const T* p, SizeType size)
+Min_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Min_StreamAligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Min_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE T
-Min_StreamUnaligned_Parallel(const T* p, SizeType size)
+Min_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Min_StreamUnaligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Min_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE T
-Max_StreamAligned_Parallel(const T* p, SizeType size)
+Max_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Max_StreamAligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Max_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE T
-Max_StreamUnaligned_Parallel(const T* p, SizeType size)
+Max_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Max_StreamUnaligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Max_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE T
-MinOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size)
+MinOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamAligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Min_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE T
-MinOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size)
+MinOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamUnaligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
-  return Min_StreamAligned_Sequential(subResults, subResultsSize);
+  return Min_StreamAligned_Sequential(subResults, subResultsSize, int numberOfThreads);
 }
 
 template <class T> MTL_INLINE T
-MaxOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size)
+MaxOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
     ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamAligned_Sequential<T> >
-      (subResults, subResultsSize, p, size);
+      (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Max_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE T
-MaxOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size)
+MaxOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamUnaligned_Sequential<T> >
-    (subResults, subResultsSize, p, size);
+    (subResults, subResultsSize, p, size, numberOfThreads);
 
   return Max_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE T
-DotProduct_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size)
+DotProduct_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_2Src<T, T, DotProduct_StreamAligned_Sequential<T> >
-    (subResults, subResultsSize, p1, p2, size);
+    (subResults, subResultsSize, p1, p2, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 template <class T> MTL_INLINE T
-DotProduct_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeType size)
+DotProduct_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeType size, int numberOfThreads)
 {
   T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_2Src<T, T, DotProduct_StreamUnaligned_Sequential<T> >
-    (subResults, subResultsSize, p1, p2, size);
+    (subResults, subResultsSize, p1, p2, size, numberOfThreads);
 
   return Sum_StreamAligned_Sequential(subResults, subResultsSize);
 }
 
 template <class T> MTL_INLINE void
-AdditionScaled_StreamAligned_Parallel(T* pDst, const T* pSrc, const T& scalar, SizeType size)
+AdditionScaled_StreamAligned_Parallel(T* pDst, const T* pSrc, const T& scalar, SizeType size,
+                                      int numberOfThreads)
 {
   Parallel_1Dst_1Src_1Val< T, AdditionScaled_StreamAligned_Sequential<T> >(pDst, pSrc,
                                                                            scalar, size);
 }
 template <class T> MTL_INLINE void
-AdditionScaled_StreamUnaligned_Parallel(T* pDst, const T* pSrc, const T& scalar, SizeType size)
+AdditionScaled_StreamUnaligned_Parallel(T* pDst, const T* pSrc, const T& scalar, SizeType size,
+                                        int numberOfThreads)
 {
   Parallel_1Dst_1Src_1Val< T, AdditionScaled_StreamUnaligned_Sequential<T> >(pDst, pSrc,
                                                                              scalar, size);

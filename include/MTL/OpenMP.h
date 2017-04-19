@@ -125,10 +125,11 @@ MTL_INLINE static void ComputeParallelSubHeights
 }
 
 template <class T, void (*Func)(T*, SizeType)>
-MTL_INLINE static void Parallel_1Dst(T* p, SizeType size)
+MTL_INLINE static void Parallel_1Dst(T* p, SizeType size, I64 numberOfThreads)
 {
 #if MTL_ENABLE_OPENMP
-  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads < 1)
+    numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
@@ -150,10 +151,12 @@ MTL_INLINE static void Parallel_1Dst(T* p, SizeType size)
 }
 
 template <class DstT, class SrcT, void (*Func)(DstT*, const SrcT*, SizeType)>
-MTL_INLINE static void Parallel_1Dst_1Src(DstT* pDst, const SrcT* pSrc, SizeType size)
+MTL_INLINE static void Parallel_1Dst_1Src(DstT* pDst, const SrcT* pSrc, SizeType size,
+                                          I64 numberOfThreads)
 {
 #if MTL_ENABLE_OPENMP
-  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads < 1)
+    numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
@@ -172,10 +175,11 @@ MTL_INLINE static void Parallel_1Dst_1Src(DstT* pDst, const SrcT* pSrc, SizeType
 }
 
 template <class T, void (*Func)(T*, const T&, SizeType)>
-MTL_INLINE static void Parallel_1Dst_1Val(T* p, const T& val, SizeType size)
+MTL_INLINE static void Parallel_1Dst_1Val(T* p, const T& val, SizeType size, I64 numberOfThreads)
 {
 #if MTL_ENABLE_OPENMP
-  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads < 1)
+    numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
@@ -194,10 +198,12 @@ MTL_INLINE static void Parallel_1Dst_1Val(T* p, const T& val, SizeType size)
 }
 
 template <class T, void (*Func)(T*, const T*, const T&, SizeType)>
-MTL_INLINE static void Parallel_1Dst_1Src_1Val(T* pDst, const T* pSrc, const T& val, SizeType size)
+MTL_INLINE static void Parallel_1Dst_1Src_1Val(T* pDst, const T* pSrc, const T& val, SizeType size,
+                                               I64 numberOfThreads)
 {
 #if MTL_ENABLE_OPENMP
-  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads < 1)
+    numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
@@ -217,10 +223,11 @@ MTL_INLINE static void Parallel_1Dst_1Src_1Val(T* pDst, const T* pSrc, const T& 
 
 template <class ReductionT, class T, ReductionT (*Func)(const T*, SizeType)>
 MTL_INLINE static void ParallelReduction_1Src(ReductionT* subResults, SizeType& subResultsSize,
-                                              const T* pSrc, SizeType size)
+                                              const T* pSrc, SizeType size, I64 numberOfThreads)
 {
 #if MTL_ENABLE_OPENMP
-  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads < 1)
+    numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
@@ -245,10 +252,12 @@ MTL_INLINE static void ParallelReduction_1Src(ReductionT* subResults, SizeType& 
 
 template <class ReductionT, class T, ReductionT (*Func)(const T*, const T*, SizeType)>
 MTL_INLINE static void ParallelReduction_2Src(ReductionT* subResults, SizeType& subResultsSize,
-                                              const T* pSrc1, const T* pSrc2, SizeType size)
+                                              const T* pSrc1, const T* pSrc2, SizeType size,
+                                              I64 numberOfThreads)
 {
 #if MTL_ENABLE_OPENMP
-  I64 numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads < 1)
+    numberOfThreads = MTL::CPU::Instance().NumberOfThreads();
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 

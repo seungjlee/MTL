@@ -55,7 +55,7 @@ TEST(TestMatrixMultiplication)
   DynamicMatrix<F64> Q1 = A1 .MultiplyByTranspose();
 }
 
-#if 0
+#if 1
 TEST(TestHouseholderQR)
 {
   static const double kHouseholderTol = 1e-12;
@@ -378,7 +378,7 @@ TEST(TestSolvers)
       SolveJacobiSVDTransposed(svdX, rank, conditionNumber, A, b);
       t_SVD.Stop();
     }
- 
+
     DynamicVector<F64> eigenX;
     {
       I32 rank;

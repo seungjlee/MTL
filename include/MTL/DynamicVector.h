@@ -467,7 +467,7 @@ template <class T> MTL_INLINE static void OptimizedZeros_Sequential(T* p, SizeTy
 }
 template <class T> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)
 {
-  Parallel_1Dst< T, OptimizedZeros_Sequential >(p, size);
+  Parallel_1Dst< T, OptimizedZeros_Sequential >(p, size, 0);
 }
 
 template <class T>
@@ -477,7 +477,7 @@ MTL_INLINE static void OptimizedCopy_Sequential(T* pDst, const T* pSrc, SizeType
 }
 template <class T> MTL_INLINE static void OptimizedCopy(T* pDst, const T* pSrc, SizeType size)
 {
-  Parallel_1Dst_1Src< T, T, OptimizedCopy_Sequential >(pDst, pSrc, size);
+  Parallel_1Dst_1Src< T, T, OptimizedCopy_Sequential >(pDst, pSrc, size, 0);
 }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -528,8 +528,9 @@ MTL_INLINE static void AssignAll_Stream(T* p, const T& val, SizeType size)
 template <class T> MTL_INLINE static void OptimizedAssignAll(T* p, const T& val, SizeType size)
 {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-  if (MTL::CPU::Instance().NumberOfThreads() > 1)
-    Parallel_1Dst_1Val< T, AssignAll_Stream<T> >(p, val, size);
+  int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
+  if (numberOfThreads > 1)
+    Parallel_1Dst_1Val< T, AssignAll_Stream<T> >(p, val, size, numberOfThreads);
   else
     AssignAll_Stream<T>(p, val, size);
 #else
@@ -574,7 +575,7 @@ template <> MTL_INLINE static void OptimizedZeros_Sequential(T* p, SizeType size
 }                                                                                                 \
 template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)                            \
 {                                                                                                 \
-  Parallel_1Dst< T, OptimizedZeros_Sequential<T> >(p, size);                                      \
+  Parallel_1Dst< T, OptimizedZeros_Sequential<T> >(p, size, 0);                                   \
 }                                                                                                 \
 }
 #else
@@ -587,7 +588,7 @@ template <> inline void OptimizedZeros_Sequential(T* p, SizeType size)          
 }                                                                                                 \
 template <> inline void OptimizedZeros(T* p, SizeType size)                                       \
 {                                                                                                 \
-  Parallel_1Dst< T, OptimizedZeros_Sequential<T> >(p, size);                                      \
+  Parallel_1Dst< T, OptimizedZeros_Sequential<T> >(p, size, 0);                                   \
 }                                                                                                 \
 }
 #endif
@@ -601,7 +602,7 @@ namespace MTL                                                                   
 {                                                                                                 \
 template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)                            \
 {                                                                                                 \
-  Parallel_1Dst< I8, OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T));                   \
+  Parallel_1Dst< I8, OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T), 0);                \
 }                                                                                                 \
 }
 #else
@@ -610,7 +611,7 @@ namespace MTL                                                                   
 {                                                                                                 \
 template <> inline void OptimizedZeros(T* p, SizeType size)                                       \
 {                                                                                                 \
-  Parallel_1Dst< I8, OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T));                   \
+  Parallel_1Dst< I8, OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T), 0);                \
 }                                                                                                 \
 }
 #endif

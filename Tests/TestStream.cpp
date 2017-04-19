@@ -63,8 +63,8 @@ TEST(TestToFloat)
   for (int i = 0; i < size; i++)
     u[i] = i;
 
-  MTL::Convert_StreamUnaligned_Parallel(&v32[0], &u[0], size);
-  MTL::Convert_StreamUnaligned_Parallel(&v64[0], &u[0], size);
+  MTL::Convert_StreamUnaligned_Parallel(&v32[0], &u[0], size, 0);
+  MTL::Convert_StreamUnaligned_Parallel(&v64[0], &u[0], size, 0);
 
   for (int i = 0; i < size; i++)
   {
