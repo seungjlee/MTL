@@ -331,6 +331,74 @@ TEST(TestMultiplyByTranspose)
 }
 #endif
 
+TEST(TestSolversIdentityMatrix)
+{
+  enum
+  {
+    N = 639,
+    kRepeats = 1
+  };
+
+  DynamicMatrix<F64> A(N,N);
+  DynamicVector<F64> b;
+  A.Identity();
+
+  Timer t_SVD;
+  Timer t_LDLt;
+  Timer t_QR;
+  Timer t_Eigen;
+
+  Random random;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    b = random.DynamicVector<F64>(N, -1, 1);
+
+    DynamicVector<F64> qrX = b;
+    t_QR.Start();
+    DynamicMatrix<F64> temp(A);
+    SolveHouseholderQRTransposed(qrX, temp);
+    t_QR.Stop();
+
+    DynamicVector<F64> ldlX = b;
+    t_LDLt.Start();
+    temp = A;
+    SolveLDLt(ldlX, temp);
+    t_LDLt.Stop();
+ 
+    DynamicVector<F64> svdX;
+    {
+      I32 rank;
+      F64 conditionNumber;
+      t_SVD.Start();
+      SolveJacobiSVDTransposed(svdX, rank, conditionNumber, A, b);
+      t_SVD.Stop();
+    }
+
+    DynamicVector<F64> eigenX;
+    {
+      I32 rank;
+      F64 conditionNumber;
+      t_Eigen.Start();
+      SolveJacobiEigenTransposed(eigenX, rank, conditionNumber, A, b);
+      t_Eigen.Stop(); 
+    }
+
+    for (I32 k = 0; k < N; k++)
+    {
+      MTL_EQUAL_FLOAT(   qrX[k], b[k], kTol);
+      MTL_EQUAL_FLOAT(  ldlX[k], b[k], kTol);
+      MTL_EQUAL_FLOAT(  svdX[k], b[k], kTol);
+      MTL_EQUAL_FLOAT(eigenX[k], b[k], kTol);
+    }
+  }
+
+  printf("  QR    solver: %9.3f msecs (%d times)\n",    t_QR.Milliseconds(), kRepeats);
+  printf("  LDLt  solver: %9.3f msecs (%d times)\n",  t_LDLt.Milliseconds(), kRepeats);
+  printf("  SVD   solver: %9.3f msecs (%d times)\n",   t_SVD.Milliseconds(), kRepeats);
+  printf("  Eigen solver: %9.3f msecs (%d times)\n", t_Eigen.Milliseconds(), kRepeats);
+}
+
 TEST(TestSolvers)
 {
   enum

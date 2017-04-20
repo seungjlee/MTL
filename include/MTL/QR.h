@@ -73,7 +73,10 @@ static I32 SolveHouseholderQR(ColumnVector<M,T>& x, Matrix<M,N,T>& A,
 
     T norm = Sqrt(Pow<2>(*pV) + sumOfSquares);
     if (norm < tolerance)
+    {
+      *pV += normAii;  // Restore.
       continue;
+    }
 
     T div = T(1)/norm;
     for (I32 k = 0; k < Mi; k++)
@@ -180,7 +183,10 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
 
     T norm = Sqrt(Pow<2>(*pV) + sumOfSquares);
     if (norm < tolerance)
+    {
+      *pV += normAii;  // Restore.
       continue;
+    }
 
     T div = T(1)/norm;
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
