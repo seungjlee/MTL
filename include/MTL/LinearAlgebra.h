@@ -31,7 +31,31 @@
 namespace MTL
 {
 
-// Compute null space of a row vector.
+// Returns rows of eigen vectors that map to the null space.
+// Assumes the input matrix is symmetric.
+// Return true if decomposition of the matrix converged.
+template<class T>
+static bool NullSpaceSymmetric(DynamicMatrix<T>& null)
+{
+  assert(null.Rows() == null.Cols());
+
+  DynamicVector<T> D;
+  bool converged = JacobiSVDTransposed(null, D);
+
+  T tolerance = null.Rows() * D[0] * Epsilon<T>();
+  I32 rank = (I32)D.Size();
+  for (; rank > 0 && D[rank-1] < tolerance; rank--);
+
+  I32 numberOfRows = null.Rows() - rank;
+  for (I32 i = 0; i < numberOfRows; i++)
+    OptimizedCopy_Sequential(null[i], null[i + rank], null.Cols());
+
+  null.Resize(numberOfRows, null.Cols());
+
+  return converged;
+}
+
+// Compute null space transform of a row vector.
 template<I32 N, class T> static Matrix<N,N-1,T> NullSpace(const RowVector<N,T>& v)
 {
   T S[N];

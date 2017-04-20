@@ -28,6 +28,7 @@
 
 #include "DynamicMatrix.h"
 #include "Givens.h"
+#include "Point2D.h"
 
 namespace MTL
 {
@@ -332,12 +333,49 @@ static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T
   return true;
 }
 
+static void ComputeJacobiParallelPairs(DynamicVector<DynamicVector<Point2D<I32>>>& pairs, I32 N)
+{
+  DynamicVector<Point2D<I32>> allPairs;
+  I32 index = 0;
+  for (I32 i = 0; i < N-1; i++)
+  {
+    for (I32 j = i+1; j < N; j++)
+    {
+      allPairs.PushBack(Point2D<I32>(i,j));
+    }
+  }
+
+  DynamicVector<U8> used(N);
+
+  U32 count = 0;
+  while (count < allPairs.Size())
+  {
+    used.Zeros();
+    pairs.Resize(pairs.Size() + 1);
+    DynamicVector<Point2D<I32>>& set = pairs.Back();
+
+    for (Point2D<I32>& pair : allPairs)
+    {
+      if (pair.x() >= 0 && !used[pair.x()] && !used[pair.y()])
+      {
+        set.PushBack(pair);
+        used[pair.x()] = 1;
+        used[pair.y()] = 1;
+        pair.x(-1);
+        count++;
+        //break;
+      }
+    }
+  }
+}
+
 // Dynamic matrix version of SVD. Note that it takes A transposed. It expects At and Vt to be
 // memory aligned.
 template<class T>
 static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, I32 rowSizeV)
 {
   I32 maxIterations = Max(M, 30);
+  I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
 
   OptimizedZeros(Vt, N*rowSizeV);
 
@@ -351,16 +389,51 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 #endif
   }
 
+  DynamicVector<DynamicVector<Point2D<I32>>> parallelPairs;
+  ComputeJacobiParallelPairs(parallelPairs, N);
+  DynamicVector<I32> setChanged;
+
   I32 iteration;
   for (iteration = 0; iteration < maxIterations; iteration++)
   {
     bool changed = false;
-
-    for (I32 i = 0; i < N-1; i++)
+    
+    for (const auto& set : parallelPairs)
     {
-      for (I32 j = i+1; j < N; j++)
+      if (set.Size() > 1)
       {
+        setChanged.Resize(set.Size());
+
+        I32 blockSize = (I32)MTL::ComputeParallelSubSizesBlockSize(set.Size(), numberOfThreads);
+
+        #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+        for (I32 k = 0; k < (I32)set.Size(); k++)
+        {
+          int i = set[k].x();
+          int j = set[k].y();
+          T c, s;
+
+          setChanged[k] = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+          if (setChanged[k])
+          {
+
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+            GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
+#else
+            GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
+#endif
+            changed = true;
+          }
+        }
+
+        changed |= Sum_StreamAligned_Sequential(setChanged.Begin(), setChanged.Size()) > 0;
+      }
+      else
+      {
+        int i = set[0].x();
+        int j = set[0].y();
         T c, s;
+
         if (JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA))
         {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -399,13 +472,9 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 template<class T>
 static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 {
-  T epsilon = Epsilon<T>();
-  T epsilon2 = Square(epsilon);
-
-  I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfCores();
   I32 maxIterations = Max(M, 30);
-
-  //MTL_PARALLEL_FOR_BLOCKS_THREADS(N, numberOfThreads)
+  I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+  
   for (I32 i = 0; i < N; i++)
   {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -415,18 +484,38 @@ static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 #endif
   }
 
+  DynamicVector<DynamicVector<Point2D<I32>>> parallelPairs;
+  ComputeJacobiParallelPairs(parallelPairs, N);
+  DynamicVector<I32> setChanged;
+
   I32 iteration;
   for (iteration = 0; iteration < maxIterations; iteration++)
   {
     bool changed = false;
     
-
-    for (I32 i = 0; i < N-1; i++)
+    for (const auto& set : parallelPairs)
     {
-      for (I32 j = i+1; j < N; j++)
+      if (set.Size() > 1)
+      {
+        setChanged.Resize(set.Size());
+
+        I32 blockSize = (I32)MTL::ComputeParallelSubSizesBlockSize(set.Size(), numberOfThreads);
+
+        #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+        for (I32 i = 0; i < (I32)set.Size(); i++)
+        {
+          T c, s;
+          setChanged[i] = JacobiRotationsTransposed(c, s, set[i].x(), set[i].y(), iteration,
+                                                    At, W, M, N, rowSizeA);
+        }
+
+        changed |= Sum_StreamAligned_Sequential(setChanged.Begin(), setChanged.Size()) > 0;
+      }
+      else
       {
         T c, s;
-        if (JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA))
+        if (JacobiRotationsTransposed(c, s, set[0].x(), set[0].y(), iteration,
+                                      At, W, M, N, rowSizeA))
           changed = true;
       }
     }
