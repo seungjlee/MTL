@@ -320,9 +320,16 @@ public:
     assert(Cols() == B.Rows());
 
     DynamicMatrix result;
-    MultiplyTransposed(result, B.ComputeTranspose());
+    Multiply(result, B);
 
     return result;
+  }
+
+  MTL_INLINE void Multiply(DynamicMatrix& product, const DynamicMatrix& B) const
+  {
+    DynamicMatrix Bt;
+    B.ComputeTranspose(Bt);
+    MultiplyTransposed(product, Bt);
   }
 
   MTL_INLINE void MultiplyTransposed(DynamicMatrix& product, const DynamicMatrix& Bt) const
@@ -580,14 +587,20 @@ public:
 
   MTL_INLINE DynamicMatrix ComputeTranspose() const
   {
-    DynamicMatrix t(Cols(), Rows());
+    DynamicMatrix t;
+    ComputeTranspose(t);
+
+    return t;
+  }
+
+  MTL_INLINE void ComputeTranspose(DynamicMatrix& t) const
+  {
+    t.Resize(Cols(), Rows());
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
       for (I32 j = 0; j < Cols(); j++)
         t[j][i] = (*this)[i][j];
-
-    return t;
   }
 
   void SetRow(I32 row, const DynamicVector<T>& v)

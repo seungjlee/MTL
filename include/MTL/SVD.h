@@ -336,6 +336,7 @@ static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T
 static void ComputeJacobiParallelPairs(DynamicVector<DynamicVector<Point2D<I32>>>& pairs, I32 N)
 {
   DynamicVector<Point2D<I32>> allPairs;
+  allPairs.Reserve((N-1)*N/2);
   I32 index = 0;
   for (I32 i = 0; i < N-1; i++)
   {
