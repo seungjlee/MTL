@@ -54,6 +54,28 @@ static bool NullSpaceSymmetric(DynamicMatrix<T>& null)
 
   return converged;
 }
+// This is the more stable version in case A is singular or nearly singular.
+template<class T>
+static bool NullSpaceSymmetric(DynamicMatrix<T>& null, const DynamicMatrix<T>& A)
+{
+  assert(A.Rows() == A.Cols());
+
+  DynamicMatrix<T> U = A;
+  DynamicVector<T> D;
+  bool converged = JacobiSVDTransposed(U, D, null);
+
+  T tolerance = null.Rows() * D[0] * Epsilon<T>();
+  I32 rank = (I32)D.Size();
+  for (; rank > 0 && D[rank-1] < tolerance; rank--);
+
+  I32 numberOfRows = null.Rows() - rank;
+  for (I32 i = 0; i < numberOfRows; i++)
+    OptimizedCopy_Sequential(null[i], null[i + rank], null.Cols());
+
+  null.Resize(numberOfRows, null.Cols());
+
+  return converged;
+}
 
 // Compute null space transform of a row vector.
 template<I32 N, class T> static Matrix<N,N-1,T> NullSpace(const RowVector<N,T>& v)
