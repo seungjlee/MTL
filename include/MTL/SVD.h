@@ -373,7 +373,8 @@ static void ComputeJacobiParallelPairs(DynamicVector<DynamicVector<Point2D<I32>>
 // Dynamic matrix version of SVD. Note that it takes A transposed. It expects At and Vt to be
 // memory aligned.
 template<class T>
-static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, I32 rowSizeV)
+static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N,
+                                        I32 rowSizeA, I32 rowSizeV)
 {
   I32 maxIterations = Max(M, 30);
   I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
@@ -471,7 +472,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
   return iteration < maxIterations;
 }
 template<class T>
-static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
+static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 {
   I32 maxIterations = Max(M, 30);
   I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
@@ -525,7 +526,6 @@ static bool JacobiSVDTransposed(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
       break;
   }
 
-  //#pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
   for (I32 i = 0; i < N; i++)
   {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -639,8 +639,8 @@ MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
 {
   Vt.Resize(Ut.Rows(), Ut.Rows());
   D.Resize(Ut.Rows());
-  bool converged = JacobiSVDTransposed(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
-                                       Ut.RowSize(), Vt.RowSize());
+  bool converged = JacobiSVDTransposedParallel(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
+                                               Ut.RowSize(), Vt.RowSize());
 
   if (sortAscending)
   {
@@ -661,7 +661,8 @@ MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
                                            bool sortAscending = false)
 {
   D.Resize(Ut.Rows());
-  bool converged = JacobiSVDTransposed(Ut[0], D.Begin(), Ut.Cols(), Ut.Rows(), Ut.RowSize());
+  bool converged = JacobiSVDTransposedParallel(Ut[0], D.Begin(), Ut.Cols(), Ut.Rows(),
+                                               Ut.RowSize());
 
   if (sortAscending)
   {
