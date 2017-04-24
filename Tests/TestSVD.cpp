@@ -29,6 +29,26 @@ using namespace MTL;
 
 static const double kTol = 1e-14;
 
+TEST(TestSVD_FixedMatrix)
+{
+  double a[4][4] = {{1, 5, 0, 0},
+                    {0, 2, 6, 0},
+                    {0, 0, 3, 7},
+                    {0, 0, 0, 4}};
+
+  SquareMatrix4x4 A(a);
+  SquareMatrix4x4 V;
+  double S[4];
+
+  JacobiSVD<4,4>(A, S, V);
+
+  printf("  %20.15f  %20.15f  %20.15f  %20.15f\n", S[0], S[1], S[2], S[3]);
+  MTL_EQUAL_FLOAT(S[0], 8.895008771746831, kTol);
+  MTL_EQUAL_FLOAT(S[1], 6.357395271827689, kTol);
+  MTL_EQUAL_FLOAT(S[2], 4.522558768895992, kTol);
+  MTL_EQUAL_FLOAT(S[3], 0.093842901552412, kTol);
+}
+
 TEST(TestSVD)
 {
   double a[5][5] = {{ 1.0, 0.1, 0.9, 0.3, 0.6 },

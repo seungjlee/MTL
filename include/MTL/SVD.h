@@ -472,6 +472,69 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N,
   return iteration < maxIterations;
 }
 template<class T>
+static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, I32 rowSizeV)
+{
+  I32 maxIterations = Max(M, 30);
+  I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+
+  OptimizedZeros(Vt, N*rowSizeV);
+
+  for (I32 i = 0; i < N; i++)
+  {
+    Vt[i*rowSizeV + i] = T(1);
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+    W[i] = SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M);
+#else
+    W[i] = SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M);
+#endif
+  }
+
+  I32 iteration;
+  for (iteration = 0; iteration < maxIterations; iteration++)
+  {
+    bool changed = false;
+
+    for (I32 i = 0; i < N-1; i++)
+    {
+      for (I32 j = i+1; j < N; j++)
+      {
+        T c, s;
+        if (JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA))
+        {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+          GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
+#else
+          GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
+#endif
+          changed = true;
+        }
+      }
+    }
+
+    if (!changed)
+      break;
+  }
+
+  for (I32 i = 0; i < N; i++)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+    W[i] = Sqrt(SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M));
+#else
+    W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M));
+#endif
+
+  for (I32 i = 0; i < N; i++)
+  {
+    if (W[i] > 0)
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+      ScalarMultiplication_StreamAligned_Sequential(At + i*rowSizeA, T(1)/W[i], M);
+#else
+      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
+#endif
+  }
+
+  return iteration < maxIterations;
+}
+template<class T>
 static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 {
   I32 maxIterations = Max(M, 30);
@@ -641,6 +704,8 @@ MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
   D.Resize(Ut.Rows());
   bool converged = JacobiSVDTransposedParallel(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
                                                Ut.RowSize(), Vt.RowSize());
+  //bool converged = JacobiSVDTransposed(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
+  //                                     Ut.RowSize(), Vt.RowSize());
 
   if (sortAscending)
   {
