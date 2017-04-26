@@ -62,14 +62,20 @@ public:
 
   // Gets/Sets number of threads for OpenMP.
   // Note that this is configured for each user thread.
+  // NOTE: Per thread number of threads disabled for now since it has performance issues.
   U64 NumberOfThreads() const
   {
     return const_cast<CPU*>(this)->Number_Of_Threads();
   }
   void NumberOfThreads(U64 n)
   {
+#ifdef NUMBER_OF_THREADS_PER_THREAD
     Lock lock(NumberOfThreadsMutex_);
-    NumberOfThreads_[std::this_thread::get_id().hash()] = n;
+    std::hash<std::thread::id> hasher;
+    NumberOfThreads_[hasher(std::this_thread::get_id())] = n;
+#else
+    DefaultNumberOfThreads_ = n;
+#endif
   }
 
   void SetDefaultNumberOfThreads(U64 n)
@@ -249,8 +255,10 @@ private:
     bool multithreading_;
   };
 
+#ifdef NUMBER_OF_THREADS_PER_THREAD
   std::recursive_mutex NumberOfThreadsMutex_;
   std::map<size_t,U64> NumberOfThreads_;
+#endif
   U64 NumberOfCores_;
   U64 NumberOfLogicalCores_;
   const InstructionSet_Internal CPU_Rep_;
@@ -259,13 +267,18 @@ private:
 
   U64 Number_Of_Threads()
   {
+#ifdef NUMBER_OF_THREADS_PER_THREAD
     Lock lock(NumberOfThreadsMutex_);
-    size_t threadHash = std::this_thread::get_id().hash();
+    std::hash<std::thread::id> hasher;
+    size_t threadHash = hasher(std::this_thread::get_id());
     if (NumberOfThreads_.find(threadHash) == NumberOfThreads_.end())
     {
       NumberOfThreads_[threadHash] = DefaultNumberOfThreads_;
     }
     return NumberOfThreads_[threadHash];
+#else
+    return DefaultNumberOfThreads_;
+#endif
   }
 };
 
