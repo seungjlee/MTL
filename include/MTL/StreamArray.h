@@ -1363,14 +1363,16 @@ AdditionScaled_StreamAligned_Parallel(T* pDst, const T* pSrc, const T& scalar, S
                                       int numberOfThreads)
 {
   Parallel_1Dst_1Src_1Val< T, AdditionScaled_StreamAligned_Sequential<T> >(pDst, pSrc,
-                                                                           scalar, size);
+                                                                           scalar, size,
+                                                                           numberOfThreads);
 }
 template <class T> MTL_INLINE void
 AdditionScaled_StreamUnaligned_Parallel(T* pDst, const T* pSrc, const T& scalar, SizeType size,
                                         int numberOfThreads)
 {
   Parallel_1Dst_1Src_1Val< T, AdditionScaled_StreamUnaligned_Sequential<T> >(pDst, pSrc,
-                                                                             scalar, size);
+                                                                             scalar, size,
+                                                                             numberOfThreads);
 }
 #endif  // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 

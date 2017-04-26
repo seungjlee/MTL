@@ -149,6 +149,8 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
 {
   assert(M >= N);  // Not supporting or testing M < N cases.
 
+  I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+
   for (I32 i = 0; i < N; i++)
     P[i] = i;
 
@@ -173,7 +175,7 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
     T Aii = *pV;
     
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-    T sumOfSquares = SumOfSquares_StreamUnaligned_Sequential(pV + 1, Mi - 1);
+    T sumOfSquares = SumOfSquares_StreamUnaligned_Parallel(pV + 1, Mi - 1, numberOfThreads);
 #else
     T sumOfSquares = SumOfSquares_Sequential(pV + 1, pV + Mi);
 #endif
@@ -190,7 +192,7 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
 
     T div = T(1)/norm;
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-    ScalarMultiplication_StreamUnaligned_Sequential(pV, div, Mi);
+    ScalarMultiplication_StreamUnaligned_Parallel(pV, div, Mi, numberOfThreads);
 #else
     ScalarMultiplication_Sequential(pV, div, pV + Mi);
 #endif
@@ -199,16 +201,17 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
     for (I32 j = i+1; j < N; j++)
     {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      T dotA = DotProduct_StreamUnaligned_Sequential(pV, At + P[j]*rowSize + i, Mi);
-      AdditionScaled_StreamUnaligned_Sequential(At + P[j]*rowSize + i, pV, T(-2) * dotA, Mi);
+      T dotA = DotProduct_StreamUnaligned_Parallel(pV, At + P[j]*rowSize + i, Mi, numberOfThreads);
+      AdditionScaled_StreamUnaligned_Parallel(At + P[j]*rowSize + i, pV, T(-2) * dotA, Mi,
+                                              numberOfThreads);
 #else
       T dotA = DotProduct_Sequential(pV, At + P[j]*rowSize + i, pV + Mi);
       AdditionScaled_Sequential(At + P[j]*rowSize + i, pV, T(-2) * dotA, At + P[j]*rowSize + i + Mi);
 #endif
     }
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-    T dotB = DotProduct_StreamUnaligned_Sequential(pV, x + i, Mi);
-    AdditionScaled_StreamUnaligned_Sequential(x + i, pV, T(-2) * dotB, Mi);
+    T dotB = DotProduct_StreamUnaligned_Parallel(pV, x + i, Mi, numberOfThreads);
+    AdditionScaled_StreamUnaligned_Parallel(x + i, pV, T(-2) * dotB, Mi, numberOfThreads);
 #else
     T dotB = DotProduct_Sequential(pV, x + i, pV + Mi);
     AdditionScaled_Sequential(x + i, pV, T(-2) * dotB, x + i + Mi);
