@@ -35,7 +35,12 @@
 #include <vector>
 #include <omp.h>
 
-#ifndef WIN32
+#ifdef WIN32
+#define MTL_THREAD_GLOBAL  __declspec(selectany) __declspec(thread)
+#define MTL_GLOBAL         __declspec(selectany)
+#else
+#define MTL_THREAD_GLOBAL static  // Need something for g++ (thread_local is available in C++11).
+#define MTL_GLOBAL static         // Something like selectany would be nice here for g++.
 #include <cpuid.h>
 #include <string.h>
 #endif
@@ -44,7 +49,8 @@ namespace MTL
 {
 
 class CPU;
-static CPU* Instance_ = 0;
+MTL_GLOBAL CPU* Instance_ = 0;
+MTL_THREAD_GLOBAL U64 gNumberOfThreads = 0;
 
 class CPU
 {
@@ -69,13 +75,7 @@ public:
   }
   void NumberOfThreads(U64 n)
   {
-#ifdef NUMBER_OF_THREADS_PER_THREAD
-    Lock lock(NumberOfThreadsMutex_);
-    std::hash<std::thread::id> hasher;
-    NumberOfThreads_[hasher(std::this_thread::get_id())] = n;
-#else
-    DefaultNumberOfThreads_ = n;
-#endif
+    gNumberOfThreads = n;
   }
 
   void SetDefaultNumberOfThreads(U64 n)
@@ -83,7 +83,7 @@ public:
     DefaultNumberOfThreads_ = n;
   }
 
-  U64 NumberOfCores() const           { return NumberOfCores_;          }
+  U64 NumberOfCores() const    { return NumberOfCores_;           }
 
   bool SSE()  const  { return CPU_Rep_.f_1_EDX_[25] || false; }
   bool SSE2() const  { return CPU_Rep_.f_1_EDX_[26] || false; }
@@ -255,10 +255,6 @@ private:
     bool multithreading_;
   };
 
-#ifdef NUMBER_OF_THREADS_PER_THREAD
-  std::recursive_mutex NumberOfThreadsMutex_;
-  std::map<size_t,U64> NumberOfThreads_;
-#endif
   U64 NumberOfCores_;
   U64 NumberOfLogicalCores_;
   const InstructionSet_Internal CPU_Rep_;
@@ -267,18 +263,10 @@ private:
 
   U64 Number_Of_Threads()
   {
-#ifdef NUMBER_OF_THREADS_PER_THREAD
-    Lock lock(NumberOfThreadsMutex_);
-    std::hash<std::thread::id> hasher;
-    size_t threadHash = hasher(std::this_thread::get_id());
-    if (NumberOfThreads_.find(threadHash) == NumberOfThreads_.end())
-    {
-      NumberOfThreads_[threadHash] = DefaultNumberOfThreads_;
-    }
-    return NumberOfThreads_[threadHash];
-#else
-    return DefaultNumberOfThreads_;
-#endif
+    if (gNumberOfThreads == 0)
+      gNumberOfThreads = DefaultNumberOfThreads_;
+
+    return gNumberOfThreads;
   }
 };
 
