@@ -615,7 +615,7 @@ Sum_StreamAligned_Sequential(const T* p, SizeType size)
   }
   return Sum< XX<T>::Increment >(xSum.pData()) + Sum_Sequential(p, pEnd);
 }
-template <class T> MTL_INLINE void
+template <class T> MTL_INLINE T
 Sum_StreamUnaligned_Sequential(const T* p, SizeType size)
 {
   const T* pEnd = p + size;
