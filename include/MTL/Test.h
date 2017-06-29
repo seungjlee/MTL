@@ -47,6 +47,16 @@ static Test_ ## TestName                                                        
  Test_ ## TestName ## _Instance_(MTL::String(TOWCHAR(#TestName)));                                 \
 void Test_ ## TestName::Run()
 
+#define TEST_INITIALIZE()                                                                          \
+static void MTL_TestInitialize_();                                                                 \
+static int MTL_Test_Initialze_ = MTL::Test::SetInitializeFunction(MTL_TestInitialize_);            \
+static void MTL_TestInitialize_()
+
+#define TEST_SHUTDOWN()                                                                            \
+static void MTL_TestShutdown_();                                                                   \
+static int MTL_Test_Shutdown_ = MTL::Test::SetShutdownFunction(MTL_TestShutdown_);                 \
+static void MTL_TestShutdown_()
+
 #define MTL_VERIFY(Expression)                                                                     \
 MTL::Test::Verify(Expression, #Expression, MTL::String(MTL__FILE__), __LINE__)
 
@@ -216,6 +226,9 @@ public:
     }
   }
 
+  static int SetInitializeFunction(void(*initf)())  { Initialize_ = initf;  return 0; }
+  static int SetShutdownFunction(void(*sdf)())      { Shutdown_   = sdf;    return 0; }
+
 protected:
   double TimeElapsed_;  // In seconds.
 
@@ -231,9 +244,42 @@ private:
   static U64 TotalNumberOfFailures_;
   static double TotalTimeElapsed_;  // In seconds.
 
+  static void (*Initialize_)();
+  static void (*Shutdown_)();
+
+  static void Initialize()
+  {
+    if (Initialize_)
+    {
+      Out() << "[Initialize_Test] Begins..." << std::endl;
+      Timer timer(true);
+      Initialize_();
+      timer.Stop();
+
+      Out() << "[Initialize_Test] Ends.";
+      Out() << "  Time: " << timer.Seconds() << " seconds." << std::endl << std::endl;
+    }
+  }
+
+  static void Shutdown()
+  {
+    if (Shutdown_)
+    {
+      Out() << "[Shutdown_Test] Begins..." << std::endl;
+      Timer timer(true);
+      Shutdown_();
+      timer.Stop();
+
+      Out() << "[Shutdown_Test] Ends.";
+      Out() << "  Time: " << timer.Seconds() << " seconds." << std::endl << std::endl;
+    }
+  }
+
   static void Run_All()
   {
     Out() << std::endl;
+    Initialize();
+
     for (U32 i = 0; i < List_.Size(); i++)
     {
       Out() << "[" << List_[i]->Name_ << "]" << " Begins..." << std::endl;
@@ -268,6 +314,7 @@ private:
 
       TotalTimeElapsed_ += List_[i]->TimeElapsed_;
     }
+    Shutdown();
 
     Out() << "Total number of errors: " << TotalNumberOfFailures() << std::endl;
     Out() << "Total time: " << TotalTimeElapsed_ << " seconds." << std::endl;
@@ -280,6 +327,8 @@ DynamicVector<Test*> Test::List_;
 DynamicVector<String> Test::Arguments_;
 U64 Test::TotalNumberOfFailures_;
 double Test::TotalTimeElapsed_;
+void(*Test::Initialize_)() = 0;
+void(*Test::Shutdown_)() = 0;
 
 }  // namespace MTL
 
