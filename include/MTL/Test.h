@@ -73,6 +73,11 @@ MTL::Test::LessThan(Actual, Limit, MTL::String(MTL__FILE__), __LINE__)
 #define MTL_LESS_THAN_OR_EQUAL_TO(Actual, Limit)                                                   \
 MTL::Test::LessThanOrEqualTo(Actual, Limit, MTL::String(MTL__FILE__), __LINE__)
 
+#define MTL_APP()                                                                                  \
+static void MTL_App_();                                                                            \
+static int MTL_App_Initialze_ = MTL::Test::SetAppFunction(MTL_App_);                               \
+static void MTL_App_()
+
 namespace MTL
 {
 
@@ -228,6 +233,7 @@ public:
 
   static int SetInitializeFunction(void(*initf)())  { Initialize_ = initf;  return 0; }
   static int SetShutdownFunction(void(*sdf)())      { Shutdown_   = sdf;    return 0; }
+  static int SetAppFunction(void(*app)())           { App_        = app;    return 0; }
 
 protected:
   double TimeElapsed_;  // In seconds.
@@ -246,6 +252,7 @@ private:
 
   static void (*Initialize_)();
   static void (*Shutdown_)();
+  static void (*App_)();
 
   static void Initialize()
   {
@@ -277,47 +284,54 @@ private:
 
   static void Run_All()
   {
-    Out() << std::endl;
-    Initialize();
-
-    for (U32 i = 0; i < List_.Size(); i++)
+    if (List_.Size() > 0)
     {
-      Out() << "[" << List_[i]->Name_ << "]" << " Begins..." << std::endl;
+      Out() << std::endl;
+      Initialize();
 
-      try
+      for (U32 i = 0; i < List_.Size(); i++)
       {
-        Timer timer(true);
-        List_[i]->Run();
-        timer.Stop();
-        List_[i]->TimeElapsed_ = timer.Seconds();
-      }
-      catch(const Exception& e)
-      {
-        List_[i]->TotalNumberOfFailures_++;
-        Out() << "ERROR: " << e.Message() << std::endl;
-      }
-      catch(const std::exception& e)
-      {
-        List_[i]->TotalNumberOfFailures_++;
-        Out() << "std::exception: " << e.what() << std::endl;
-      }
-      catch(...)
-      {
-        List_[i]->TotalNumberOfFailures_++;
-        Out() << "UNEXPECTED ERROR!" << std::endl;
-      }
+        Out() << "[" << List_[i]->Name_ << "]" << " Begins..." << std::endl;
 
-      Out() << "[" << List_[i]->Name_ << "]" << " Ends.";
+        try
+        {
+          Timer timer(true);
+          List_[i]->Run();
+          timer.Stop();
+          List_[i]->TimeElapsed_ = timer.Seconds();
+        }
+        catch (const Exception& e)
+        {
+          List_[i]->TotalNumberOfFailures_++;
+          Out() << "ERROR: " << e.Message() << std::endl;
+        }
+        catch (const std::exception& e)
+        {
+          List_[i]->TotalNumberOfFailures_++;
+          Out() << "std::exception: " << e.what() << std::endl;
+        }
+        catch (...)
+        {
+          List_[i]->TotalNumberOfFailures_++;
+          Out() << "UNEXPECTED ERROR!" << std::endl;
+        }
 
-      Out() << "  Time: " << float(List_[i]->TimeElapsed_) << " seconds."
-            << std::endl << std::endl;
+        Out() << "[" << List_[i]->Name_ << "]" << " Ends.";
 
-      TotalTimeElapsed_ += List_[i]->TimeElapsed_;
+        Out() << "  Time: " << float(List_[i]->TimeElapsed_) << " seconds."
+          << std::endl << std::endl;
+
+        TotalTimeElapsed_ += List_[i]->TimeElapsed_;
+      }
+      Shutdown();
+
+      Out() << "Total number of errors: " << TotalNumberOfFailures() << std::endl;
+      Out() << "Total time: " << TotalTimeElapsed_ << " seconds." << std::endl;
     }
-    Shutdown();
-
-    Out() << "Total number of errors: " << TotalNumberOfFailures() << std::endl;
-    Out() << "Total time: " << TotalTimeElapsed_ << " seconds." << std::endl;
+    if (App_)
+    {
+      App_();
+    }
   }
 };
 
@@ -329,6 +343,7 @@ U64 Test::TotalNumberOfFailures_;
 double Test::TotalTimeElapsed_;
 void(*Test::Initialize_)() = 0;
 void(*Test::Shutdown_)() = 0;
+void(*Test::App_)() = 0;
 
 }  // namespace MTL
 
