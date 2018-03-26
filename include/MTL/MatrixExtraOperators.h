@@ -39,7 +39,7 @@ template<MTL::I32 M, MTL::I32 N, class T>
 MTL_INLINE MTL::Matrix<M,N,T> operator^(const MTL::Matrix<M,N,T>& a, const MTL::Matrix<M,N,T>& b)
 {
   MTL::Matrix c = a;
-  c += b;
+  c ^= b;
   return c;
 }
 
