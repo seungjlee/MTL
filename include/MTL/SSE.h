@@ -172,7 +172,13 @@ public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<I32>(data) {}
   MTL_INLINE X128(I32 val)         { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(const I32 *ptr)  { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(const I32 *ptr)  { LoadPackedUnaligned(ptr); }
+  MTL_INLINE X128(I32 val3, I32 val2, I32 val1, I32 val0)  { Set(val3, val2, val1, val0); }
+
+  MTL_INLINE void Set(I32 val3, I32 val2, I32 val1, I32 val0)
+  {
+    Data_ = _mm_set_epi32(val3, val2, val1, val0);
+  }
 
   MTL_INLINE void Load(const I32* pSrc)   { LoadPackedUnaligned(pSrc);  }
   MTL_INLINE void Store(I32* pDst) const  { StorePackedUnaligned(pDst); }
@@ -212,7 +218,13 @@ public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<U32>(data) {}
   MTL_INLINE X128(U32 val)         { Data_ = X128_SetPacked(val); }
-  MTL_INLINE X128(const U32 *ptr)  { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X128(const U32 *ptr)  { LoadPackedUnaligned(ptr); }
+  MTL_INLINE X128(U32 val3, U32 val2, U32 val1, U32 val0)  { Set(val3, val2, val1, val0); }
+
+  MTL_INLINE void Set(U32 val3, U32 val2, U32 val1, U32 val0)
+  {
+    Data_ = _mm_set_epi32(val3, val2, val1, val0);
+  }
 
   MTL_INLINE void Load(const U32* pSrc)   { LoadPackedUnaligned(pSrc);  }
   MTL_INLINE void Store(U32* pDst) const  { StorePackedUnaligned(pDst); }
@@ -228,9 +240,21 @@ public:
 
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
 
+  MTL_INLINE X128 operator+(const X128& y) const  { return _mm_add_epi32(Data_, y.Data_); }
+  MTL_INLINE X128 operator-(const X128& y) const  { return _mm_sub_epi32(Data_, y.Data_); }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
   MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
+
+  MTL_INLINE X128 operator>>(int shift) const      { return _mm_srli_epi32(Data_, shift); }
+  MTL_INLINE X128 operator<<(int shift) const      { return _mm_slli_epi32(Data_, shift); }
+  MTL_INLINE X128& operator>>=(int shift)          { return *this = *this >> shift; }
+  MTL_INLINE X128& operator<<=(int shift)          { return *this = *this << shift; }
+
+  MTL_INLINE X128& RotateLeft(int shift)
+  { return *this = (*this << shift) | (*this >> (32 - shift)); }
+
+  MTL_STREAM_EXTRA_INTEGER_OPERATORS(128);
 };
 
 template<> class X128<I16> : public X128_Base<I16>
@@ -363,12 +387,14 @@ public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<F32>(data) {}
   MTL_INLINE X128(F32 val)                                 { Set(val);                    }
-  MTL_INLINE X128(F32 val0, F32 val1, F32 val2, F32 val3)  { Set(val0, val1, val2, val3); }
+  MTL_INLINE X128(F32 val3, F32 val2, F32 val1, F32 val0)  { Set(val3, val2, val1, val0); }
   MTL_INLINE X128(const F32 *ptr)                          { LoadPackedUnaligned(ptr);    }
 
   MTL_INLINE void Set(F32 val)                             { Data_ = X128_SetPacked(val); }
-  MTL_INLINE void Set(F32 val0, F32 val1, F32 val2, F32 val3)
-  { Data_ = _mm_setr_ps(val0, val1, val2, val3); }
+  MTL_INLINE void Set(F32 val3, F32 val2, F32 val1, F32 val0)
+  {
+    Data_ = _mm_setr_ps(val3, val2, val1, val0);
+  }
 
   MTL_INLINE explicit X128(const X128<I32>& x)    { Data_ = _mm_cvtepi32_ps(x.Data());         }
   MTL_INLINE X128<I32> RoundedIntegers() const    { return X128<I32>(_mm_cvtps_epi32(Data_));  }
@@ -376,8 +402,8 @@ public:
 
   // Conversion helpers.
   MTL_INLINE explicit X128(F64 val)  { Set((F32)val); }
-  MTL_INLINE explicit X128(F64 val0, F64 val1, F64 val2, F64 val3)
-  { Set((F32)val0, (F32)val1, (F32)val2, (F32)val3); }
+  MTL_INLINE explicit X128(F64 val3, F64 val2, F64 val1, F64 val0)
+  { Set((F32)val3, (F32)val2, (F32)val1, (F32)val0); }
 
   MTL_INLINE static X128 Zeros()        { return kX128_ZerosF32 ;     }
   MTL_INLINE static X128 Ones()         { return kX128_OnesF32;       }
@@ -442,11 +468,11 @@ public:
   MTL_INLINE X128() : X128_Base() {}
   MTL_INLINE X128(const DataType& data) : X128_Base<double>(data) {}
   MTL_INLINE X128(F64 val)             { Set(val);                 }
-  MTL_INLINE X128(F64 val0, F64 val1)  { Set(val0, val1);          }
+  MTL_INLINE X128(F64 val1, F64 val0)  { Set(val1, val0);          }
   MTL_INLINE X128(const F64 *ptr)      { LoadPackedUnaligned(ptr); }
 
   MTL_INLINE void Set(F64 val)             { Data_ = X128_SetPacked(val);     }
-  MTL_INLINE void Set(F64 val0, F64 val1)  { Data_ = _mm_setr_pd(val0, val1); }
+  MTL_INLINE void Set(F64 val1, F64 val0)  { Data_ = _mm_setr_pd(val1, val0); }
 
   MTL_INLINE explicit X128(const X128<I32>& x)    { Data_ = _mm_cvtepi32_pd(x.Data());         }
   MTL_INLINE X128<I32> RoundedIntegers() const    { return X128<I32>(_mm_cvtpd_epi32(Data_));  }

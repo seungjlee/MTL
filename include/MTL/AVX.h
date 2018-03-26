@@ -166,7 +166,7 @@ public:
   MTL_INLINE X256() : X256_Base() {}
   MTL_INLINE X256(const DataType& data) : X256_Base<I32>(data) {}
   MTL_INLINE X256(I32 val)         { Data_ = X256_SetPacked(val); }
-  MTL_INLINE X256(const I32 *ptr)  { LoadPackedUnaligned(ptr);    }
+  MTL_INLINE X256(const I32 *ptr)  { LoadPackedUnaligned(ptr); }
 
   MTL_INLINE void Load(const I32* pSrc)   { LoadPackedUnaligned(pSrc);  }
   MTL_INLINE void Store(I32* pDst) const  { StorePackedUnaligned(pDst); }
@@ -374,7 +374,7 @@ public:
   // Conversion helpers.
   MTL_INLINE explicit X256(F64 val)  { Set((F32)val); }
   MTL_INLINE explicit X256(F64 val0, F64 val1, F64 val2, F64 val3,
-                           F32 val4, F32 val5, F32 val6, F32 val7)
+                           F64 val4, F64 val5, F64 val6, F64 val7)
   { Set((F32)val0, (F32)val1, (F32)val2, (F32)val3, (F32)val4, (F32)val5, (F32)val6, (F32)val7); }
 
   MTL_INLINE static X256 Zeros()        { return kX256_ZerosF32;      }
