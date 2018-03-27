@@ -30,6 +30,32 @@
 #include <MTL/Matrix.h>
 
 template<MTL::I32 M, MTL::I32 N, class T>
+MTL_INLINE MTL::Matrix<M,N,T>& operator&=(MTL::Matrix<M, N, T>& dst, const MTL::Matrix<M, N, T>& src)
+{
+  MTL::ArrayExtra<M*N, T>::AND(dst.Data()[0], src.Data()[0]);
+  return dst;
+}
+template<MTL::I32 M, MTL::I32 N, class T>
+MTL_INLINE MTL::Matrix<M,N,T> operator&(const MTL::Matrix<M, N, T>& a, const MTL::Matrix<M, N, T>& b)
+{
+  MTL::Matrix<M,N,T> c = a;
+  c &= b;
+  return c;
+}
+template<MTL::I32 M, MTL::I32 N, class T>
+MTL_INLINE MTL::Matrix<M,N,T>& operator|=(MTL::Matrix<M, N, T>& dst, const MTL::Matrix<M, N, T>& src)
+{
+  MTL::ArrayExtra<M*N, T>::OR(dst.Data()[0], src.Data()[0]);
+  return dst;
+}
+template<MTL::I32 M, MTL::I32 N, class T>
+MTL_INLINE MTL::Matrix<M,N,T> operator|(const MTL::Matrix<M, N, T>& a, const MTL::Matrix<M, N, T>& b)
+{
+  MTL::Matrix<M,N,T> c = a;
+  c |= b;
+  return c;
+}
+template<MTL::I32 M, MTL::I32 N, class T>
 MTL_INLINE MTL::Matrix<M,N,T>& operator^=(MTL::Matrix<M,N,T>& dst, const MTL::Matrix<M,N,T>& src)
 {
   MTL::ArrayExtra<M*N,T>::XOR(dst.Data()[0], src.Data()[0]);
@@ -38,8 +64,35 @@ MTL_INLINE MTL::Matrix<M,N,T>& operator^=(MTL::Matrix<M,N,T>& dst, const MTL::Ma
 template<MTL::I32 M, MTL::I32 N, class T>
 MTL_INLINE MTL::Matrix<M,N,T> operator^(const MTL::Matrix<M,N,T>& a, const MTL::Matrix<M,N,T>& b)
 {
-  MTL::Matrix c = a;
+  MTL::Matrix<M,N,T> c = a;
   c ^= b;
+  return c;
+}
+
+template<MTL::I32 M, MTL::I32 N, class T>
+MTL_INLINE MTL::Matrix<M,N,T>& operator<<=(MTL::Matrix<M, N, T>& dst, int shift)
+{
+  MTL::ArrayExtra<M*N, T>::ShiftLeft(dst.Data()[0], shift);
+  return dst;
+}
+template<MTL::I32 M, MTL::I32 N, class T>
+MTL_INLINE MTL::Matrix<M,N,T> operator<<(const MTL::Matrix<M, N, T>& a, int shift)
+{
+  MTL::Matrix<M,N,T> c = a;
+  c <<= shift;
+  return c;
+}
+template<MTL::I32 M, MTL::I32 N, class T>
+MTL_INLINE MTL::Matrix<M,N,T>& operator>>=(MTL::Matrix<M, N, T>& dst, int shift)
+{
+  MTL::ArrayExtra<M*N, T>::ShiftRight(dst.Data()[0], shift);
+  return dst;
+}
+template<MTL::I32 M, MTL::I32 N, class T>
+MTL_INLINE MTL::Matrix<M,N,T> operator>>(const MTL::Matrix<M, N, T>& a, int shift)
+{
+  MTL::Matrix<M,N,T> c = a;
+  c >>= shift;
   return c;
 }
 

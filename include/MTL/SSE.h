@@ -251,8 +251,7 @@ public:
   MTL_INLINE X128& operator>>=(int shift)          { return *this = *this >> shift; }
   MTL_INLINE X128& operator<<=(int shift)          { return *this = *this << shift; }
 
-  MTL_INLINE X128& RotateLeft(int shift)
-  { return *this = (*this << shift) | (*this >> (32 - shift)); }
+  MTL_INLINE X128& RotateLeft(int shift)  { return *this = (*this << shift) | (*this >> (32 - shift)); }
 
   MTL_STREAM_EXTRA_INTEGER_OPERATORS(128);
 };

@@ -33,16 +33,41 @@ namespace MTL
 template <int N, class T> class ArrayExtra
 {
 public:
+  MTL_INLINE static void AND(T* a, const T* b)
+  {
+    ArrayExtra<N - 1, T>::AND(a, b);
+    a[N - 1] &= b[N - 1];
+  }
+  MTL_INLINE static void OR(T* a, const T* b)
+  {
+    ArrayExtra<N - 1, T>::OR(a, b);
+    a[N - 1] |= b[N - 1];
+  }
   MTL_INLINE static void XOR(T* a, const T* b)
   {
     ArrayExtra<N-1,T>::XOR(a, b);
     a[N-1] ^= b[N-1];
   }
+  MTL_INLINE static void ShiftLeft(T* a, int shift)
+  {
+    ArrayExtra<N - 1, T>::ShiftLeft(a, shift);
+    a[N - 1] <<= shift;
+  }
+  MTL_INLINE static void ShiftRight(T* a, int shift)
+  {
+    ArrayExtra<N - 1, T>::ShiftRight(a, shift);
+    a[N - 1] >>= shift;
+  }
 };
 template <class T> class ArrayExtra<1,T>
 {
 public:
+  MTL_INLINE static void AND(T* a, const T* b)  { a[0] &= b[0]; }
+  MTL_INLINE static void  OR(T* a, const T* b)  { a[0] |= b[0]; }
   MTL_INLINE static void XOR(T* a, const T* b)  { a[0] ^= b[0]; }
+
+  MTL_INLINE static void ShiftLeft (T* a, int shift)  { a[0] <<= shift; }
+  MTL_INLINE static void ShiftRight(T* a, int shift)  { a[0] >>= shift; }
 };
 
 }  // namespace MTL
