@@ -246,12 +246,10 @@ public:
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
   MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
 
-  MTL_INLINE X128 operator>>(int shift) const      { return _mm_srli_epi32(Data_, shift); }
-  MTL_INLINE X128 operator<<(int shift) const      { return _mm_slli_epi32(Data_, shift); }
-  MTL_INLINE X128& operator>>=(int shift)          { return *this = *this >> shift; }
-  MTL_INLINE X128& operator<<=(int shift)          { return *this = *this << shift; }
-
-  MTL_INLINE X128& RotateLeft(int shift)  { return *this = (*this << shift) | (*this >> (32 - shift)); }
+  MTL_INLINE X128 operator>>(int shift) const     { return _mm_srli_epi32(Data_, shift);  }
+  MTL_INLINE X128 operator<<(int shift) const     { return _mm_slli_epi32(Data_, shift);  }
+  MTL_INLINE X128& operator>>=(int shift)         { return *this = *this >> shift;        }
+  MTL_INLINE X128& operator<<=(int shift)         { return *this = *this << shift;        }
 
   MTL_STREAM_EXTRA_INTEGER_OPERATORS(128);
 };
@@ -599,6 +597,16 @@ MTL_INLINE X128<double> Conditional(const X128<F64>& condition,
 
 // Permute values in registers.
 template<int PermutationBits>
+MTL_INLINE X128<I32> Shuffle(const X128<I32>& a)
+{
+  return _mm_shuffle_epi32(a.Data(), PermutationBits);
+}
+template<int PermutationBits>
+MTL_INLINE X128<U32> Shuffle(const X128<U32>& a)
+{
+  return _mm_shuffle_epi32(a.Data(), PermutationBits);
+}
+template<int PermutationBits>
 MTL_INLINE X128<F32> Shuffle(const X128<F32>& a, const X128<F32>& b)
 {
   return _mm_shuffle_ps(a.Data(), b.Data(), PermutationBits);
@@ -608,6 +616,14 @@ MTL_INLINE X128<F64> Shuffle(const X128<F64>& a, const X128<F64>& b)
 {
   return _mm_shuffle_pd(a.Data(), b.Data(), PermutationBits);
 }
+
+
+template<int SHIFT>
+MTL_INLINE X128<U32> ShiftRight(const X128<U32>& a)  { return _mm_srli_epi32(a.Data(), SHIFT); }
+template<int SHIFT>
+MTL_INLINE X128<U32> ShiftLeft (const X128<U32>& a)  { return _mm_slli_epi32(a.Data(), SHIFT); }
+template<int SHIFT>
+MTL_INLINE X128<U32> RotateLeft(const X128<U32>& a)  { return ShiftLeft<SHIFT>(a) | ShiftRight<32 - SHIFT>(a); }
 
 }  // namespace MTL
 
