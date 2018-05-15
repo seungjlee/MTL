@@ -43,9 +43,26 @@ public:
 
   Rotation3D() {}
 
-  MTL_INLINE Rotation3D(T roll, T pitch, T yaw) 
+  MTL_INLINE Rotation3D(T roll, T pitch, T yaw)  // angleX, angleY, angleZ
   {
     *this = RotationX(roll) * RotationY(pitch) * RotationZ(yaw);
+  }
+
+  MTL_INLINE T ComputeAngleX() const
+  {
+    return -atan2((*this)[1][2], (*this)[2][2]);
+  }
+  MTL_INLINE T ComputeAngleY() const
+  {
+    return -atan2(-(*this)[0][2], Sqrt(Square((*this)[0][0]) + Square((*this)[0][1])));
+  }
+  MTL_INLINE T ComputeAngleZ() const
+  {
+    return -atan2((*this)[0][1], (*this)[0][0]);
+  }
+  MTL_INLINE Vector3D<T> ComputeAngles() const
+  {
+    return Vector3D<T>(ComputeAngleX(), ComputeAngleY(), ComputeAngleZ());
   }
 
   MTL_INLINE static Rotation3D RotationX(T angle)

@@ -28,7 +28,6 @@
 
 using namespace MTL;
 
-
 TEST(TestRotation3D)
 {
   static const double kTol = 1e-12;
@@ -256,5 +255,42 @@ TEST(RotateToAxis)
         }
       }
     }
+  }
+}
+
+static double Normalize(double angle)
+{
+  while (angle < 0)
+    angle += kPi;
+  while (angle >= kPi)
+    angle -= kPi;
+
+  return angle;
+}
+
+TEST(ComputeAngles)
+{
+  static const double kTol = 1e-14;
+
+  enum
+  {
+    N = 1000000
+  };
+
+  Random random;
+
+  for (int i = 0; i < N; i++)
+  {
+    double angleX = random.GetNext(-1.0, 1.0) * 1.57;
+    double angleY = random.GetNext(-1.0, 1.0) * 1.57;
+    double angleZ = random.GetNext(-1.0, 1.0) * 1.57;
+
+    Rotation3D<double> R(angleX, angleY, angleZ);
+
+    Vector3D<double> angles = R.ComputeAngles();
+    
+    MTL_EQUAL_FLOAT(Normalize(angles.x()), Normalize(angleX), kTol);
+    MTL_EQUAL_FLOAT(Normalize(angles.y()), Normalize(angleY), kTol);
+    MTL_EQUAL_FLOAT(Normalize(angles.z()), Normalize(angleZ), kTol);
   }
 }
