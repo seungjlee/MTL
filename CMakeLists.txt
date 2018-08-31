@@ -29,7 +29,7 @@ cmake_minimum_required(VERSION 3.0)
 option (MTL_ENABLE_SSE "Enables SSE instructions." ON)
 option (MTL_ENABLE_AVX "Enables AVX and FMA instructions." OFF)
 
-if(MSVC11)
+if(MSVC)
 
   SET(CMAKE_CXX_FLAGS "/DWIN32 /D_WINDOWS /W3 /Zm1000 /EHsc /GR /openmp /FC")
 
@@ -53,9 +53,9 @@ if(MSVC11)
   if(CMAKE_CL_64)
     ADD_DEFINITIONS(-DWIN64)
   endif(CMAKE_CL_64)
-else(MSVC11)
+else(MSVC)
   SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11")
-endif(MSVC11)
+endif(MSVC)
 
 SET(WINVER 0x0501)
 

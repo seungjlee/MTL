@@ -33,6 +33,7 @@
 #include <map>
 #include <thread>
 #include <vector>
+#include <intrin.h>
 #include <omp.h>
 
 #ifdef WIN32
