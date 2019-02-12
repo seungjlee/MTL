@@ -44,8 +44,8 @@ public:
 
   MTL_INLINE RotationTranslation3D operator*(const RotationTranslation3D& transform) const
   {
-    return RotationTranslation3D(Matrix_ * transform.Matrix_,
-                                 Matrix_ * transform.Vector_ + Vector_);
+    return RotationTranslation3D(this->Matrix_ * transform.Matrix_,
+                                 this->Matrix_ * transform.Vector_ + this->Vector_);
   }
   MTL_INLINE RotationTranslation3D& operator*=(const RotationTranslation3D& transform)
   {
@@ -55,11 +55,11 @@ public:
 
   MTL_INLINE Point3D<T> operator*(const Point3D<T>& point) const
   {
-    return Matrix_ * point + Vector_;
+    return this->Matrix_ * point + this->Vector_;
   }
   MTL_INLINE Vector3D<T> operator*(const Vector3D<T>& vector) const
   {
-    return Matrix_ * vector;
+    return this->Matrix_ * vector;
   }
 
   RotationTranslation3D<T> Inverse() const

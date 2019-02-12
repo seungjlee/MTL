@@ -112,7 +112,7 @@ public:
   CompressedSparseMatrix(I32 rows, I32 cols, SizeType allocationSize)
     : SparseMatrix<T>(rows, cols)
   {
-    SparseMatrix<T>::Ap_.Resize(Cols_ + 1);
+    SparseMatrix<T>::Ap_.Resize(this->Cols_ + 1);
     Allocate(allocationSize);
   }
 

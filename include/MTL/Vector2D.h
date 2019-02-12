@@ -36,7 +36,8 @@ template<class T>
 class Vector2D : public ColumnVector<2,T>
 {
 public:
-  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Vector2D, ColumnVector, 2, T);
+  typedef ColumnVector<2,T> BaseClass;
+  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Vector2D, BaseClass, 2, T);
 
   MTL_INLINE Vector2D() : ColumnVector<2,T>() {}
   MTL_INLINE Vector2D(T xx, T yy)
@@ -45,7 +46,7 @@ public:
     y(yy);
   }
 
-  T Length() const  { return FrobeniusNorm(); }
+  T Length() const  { return this->FrobeniusNorm(); }
 
   // Returns unit vector.
   Vector2D unit() const  { return *this / Length(); }

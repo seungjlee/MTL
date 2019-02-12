@@ -25,7 +25,9 @@
 #ifndef MTL_OPENMP_H
 #define MTL_OPENMP_H
 
-#include "CPU.h"
+#include <MTL/CPU.h>
+#include <MTL/SSE.h>
+#include <MTL/AVX.h>
 #include <assert.h>
 
 //
@@ -294,6 +296,9 @@ MTL_INLINE static void ParallelReduction_2Src(ReductionT* subResults, SizeType& 
   __pragma(omp parallel for num_threads(NumberOfThreads) schedule(dynamic, blockSize))
 #else
   // Not sure what compilers support C++11 _Pragma. VS2012 does seem to support it.
+  // For now, just disable this functionality.
+  #define MTL_PARALLEL_FOR_BLOCKS(Size)
+  #define MTL_PARALLEL_FOR_BLOCKS_THREADS(Size, NumberOfThreads)
 #endif
 #else  // MTL_ENABLE_OPENMP
 #define MTL_PARALLEL_FOR_BLOCKS(Size)

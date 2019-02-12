@@ -33,10 +33,10 @@
 #include <map>
 #include <thread>
 #include <vector>
-#include <intrin.h>
 #include <omp.h>
 
 #ifdef WIN32
+#include <intrin.h>
 #define MTL_THREAD_GLOBAL  __declspec(selectany) __declspec(thread)
 #define MTL_GLOBAL         __declspec(selectany)
 #else
@@ -142,7 +142,7 @@ private:
       nIds_ = cpui[0];
 #else
       nIds_ = __get_cpuid_max(0, 0);
-      printf("\n");  // Need to figure out why things don't work without this extra code.
+      printf("");  // Need to figure out why things don't work correctly without this extra code.
 #endif
 
       for (int i = 0; i <= nIds_; ++i)

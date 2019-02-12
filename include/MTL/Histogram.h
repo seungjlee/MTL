@@ -89,7 +89,7 @@ public:
   
   T LevelAtPercentage100(F64 percentage0to100) const
   {
-    return LevelAtPercentage(percentage0to100 * 0.01)
+    return LevelAtPercentage(percentage0to100 * 0.01);
   }
   T LevelAtPercentage(F64 percentage0to1) const
   {

@@ -84,6 +84,7 @@ F = [det([X1; Y1]) det([X2; Y1]) det([X3; Y1])
 
 return
 */
+#ifdef WIN32  // Disabled for g++ which has trouble with templates.
 template <class T>
 static SquareMatrix<3,T> ComputeFundamentalMatrix(const ProjectionToImageTransform<T>& P1,
                                                   const ProjectionToImageTransform<T>& P2)
@@ -111,6 +112,7 @@ static SquareMatrix<3,T> ComputeFundamentalMatrix(const ProjectionToImageTransfo
 
   return F;
 }
+#endif
 
 }  // namespace MTL
 

@@ -1071,7 +1071,7 @@ Division_StreamAligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numbe
 template <class T> MTL_INLINE void
 Division_StreamUnaligned_Parallel(T* pDst, const T* pSrc, SizeType size, int numberOfThreads)
 {
-  Parallel_1Dst_1Src< T, T, Division_StreamUnaligned_Sequential<T> >(pDst, pSrc, size
+  Parallel_1Dst_1Src< T, T, Division_StreamUnaligned_Sequential<T> >(pDst, pSrc, size,
                                                                      numberOfThreads);
 }
 
@@ -1313,7 +1313,7 @@ MinOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfT
   ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
 
-  return Min_StreamAligned_Sequential(subResults, subResultsSize, int numberOfThreads);
+  return Min_StreamAligned_Sequential(subResults, subResultsSize, numberOfThreads);
 }
 
 template <class T> MTL_INLINE T

@@ -35,6 +35,8 @@ namespace MTL
 template<class T>
 class SphereFitLevenbergMarquardt : public OptimizerLevenbergMarquardt<4,T>
 {
+  typedef typename OptimizerLevenbergMarquardt<4,T>::Parameters Parameters;
+
 public:
   SphereFitLevenbergMarquardt(const DynamicVector<Point3D<T>>& points)
     : Points_(points)

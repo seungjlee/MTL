@@ -29,7 +29,7 @@
 #include <algorithm>
 #include <wctype.h>
 #include <codecvt>
-#include <cvt/wstring>
+#include <locale>
 
 namespace MTL
 {
