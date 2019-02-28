@@ -73,6 +73,12 @@ MTL::Test::LessThan(Actual, Limit, MTL::String(MTL__FILE__), __LINE__)
 #define MTL_LESS_THAN_OR_EQUAL_TO(Actual, Limit)                                                   \
 MTL::Test::LessThanOrEqualTo(Actual, Limit, MTL::String(MTL__FILE__), __LINE__)
 
+#define MTL_GREATER_THAN(Actual, Limit)                                                            \
+MTL::Test::GreaterThan(Actual, Limit, MTL::String(MTL__FILE__), __LINE__)
+
+#define MTL_GREATER_THAN_OR_EQUAL_TO(Actual, Limit)                                                \
+MTL::Test::GreaterThanOrEqualTo(Actual, Limit, MTL::String(MTL__FILE__), __LINE__)
+
 #define MTL_APP()                                                                                  \
 static void MTL_App_();                                                                            \
 static int MTL_App_Initialze_ = MTL::Test::SetAppFunction(MTL_App_);                               \
@@ -228,6 +234,38 @@ public:
       Out() << "[File '" << file << "' - line " << line << "]" << std::endl
             << "  Actual value is '" << actual << "' which is greater than the limit '"
             << limit << "'" << std::endl;
+    }
+  }
+
+  template <class T1, class T2>
+  static void GreaterThan(const T1& actual, const T2& limit, const String& file, U64 line)
+  {
+    if (actual == limit)
+    {
+      TotalNumberOfFailures_++;
+      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
+        << "  Actual value is '" << actual
+        << "' which is equal to the limit '"
+        << limit << "' but it is expected to be greater than this limit." << std::endl;
+    }
+    else if (actual < limit)
+    {
+      TotalNumberOfFailures_++;
+      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
+        << "  Actual value is '" << actual
+        << "' which is less the limit '"
+        << limit << "'" << std::endl;
+    }
+  }
+  template <class T1, class T2>
+  static void GreterThanOrEqualTo(const T1& actual, const T2& limit, const String& file, U64 line)
+  {
+    if (actual < limit)
+    {
+      TotalNumberOfFailures_++;
+      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
+        << "  Actual value is '" << actual << "' which is less than the limit '"
+        << limit << "'" << std::endl;
     }
   }
 

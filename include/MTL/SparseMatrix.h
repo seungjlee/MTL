@@ -84,11 +84,11 @@ protected:
   DynamicVector<I32> Ai_;
   DynamicVector<T>   Ax_;
 
-  void Clear()
+  void Release()
   {
-    Ap_.Clear();
-    Ai_.Clear();
-    Ax_.Clear();
+    Ap_.Release();
+    Ai_.Release();
+    Ax_.Release();
   }
 };
 
@@ -168,13 +168,13 @@ public:
     for (const auto& sparseCol : sparseColumns)
       totalDataSize += sparseCol.Size();
 
+    ReleaseCached();
+    SparseMatrix<T>::Release();
     SparseMatrix<T>::Ap_.Reserve(cols+1);
     SparseMatrix<T>::Ai_.Reserve(totalDataSize);
-    SparseMatrix<T>::Ax_.Reserve(totalDataSize);
 
     SparseMatrix<T>::Rows_ = rows;
     SparseMatrix<T>::Cols_ = cols;
-    SparseMatrix<T>::Clear();
 
     SparseMatrix<T>::Ap_.PushBack(0);
     for (I32 col = 0; col < SparseMatrix<T>::Cols_; col++)
@@ -199,13 +199,14 @@ public:
     for (const auto& sparseCol : sparseColumns)
       totalDataSize += sparseCol.Size();
 
+    ReleaseCached();
+    SparseMatrix<T>::Release();
     SparseMatrix<T>::Ap_.Reserve(cols+1);
     SparseMatrix<T>::Ai_.Reserve(totalDataSize);
     SparseMatrix<T>::Ax_.Reserve(totalDataSize);
 
     SparseMatrix<T>::Rows_ = rows;
     SparseMatrix<T>::Cols_ = cols;
-    SparseMatrix<T>::Clear();
 
     SparseMatrix<T>::Ap_.PushBack(0);
     for (I32 col = 0; col < SparseMatrix<T>::Cols_; col++)
@@ -796,8 +797,8 @@ public:
     if (MTL::CPU::Instance().IsIntel() && MTL::CPU::Instance().Multithreading())
       numberOfThreads *= 2;
 
-    ThreadRowIndexPairs_.Resize(numberOfThreads);
-    ThreadNonZeroMap_.Resize(numberOfThreads);
+    DynamicVector<DynamicVector<Point2D<I32>>> ThreadRowIndexPairs(numberOfThreads);
+    DynamicVector<DynamicVector<I32>> ThreadNonZeroMap(numberOfThreads);
 
     const I32 N = SparseMatrix<T>::Cols_;
 
@@ -823,15 +824,15 @@ public:
     {
       I32 threadNumber = omp_get_thread_num();
 
-      ThreadRowIndexPairs_[threadNumber].Reserve(SparseMatrix<T>::Rows_);
+      ThreadRowIndexPairs[threadNumber].Reserve(SparseMatrix<T>::Rows_);
 
       I32 j = N - i;
 
-      OptimizeMultiplyTransposeByThis(i, ThreadRowIndexPairs_[threadNumber],
-                                      ThreadNonZeroMap_[threadNumber]);
+      OptimizeMultiplyTransposeByThis(i, ThreadRowIndexPairs[threadNumber],
+                                      ThreadNonZeroMap[threadNumber]);
       if (j > i)
-        OptimizeMultiplyTransposeByThis(j, ThreadRowIndexPairs_[threadNumber],
-                                        ThreadNonZeroMap_[threadNumber]);
+        OptimizeMultiplyTransposeByThis(j, ThreadRowIndexPairs[threadNumber],
+                                        ThreadNonZeroMap[threadNumber]);
     }
   }
 
@@ -845,8 +846,16 @@ protected:
   DynamicVector<DynamicVector<Point2D<I32>>> RowIndexPairs_;
   DynamicVector<DynamicVector<I32>> RowIndexPairsStart_;
   DynamicVector<DynamicVector<I32>> RowIndexPairsEnd_;
-  DynamicVector<DynamicVector<Point2D<I32>>> ThreadRowIndexPairs_;
-  DynamicVector<DynamicVector<I32>> ThreadNonZeroMap_;
+
+  void ReleaseCached()
+  {
+    SparseRows_.Release();
+    SparseValues_.Release();
+    ColumnPairs_.Release();
+    RowIndexPairs_.Release();
+    RowIndexPairsStart_.Release();
+    RowIndexPairsEnd_.Release();
+  }
 
 private:
   void OptimizeMultiplyTransposeByThis(I32 i, DynamicVector<Point2D<I32>>& rowIndexPairs,
