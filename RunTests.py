@@ -11,7 +11,7 @@ totalStartTime = time.time()
 
 SkipTestList = []
 
-TestArguments = ' -NoDisplay'
+TestArgument0 = '-NoDisplay'
 TestSeparator = '{:-<80}\n'.format('').encode()
 CurrentDir = os.getcwd();
 TestDir = 'Build/Tests/Release/'
@@ -41,12 +41,15 @@ errorCount = 0
 print()
 for test in TestList:
   if (test != '') & (fnmatch.fnmatch(test, Pattern)):
+    print('{:.<60}'.format(test), end='')
+    sys.stdout.flush()
+
     testResult = 'OK'
 
     startTime = time.time()
     # Python 3.3
     try:
-      processResult = subprocess.check_output(test + TestArguments, stderr=subprocess.STDOUT)
+      processResult = subprocess.check_output([test, TestArgument0], stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
       processResult = e.output
       testResult = 'FAILED'
@@ -64,7 +67,7 @@ for test in TestList:
     #   testResult = 'FAILED'
     #   errorCount = errorCount + 1
 
-    print('{:.<60}{:<7}'.format(test, testResult), end='')
+    print('{:<7}'.format(testResult), end='')
     print(' %8.3f secs.' % (endTime - startTime,))
 
 totalEndTime = time.time()

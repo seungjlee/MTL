@@ -142,7 +142,7 @@ private:
       nIds_ = cpui[0];
 #else
       nIds_ = __get_cpuid_max(0, 0);
-      printf("");  // Need to figure out why things don't work correctly without this extra code.
+      printf("%s","");  // Need to figure out why things don't work correctly without this extra code.
 #endif
 
       for (int i = 0; i <= nIds_; ++i)
