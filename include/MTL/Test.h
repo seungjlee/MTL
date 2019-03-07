@@ -169,7 +169,7 @@ public:
     return fullPath;
   }
 
-  static void Verify(bool e, char* expression, const String& file, U64 line)
+  static void Verify(bool e, const char* expression, const String& file, U64 line)
   {
     if (!e)
     {
