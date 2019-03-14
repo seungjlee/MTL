@@ -83,7 +83,11 @@ static MTL_INLINE std::string ToUTF8(const std::wstring& str)
 }
 static MTL_INLINE std::wstring ToUTF16(const std::string& str)
 {
+#ifdef WIN32
   std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+#else  // g++ 5.4
+  std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+#endif
   return converter.from_bytes(str);
 }
 
