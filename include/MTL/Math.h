@@ -103,6 +103,8 @@ template <class T> MTL_INLINE static T Abs(const T& a)
   return abs(a);
 }
 
+template <class T> MTL_INLINE static T Sqrt(const T& a);
+ 
 // A more numerically stable version of sqrt(a*a + b*b).
 template <class T>
 MTL_INLINE static T Hypotenuse(const T& a, const T& b)

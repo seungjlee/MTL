@@ -149,7 +149,9 @@ TEST(TestInverseAndDeterminant)
   ProjectionToImageTransform<F64> P1;
   ProjectionToImageTransform<F64> P2;
 
+#ifdef WIN32
   SquareMatrix3x3 F = ComputeFundamentalMatrix(P1,P2);
+#endif
 }
 
 TEST(TestPseudoinverse)
@@ -264,7 +266,7 @@ void TestSolvers(const T& tol)
   }
 
   printf("  Maximum condition number was: %f\n", maxConditionNumber);
-  printf("  Every solver ran %d times (%ldx%ld matrices).\n", kRepeats, N, N);
+  printf("  Every solver ran %d times (%dx%d matrices).\n", kRepeats, N, N);
 
   printf("  Solve SVD:     %9.3f msecs, Max RMS = %e\n",
          time_SVD.Milliseconds(), maxRMS_SVD);

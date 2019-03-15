@@ -54,7 +54,7 @@ if(MSVC)
     ADD_DEFINITIONS(-DWIN64)
   endif(CMAKE_CL_64)
 else(MSVC)
-  SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11")
+  SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11 -fpermissive")
 endif(MSVC)
 
 SET(WINVER 0x0501)

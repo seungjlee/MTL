@@ -443,9 +443,7 @@ int main(int argc, char* argv[])
     }
 #else
     {
-      wchar_t buffer[4096];
-      mbtowc(buffer, argv[i], sizeof(buffer)/sizeof(buffer[0]));
-      arguments.PushBack(buffer);
+      arguments.PushBack(MTL::ToUTF16(argv[i]));
     }
 #endif
 
