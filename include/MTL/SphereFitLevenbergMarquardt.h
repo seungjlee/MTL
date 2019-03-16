@@ -41,7 +41,7 @@ public:
   SphereFitLevenbergMarquardt(const DynamicVector<Point3D<T>>& points)
     : Points_(points)
   {
-    Reset(Points_.Size());
+    this->Reset(Points_.Size());
   }
 
   void Optimize(Point3D<T>& center, double& radius)
@@ -70,7 +70,7 @@ protected:
 
   virtual void ComputeJacobian(DynamicMatrix<T>& Jt, const Parameters& currentParameters)
   {
-    ComputeJacobianForwardFiniteDifference(Jt, currentParameters);
+    this->ComputeJacobianForwardFiniteDifference(Jt, currentParameters);
   }
 
 private:

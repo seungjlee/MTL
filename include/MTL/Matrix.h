@@ -26,6 +26,7 @@
 #ifndef MTL_MATRIX_H
 #define MTL_MATRIX_H
 
+#include <cstring>
 #include <assert.h>
 #include <MTL/Array.h>
 #include <MTL/StreamMath.h>
