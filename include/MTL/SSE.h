@@ -28,6 +28,9 @@
 
 #include "Math.h"
 #include "Stream.h"
+
+#if MTL_ENABLE_SSE
+
 #include <emmintrin.h>
 
 namespace MTL
@@ -626,5 +629,7 @@ template<int SHIFT>
 MTL_INLINE X128<U32> RotateLeft(const X128<U32>& a)  { return ShiftLeft<SHIFT>(a) | ShiftRight<32 - SHIFT>(a); }
 
 }  // namespace MTL
+
+#endif  // MTL_ENABLE_SSE
 
 #endif  // MTL_SSE_H

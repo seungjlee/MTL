@@ -27,6 +27,7 @@
 #define MTL_DYNAMIC_MATRIX_H
 
 #include "DynamicVector.h"
+#include "StreamArray.h"
 
 namespace MTL
 {
@@ -42,7 +43,7 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     P[i*rowSizeP + i] = SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
 #else
-    P[i*rowSizeP + j] = SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
+    P[i*rowSizeP + i] = SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
 #endif
 
     for (I32 j = i + 1; j < rows; j++)
@@ -69,7 +70,7 @@ MTL_INLINE static void AddMultiplyByTranspose(T* P, const T* M, I32 rows, I32 co
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     P[i*rowSizeP + i] += SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
 #else
-    P[i*rowSizeP + j] += SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
+    P[i*rowSizeP + i] += SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
 #endif
 
     for (I32 j = i + 1; j < rows; j++)
@@ -146,8 +147,13 @@ MTL_INLINE static void MultiplyTransposed(T* P, const T* A, const T* Bt,
   {
     for (I32 col = 0; col < cols; col++)
     {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       P[row*rowSizeP + col] = DotProduct_StreamAligned_Sequential(A + row*rowSizeA,
                                                                   Bt + col*rowSizeBt, N);
+#else
+      P[row*rowSizeP + col] = DotProduct_Sequential(A + row*rowSizeA,
+	                                            Bt + col*rowSizeBt, A + row*rowSizeA + N);
+#endif
     }
   }
 }
@@ -161,8 +167,13 @@ MTL_INLINE static void AddMultiplyTransposed(T* P, const T* A, const T* Bt,
   {
     for (I32 col = 0; col < cols; col++)
     {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       P[row*rowSizeP + col] += DotProduct_StreamAligned_Sequential(A + row*rowSizeA,
                                                                    Bt + col*rowSizeBt, N);
+#else
+      P[row*rowSizeP + col] += DotProduct_Sequential(A + row*rowSizeA,
+                                                     Bt + col*rowSizeBt, A + row*rowSizeA + N);
+#endif
     }
   }
 }

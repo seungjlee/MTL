@@ -428,7 +428,11 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N,
           }
         }
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         changed |= Sum_StreamAligned_Sequential(setChanged.Begin(), setChanged.Size()) > 0;
+#else
+        changed |= Sum_Sequential(setChanged.Begin(), setChanged.End()) > 0;
+#endif
       }
       else
       {
@@ -574,7 +578,11 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
                                                     At, W, M, N, rowSizeA);
         }
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         changed |= Sum_StreamAligned_Sequential(setChanged.Begin(), setChanged.Size()) > 0;
+#else
+        changed |= Sum_Sequential(setChanged.Begin(), setChanged.End()) > 0;
+#endif
       }
       else
       {

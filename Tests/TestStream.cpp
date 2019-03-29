@@ -54,6 +54,7 @@ TEST(TestXOR)
 
 TEST(TestToFloat)
 {
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
   const int size = 1111111;
 
   std::vector<MTL::I32>  u(size);
@@ -71,4 +72,5 @@ TEST(TestToFloat)
     MTL_EQUAL(v32[i], u[i]);
     MTL_EQUAL(v64[i], u[i]);
   }
+#endif
 }

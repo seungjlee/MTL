@@ -22,8 +22,6 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-
 #ifndef MTL_STREAM_MATH_H
 #define MTL_STREAM_MATH_H
 
@@ -31,6 +29,8 @@
 
 namespace MTL
 {
+
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 
 template <class T> class X128;
 
@@ -54,9 +54,15 @@ MTL_INLINE static T Sqrt(const T& a)
   X.LoadSingle(&a);
   return X.SquareRootSingle()[0];
 }
+#else
+template <class T>
+MTL_INLINE static T Sqrt(const T& a)
+{
+  return (T)sqrt(a);
+}
+#endif  // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 
 }  // namespace MTL
 
 #endif  // MTL_STREAM_MATH_H
 
-#endif  // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX

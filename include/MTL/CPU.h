@@ -27,31 +27,27 @@
 #define MTL_CPU_H
 
 #include "Definitions.h"
-#include "Lock.h"
 #include <bitset>
 #include <array>
-#include <map>
-#include <thread>
 #include <vector>
 #include <omp.h>
 
+#ifndef __ARM_ARCH
+
 #ifdef WIN32
 #include <intrin.h>
-#define MTL_THREAD_GLOBAL  __declspec(selectany) __declspec(thread)
-#define MTL_GLOBAL         __declspec(selectany)
 #else
-#define MTL_THREAD_GLOBAL static  // Need something for g++ (thread_local is available in C++11).
-#define MTL_GLOBAL static         // Something like selectany would be nice here for g++.
 #include <cpuid.h>
 #include <string.h>
+#endif
+
 #endif
 
 namespace MTL
 {
 
 class CPU;
-MTL_GLOBAL CPU* Instance_ = 0;
-MTL_THREAD_GLOBAL U64 gNumberOfThreads = 0;
+static CPU* Instance_ = 0;
 
 class CPU
 {
@@ -67,24 +63,9 @@ public:
     return *Instance_;
   }
 
-  // Gets/Sets number of threads for OpenMP.
-  // Note that this is configured for each user thread.
-  // NOTE: Per thread number of threads disabled for now since it has performance issues.
-  U64 NumberOfThreads() const
-  {
-    return const_cast<CPU*>(this)->Number_Of_Threads();
-  }
-  void NumberOfThreads(U64 n)
-  {
-    gNumberOfThreads = n;
-  }
-
-  void SetDefaultNumberOfThreads(U64 n)
-  {
-    DefaultNumberOfThreads_ = n;
-  }
-
-  U64 NumberOfCores() const    { return NumberOfCores_;           }
+  U64 NumberOfThreads() const  { return NumberOfThreads_; }
+  void NumberOfThreads(U64 n)  { NumberOfThreads_ = n;    }
+  U64 NumberOfCores() const    { return NumberOfCores_;   }
 
   bool SSE()  const  { return CPU_Rep_.f_1_EDX_[25] || false; }
   bool SSE2() const  { return CPU_Rep_.f_1_EDX_[26] || false; }
@@ -98,8 +79,9 @@ public:
   bool Multithreading() const  { return CPU_Rep_.multithreading_; }
 
 private:
-  CPU()
+  CPU() : NumberOfThreads_(1)
   {
+#ifndef __ARM_ARCH
     NumberOfCores_ = omp_get_num_procs();
     omp_set_num_threads((int)NumberOfCores_);
 
@@ -107,7 +89,8 @@ private:
     if (IsIntel() && Multithreading())
       NumberOfCores_ /= 2;
 
-    DefaultNumberOfThreads_ = NumberOfCores_;
+    NumberOfThreads(NumberOfCores_);
+#endif
   }
 
   ~CPU() {}
@@ -132,6 +115,7 @@ private:
         data_(),
         extdata_()
     {
+#ifndef __ARM_ARCH
       //int cpuInfo[4] = {-1};
       std::array<int, 4> cpui;
 
@@ -236,6 +220,7 @@ private:
 #endif
       extdata_.push_back(cpui);
       multithreading_ = (info1[3]& (1 << 28)) || false;
+#endif
     };
 
     int nIds_;
@@ -256,19 +241,10 @@ private:
     bool multithreading_;
   };
 
+  U64 NumberOfThreads_;
   U64 NumberOfCores_;
   U64 NumberOfLogicalCores_;
   const InstructionSet_Internal CPU_Rep_;
-
-  U64 DefaultNumberOfThreads_;
-
-  U64 Number_Of_Threads()
-  {
-    if (gNumberOfThreads == 0)
-      gNumberOfThreads = DefaultNumberOfThreads_;
-
-    return gNumberOfThreads;
-  }
 };
 
 }  // namespace MTL
