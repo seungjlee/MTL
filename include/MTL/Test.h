@@ -395,6 +395,26 @@ void(*Test::App_)() = 0;
 
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>
+
+  #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+  #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+  #endif
+
+  static bool EnableVTMode()
+  {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut == INVALID_HANDLE_VALUE)
+      return false;
+
+    DWORD dwMode = 0;
+    if (!GetConsoleMode(hOut, &dwMode))
+      return false;
+
+    if (!SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING))
+      return false;
+
+    return true;
+  }
 #endif  // WIN32
 
 #if defined(WIN32) || defined(WIN64)
@@ -404,6 +424,7 @@ int main(int argc, char* argv[])
 #endif
 {
 #if defined(WIN32) || defined(WIN64)
+  EnableVTMode();
 
 #ifndef _DEBUG
   // Avoid pop up windows when not debugging.
