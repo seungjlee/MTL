@@ -287,18 +287,23 @@ MTL_INLINE static void ParallelReduction_2Src(ReductionT* subResults, SizeType& 
 
 #if MTL_ENABLE_OPENMP
 #ifdef WIN32
-#define MTL_PARALLEL_FOR_BLOCKS(Size)                                                 \
-  int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();                  \
-  int blockSize = (int)MTL::ComputeParallelSubSizesBlockSize(Size, numberOfThreads);  \
-  __pragma(omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize))
-#define MTL_PARALLEL_FOR_BLOCKS_THREADS(Size, NumberOfThreads)                        \
-  int blockSize = (int)MTL::ComputeParallelSubSizesBlockSize(Size, NumberOfThreads);  \
-  __pragma(omp parallel for num_threads(NumberOfThreads) schedule(dynamic, blockSize))
+#define MTL_PARALLEL_FOR_BLOCKS(Size)                                                       \
+  int Number_Of_Threads = (int)MTL::CPU::Instance().NumberOfThreads();                      \
+  int Block_Size = (int)MTL::ComputeParallelSubSizesBlockSize(Size, Number_Of_Threads);     \
+  __pragma(omp parallel for num_threads(Number_Of_Threads) schedule(dynamic, Block_Size))
+#define MTL_PARALLEL_FOR_BLOCKS_THREADS(Size, NumberOfThreads)                              \
+  int Block_Size = (int)MTL::ComputeParallelSubSizesBlockSize(Size, NumberOfThreads);       \
+  __pragma(omp parallel for num_threads(NumberOfThreads) schedule(dynamic, Block_Size))
 #else
-  // Not sure what compilers support C++11 _Pragma. VS2012 does seem to support it.
-  // For now, just disable this functionality.
-  #define MTL_PARALLEL_FOR_BLOCKS(Size)
-  #define MTL_PARALLEL_FOR_BLOCKS_THREADS(Size, NumberOfThreads)
+#define MTL_PRAGMA(x) _Pragma(#x)
+#define MTL_PARALLEL_FOR_BLOCKS(Size)                                                       \
+  int Number_Of_Threads = (int)MTL::CPU::Instance().NumberOfThreads();                      \
+  int Block_Size = (int)MTL::ComputeParallelSubSizesBlockSize(Size, Number_Of_Threads);     \
+  MTL_PRAGMA(omp parallel for num_threads(Number_Of_Threads) schedule(dynamic, Block_Size))
+#define MTL_PARALLEL_FOR_BLOCKS_THREADS(Size, NumberOfThreads)                              \
+  int Number_Of_Threads = (int)NumberOfThreads;                                             \
+  int Block_Size = (int)MTL::ComputeParallelSubSizesBlockSize(Size, NumberOfThreads);       \
+  MTL_PRAGMA(omp parallel for num_threads(Number_Of_Threads) schedule(dynamic, Block_Size))
 #endif
 #else  // MTL_ENABLE_OPENMP
 #define MTL_PARALLEL_FOR_BLOCKS(Size)
