@@ -357,8 +357,8 @@ private:
 
         Out() << L"[" << List_[i]->Name_ << L"]" << L" Ends.";
 
-        Out() << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
-	      << std::endl << std::endl;
+        Out() << COLOR_BLUE << L"  Time: " << COLOR_LBLUE << float(List_[i]->TimeElapsed_) << L" seconds."
+	      << COLOR_RESET << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
       }
@@ -370,7 +370,7 @@ private:
 	Out() << COLOR_LRED;
 
       Out() << L"Total number of errors: " << TotalNumberOfFailures() << COLOR_RESET << std::endl;
-      Out() << L"Total time: " << TotalTimeElapsed_ << L" seconds." << std::endl;
+      Out() << COLOR_LCYAN << L"Total time: " << TotalTimeElapsed_ << L" seconds." << COLOR_RESET << std::endl;
     }
     if (App_)
     {
