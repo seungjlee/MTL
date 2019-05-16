@@ -330,7 +330,7 @@ private:
 
       for (U32 i = 0; i < List_.Size(); i++)
       {
-        Out() << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << std::endl;
+        Out() << COLOR_LBLUE << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << COLOR_RESET << std::endl;
 
         try
         {
@@ -355,7 +355,7 @@ private:
           Out() << COLOR_LRED << L"UNEXPECTED ERROR!" << COLOR_RESET << std::endl;
         }
 
-        Out() << L"[" << List_[i]->Name_ << L"]" << L" Ends.";
+        Out() << COLOR_LBLUE << L"[" << List_[i]->Name_ << L"]" << L" Ends.";
 
         Out() << COLOR_BLUE << L"  Time: " << COLOR_LBLUE << float(List_[i]->TimeElapsed_) << L" seconds."
 	      << COLOR_RESET << std::endl << std::endl;
@@ -455,7 +455,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::wcout << COLOR_CYAN << std::endl << L"Number Of Actual Cores: "
+    std::wcout << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
                << MTL::CPU::Instance().NumberOfCores() << std::endl;
     std::wcout << L"Initial Number Of OpenMP Threads: "
                << MTL::CPU::Instance().NumberOfThreads() << COLOR_RESET << std::endl;
