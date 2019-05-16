@@ -116,17 +116,15 @@ private:
         extdata_()
     {
 #ifndef __ARM_ARCH
-      //int cpuInfo[4] = {-1};
       std::array<int, 4> cpui;
 
+#ifdef WIN32
       // Calling __cpuid with 0x0 as the function_id argument
       // gets the number of the highest valid function ID.
-#ifdef WIN32
       __cpuid(cpui.data(), 0);
       nIds_ = cpui[0];
 #else
       nIds_ = __get_cpuid_max(0, 0);
-      printf("%s","");  // Need to figure out why things don't work correctly without this extra code.
 #endif
 
       for (int i = 0; i <= nIds_; ++i)
