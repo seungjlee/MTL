@@ -27,6 +27,7 @@
 #define MTL_TEST_H
 
 #include "CPU.h"
+#include "Colors.h"
 #include "DynamicVector.h"
 #include "Exception.h"
 #include "StringHelpers.h"
@@ -109,7 +110,7 @@ public:
     }
     __except(EXCEPTION_EXECUTE_HANDLER)  
     {
-      Out() << "ERROR: SEH exception caught!" << std::endl;
+      Out() << COLOR_LRED << L"ERROR: SEH exception caught!" << COLOR_RESET << std::endl;
       TotalNumberOfFailures_++;
     }
 #endif
@@ -174,8 +175,8 @@ public:
     if (!e)
     {
       TotalNumberOfFailures_++;
-      Out() << "[In file '" << file << "' - line " << line  << "]" << std::endl
-            << "  '" << expression << "' failed!" << std::endl;
+      Out() << COLOR_LRED << L"[In file '" << file << L"' - line " << line  << L"]" << std::endl
+            << L"  '" << expression << L"' failed!" << COLOR_RESET <<  std::endl;
     }
   }
 
@@ -185,9 +186,9 @@ public:
     if (actual != expected)
     {
       TotalNumberOfFailures_++;
-      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
-            << "  Actual value is '" << actual << "' but '"
-            << expected << "' is expected!'" << std::endl;
+      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+            << L"  Actual value is '" << actual << L"' but '"
+            << expected << L"' is expected!'" << COLOR_RESET << std::endl;
     }
   }
 
@@ -198,10 +199,10 @@ public:
     if (MTL::Abs(difference) > tolerance || actual != actual)
     {
       TotalNumberOfFailures_++;
-      Out() << "[File '" << file << "' - line " << line  << "]" << std::endl
-            << "  Actual value is " << actual << " but " << expected
-            << " is expected; difference is: " << difference << ", tolerance is: "
-            << tolerance << std::endl;
+      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line  << L"]" << std::endl
+            << L"  Actual value is " << actual << L" but " << expected
+            << L" is expected; difference is: " << difference << L", tolerance is: "
+            << tolerance << COLOR_RESET << std::endl;
     }
   }
 
@@ -211,18 +212,18 @@ public:
     if (actual == limit)
     {
       TotalNumberOfFailures_++;
-      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
-            << "  Actual value is '" << actual
-            << "' which is equal to the limit '"
-            << limit << "' but it is expected to be less than this limit." << std::endl;
+      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+            << L"  Actual value is '" << actual
+            << L"' which is equal to the limit '"
+            << limit << L"' but it is expected to be less than this limit." << COLOR_RESET << std::endl;
     }
     else if (actual > limit)
     {
       TotalNumberOfFailures_++;
-      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
-            << "  Actual value is '" << actual
-            << "' which is greater the limit '"
-            << limit << "'" << std::endl;
+      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+            << L"  Actual value is '" << actual
+            << L"' which is greater the limit '"
+            << limit << L"'" << COLOR_RESET << std::endl;
     }
   }
   template <class T1, class T2>
@@ -231,9 +232,9 @@ public:
     if (actual > limit)
     {
       TotalNumberOfFailures_++;
-      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
-            << "  Actual value is '" << actual << "' which is greater than the limit '"
-            << limit << "'" << std::endl;
+      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+            << L"  Actual value is '" << actual << L"' which is greater than the limit '"
+            << limit << L"'" << COLOR_RESET << std::endl;
     }
   }
 
@@ -243,18 +244,18 @@ public:
     if (actual == limit)
     {
       TotalNumberOfFailures_++;
-      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
-        << "  Actual value is '" << actual
-        << "' which is equal to the limit '"
-        << limit << "' but it is expected to be greater than this limit." << std::endl;
+      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+	    << L"  Actual value is '" << actual
+	    << L"' which is equal to the limit '"
+	    << limit << L"' but it is expected to be greater than this limit." << COLOR_RESET << std::endl;
     }
     else if (actual < limit)
     {
       TotalNumberOfFailures_++;
-      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
-        << "  Actual value is '" << actual
-        << "' which is less the limit '"
-        << limit << "'" << std::endl;
+      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+	    << L"  Actual value is '" << actual
+	    << L"' which is less the limit '"
+	    << limit << L"'" << COLOR_RESET << std::endl;
     }
   }
   template <class T1, class T2>
@@ -263,9 +264,9 @@ public:
     if (actual < limit)
     {
       TotalNumberOfFailures_++;
-      Out() << "[File '" << file << "' - line " << line << "]" << std::endl
-        << "  Actual value is '" << actual << "' which is less than the limit '"
-        << limit << "'" << std::endl;
+      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+	    << L"  Actual value is '" << actual << L"' which is less than the limit '"
+	    << limit << L"'" << COLOR_RESET << std::endl;
     }
   }
 
@@ -296,13 +297,13 @@ private:
   {
     if (Initialize_)
     {
-      Out() << "[Initialize_Test] Begins..." << std::endl;
+      Out() << COLOR_CYAN << L"[Initialize_Test] Begins..." << COLOR_RESET << std::endl;
       Timer timer(true);
       Initialize_();
       timer.Stop();
 
-      Out() << "[Initialize_Test] Ends.";
-      Out() << "  Time: " << timer.Seconds() << " seconds." << std::endl << std::endl;
+      Out() << COLOR_CYAN << L"[Initialize_Test] Ends.";
+      Out() << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
     }
   }
 
@@ -310,13 +311,13 @@ private:
   {
     if (Shutdown_)
     {
-      Out() << "[Shutdown_Test] Begins..." << std::endl;
+      Out() << COLOR_CYAN << L"[Shutdown_Test] Begins..." << COLOR_RESET << std::endl;
       Timer timer(true);
       Shutdown_();
       timer.Stop();
 
-      Out() << "[Shutdown_Test] Ends.";
-      Out() << "  Time: " << timer.Seconds() << " seconds." << std::endl << std::endl;
+      Out() << COLOR_CYAN << L"[Shutdown_Test] Ends.";
+      Out() << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
     }
   }
 
@@ -329,7 +330,7 @@ private:
 
       for (U32 i = 0; i < List_.Size(); i++)
       {
-        Out() << "[" << List_[i]->Name_ << "]" << " Begins..." << std::endl;
+        Out() << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << std::endl;
 
         try
         {
@@ -341,30 +342,35 @@ private:
         catch (const Exception& e)
         {
           List_[i]->TotalNumberOfFailures_++;
-          Out() << "ERROR: " << e.Message() << std::endl;
+          Out() << COLOR_LRED << L"ERROR: " << e.Message() << COLOR_RESET << std::endl;
         }
         catch (const std::exception& e)
         {
           List_[i]->TotalNumberOfFailures_++;
-          Out() << "std::exception: " << e.what() << std::endl;
+          Out() << COLOR_LRED << L"std::exception: " << e.what() << COLOR_RESET << std::endl;
         }
         catch (...)
         {
           List_[i]->TotalNumberOfFailures_++;
-          Out() << "UNEXPECTED ERROR!" << std::endl;
+          Out() << COLOR_LRED << L"UNEXPECTED ERROR!" << COLOR_RESET << std::endl;
         }
 
-        Out() << "[" << List_[i]->Name_ << "]" << " Ends.";
+        Out() << L"[" << List_[i]->Name_ << L"]" << L" Ends.";
 
-        Out() << "  Time: " << float(List_[i]->TimeElapsed_) << " seconds."
-          << std::endl << std::endl;
+        Out() << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
+	      << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
       }
       Shutdown();
 
-      Out() << "Total number of errors: " << TotalNumberOfFailures() << std::endl;
-      Out() << "Total time: " << TotalTimeElapsed_ << " seconds." << std::endl;
+      if (TotalNumberOfFailures() == 0)
+	Out() << COLOR_LGREEN;
+      else
+	Out() << COLOR_LRED;
+
+      Out() << L"Total number of errors: " << TotalNumberOfFailures() << COLOR_RESET << std::endl;
+      Out() << L"Total time: " << TotalTimeElapsed_ << L" seconds." << std::endl;
     }
     if (App_)
     {
@@ -449,10 +455,10 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::wcout << std::endl << "Number Of Actual Cores: "
+    std::wcout << COLOR_CYAN << std::endl << L"Number Of Actual Cores: "
                << MTL::CPU::Instance().NumberOfCores() << std::endl;
-    std::wcout << "Initial Number Of OpenMP Threads: "
-               << MTL::CPU::Instance().NumberOfThreads() << std::endl;
+    std::wcout << L"Initial Number Of OpenMP Threads: "
+               << MTL::CPU::Instance().NumberOfThreads() << COLOR_RESET << std::endl;
 
     MTL::DynamicVector<MTL::String>& arguments =
       const_cast<MTL::DynamicVector<MTL::String>&>(MTL::Test::Arguments());
@@ -472,11 +478,11 @@ int main(int argc, char* argv[])
   }
   catch(const MTL::Exception& e)
   {
-    std::wcout << "ERROR: " << e.Message() << std::endl;
+    std::wcout << COLOR_LRED << L"ERROR: " << e.Message() << COLOR_RESET << std::endl;
   }
   catch(...)
   {
-    std::wcout << "UNEXPECTED ERROR!" << std::endl;
+    std::wcout << COLOR_LRED << L"UNEXPECTED ERROR!" << COLOR_RESET << std::endl;
   }
 
   return (int)MTL::Test::TotalNumberOfFailures();
