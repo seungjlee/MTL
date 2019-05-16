@@ -31,7 +31,7 @@ using namespace MTL;
 static const double kTol = 1e-13;
 
 #define CHECK_FEATURE(FEATURE) \
-  printf("  %-8s %s\n", #FEATURE, CPU::Instance().FEATURE()  ? "Yes" : "No");
+  wprintf(L"  %-8hs %hs\n", #FEATURE, CPU::Instance().FEATURE()  ? "Yes" : "No");
 
 TEST(TestCPU)
 {
@@ -63,7 +63,7 @@ TEST(TestMemoryBandwitdh)
     double* p1 = testV1.Begin();
     double* p2 = testV2.Begin();
 
-    printf("Number of Threads: %ld\n", numberOfThreads);
+    wprintf(L"Number of Threads: %ld\n", numberOfThreads);
     CPU::Instance().NumberOfThreads(numberOfThreads);
 
     bestTime = kINF;
@@ -76,8 +76,8 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    printf("  Zero:                  %8.3f GB/s.\n",
-           sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    wprintf(L"  Zero:                  %8.3f GB/s.\n",
+            sizeof(double) * kVectorSize * 1e-9 / bestTime);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 0, kTol);
 
@@ -91,8 +91,8 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    printf("  Assign:                %8.3f GB/s.\n",
-           sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    wprintf(L"  Assign:                %8.3f GB/s.\n",
+            sizeof(double) * kVectorSize * 1e-9 / bestTime);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 101, kTol);
 
@@ -106,8 +106,8 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    printf("  Copy:                  %8.3f GB/s.\n",
-           2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    wprintf(L"  Copy:                  %8.3f GB/s.\n",
+            2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 11, kTol);
 
@@ -122,8 +122,8 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    printf("  Add Scalar:            %8.3f GB/s.\n",
-           2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    wprintf(L"  Add Scalar:            %8.3f GB/s.\n",
+            2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 28, kTol);
 
@@ -138,8 +138,8 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    printf("  Multiply Scalar:       %8.3f GB/s.\n",
-           2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    wprintf(L"  Multiply Scalar:       %8.3f GB/s.\n",
+            2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 77, kTol);
 
@@ -154,8 +154,8 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    printf("  Divide Scalar:         %8.3f GB/s.\n",
-           2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    wprintf(L"  Divide Scalar:         %8.3f GB/s.\n",
+            2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 5.5, kTol);
 
@@ -171,8 +171,8 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    printf("  Add Vectors:           %8.3f GB/s.\n",
-           3 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    wprintf(L"  Add Vectors:           %8.3f GB/s.\n",
+            3 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 9999.777-123.456, kTol);
 
@@ -188,8 +188,8 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    printf("  Multiply Vectors:      %8.3f GB/s.\n",
-           3 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    wprintf(L"  Multiply Vectors:      %8.3f GB/s.\n",
+            3 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], -123.456*9999.777, kTol);
   }
@@ -213,7 +213,7 @@ TEST(TestStreamPerformance)
     double* p1 = testV1.Begin();
     double* p2 = testV2.Begin();
 
-    printf("Number of Threads: %ld\n", numberOfThreads);
+    wprintf(L"Number of Threads: %ld\n", numberOfThreads);
     CPU::Instance().NumberOfThreads(numberOfThreads);
 
     double dotProduct;
@@ -226,8 +226,8 @@ TEST(TestStreamPerformance)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds() / kIterations);
     }
-    printf("  Dot product:    %8.3f GFLOPS, %.6f msecs.\n",
-           2 * kVectorSize * 1e-9 / bestTime, bestTime * 1e3);
+    wprintf(L"  Dot product:    %8.3f GFLOPS, %.6f msecs.\n",
+            2 * kVectorSize * 1e-9 / bestTime, bestTime * 1e3);
     MTL_EQUAL_FLOAT(dotProduct, 2*kVectorSize, kTol);
 
     double sumOfSquares;
@@ -240,8 +240,8 @@ TEST(TestStreamPerformance)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds() / kIterations);
     }
-    printf("  Sum of Squares: %8.3f GFLOPS, %.6f msecs.\n",
-           2 * kVectorSize * 1e-9 / bestTime, bestTime * 1e3);
+    wprintf(L"  Sum of Squares: %8.3f GFLOPS, %.6f msecs.\n",
+            2 * kVectorSize * 1e-9 / bestTime, bestTime * 1e3);
     MTL_EQUAL_FLOAT(sumOfSquares, kVectorSize, kTol);
   }
 }

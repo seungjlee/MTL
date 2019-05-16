@@ -109,14 +109,14 @@ TEST(TestPolynomialFit)
   t.ResetAndStart();
   optimizer.Optimize(coeffs);
   t.Stop();
-  printf("  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
-         (int)optimizer.Iterations(), t.Milliseconds());
-  printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
+  wprintf(L"  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
+          (int)optimizer.Iterations(), t.Milliseconds());
+  wprintf(L"  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
 
   t.ResetAndStart();
   ColumnVector<4,F64> polyCoeffs1 = Polynomial<F64>::Fit<4>(pts);
   t.Stop();
-  printf("  Polynomial fit time 1: %.3f msecs\n", t.Milliseconds());
+  wprintf(L"  Polynomial fit time 1: %.3f msecs\n", t.Milliseconds());
 
   FOR_EACH_INDEX(coeffs)
   {
@@ -126,7 +126,7 @@ TEST(TestPolynomialFit)
   t.ResetAndStart();
   ColumnVector<4,F64> polyCoeffs2 = Polynomial<F64>::Fit<4>(xs, ys);
   t.Stop();
-  printf("  Polynomial fit time 2: %.3f msecs\n", t.Milliseconds());
+  wprintf(L"  Polynomial fit time 2: %.3f msecs\n", t.Milliseconds());
 
   FOR_EACH_INDEX(coeffs)
   {

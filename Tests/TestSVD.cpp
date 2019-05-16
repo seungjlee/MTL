@@ -42,7 +42,7 @@ TEST(TestSVD_FixedMatrix)
 
   JacobiSVD<4,4>(A, S, V);
 
-  printf("  %20.15f  %20.15f  %20.15f  %20.15f\n", S[0], S[1], S[2], S[3]);
+  wprintf(L"  %20.15f  %20.15f  %20.15f  %20.15f\n", S[0], S[1], S[2], S[3]);
   MTL_EQUAL_FLOAT(S[0], 8.895008771746831, kTol);
   MTL_EQUAL_FLOAT(S[1], 6.357395271827689, kTol);
   MTL_EQUAL_FLOAT(S[2], 4.522558768895992, kTol);

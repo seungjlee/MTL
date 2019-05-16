@@ -196,8 +196,8 @@ TEST(TestAxisAngle)
     MTL_EQUAL_FLOAT(VV.Vector().z(), V.Vector().z(), kAxisAngleTol);
   }
 
-  printf("  GetRotationMatrix time:     %9.3f msecs (%d times)\n", timeR.Milliseconds(), N);
-  printf("  Convert to axis angle time: %9.3f msecs (%d times)\n", timeV.Milliseconds(), N);
+  wprintf(L"  GetRotationMatrix time:     %9.3f msecs (%d times)\n", timeR.Milliseconds(), N);
+  wprintf(L"  Convert to axis angle time: %9.3f msecs (%d times)\n", timeV.Milliseconds(), N);
 }
 
 TEST(RotateToAxis)

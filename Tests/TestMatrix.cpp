@@ -83,7 +83,7 @@ TEST(TestNullSpace)
   Matrix<4,3> Null = NullSpace(V);
 
   for (int row = 0; row < 4; row++)
-    printf("  %18.15f %18.15f %18.15f\n", Null[row][0], Null[row][1], Null[row][2]);
+    wprintf(L"  %18.15f %18.15f %18.15f\n", Null[row][0], Null[row][1], Null[row][2]);
 
   RowVector3D zeros = V * Null;
 
@@ -143,8 +143,8 @@ TEST(TestInverseAndDeterminant)
   ColumnVector3D xSVD;
   SquareMatrix3x3 temp(A);
   SolveJacobiSVD<3>(temp, xSVD, rank, conditionNumber);
-  printf("SVD Condition number of A = %.15f\n", conditionNumber);
-  printf("LUP Condition number of A = %.15f\n", A.ConditionNumber());
+  wprintf(L"SVD Condition number of A = %.15f\n", conditionNumber);
+  wprintf(L"LUP Condition number of A = %.15f\n", A.ConditionNumber());
 
   ProjectionToImageTransform<F64> P1;
   ProjectionToImageTransform<F64> P2;
@@ -265,19 +265,19 @@ void TestSolvers(const T& tol)
     maxRMS_Inverse = Max(maxRMS_Inverse, residuals.RMS());
   }
 
-  printf("  Maximum condition number was: %f\n", maxConditionNumber);
-  printf("  Every solver ran %d times (%dx%d matrices).\n", kRepeats, N, N);
+  wprintf(L"  Maximum condition number was: %f\n", maxConditionNumber);
+  wprintf(L"  Every solver ran %d times (%dx%d matrices).\n", kRepeats, N, N);
 
-  printf("  Solve SVD:     %9.3f msecs, Max RMS = %e\n",
-         time_SVD.Milliseconds(), maxRMS_SVD);
-  printf("  Solve QR:      %9.3f msecs, Max RMS = %e\n",
-         time_QR.Milliseconds(), maxRMS_QR);
-  printf("  Solve LDLt:    %9.3f msecs, Max RMS = %e\n",
-         time_LDLt.Milliseconds(), maxRMS_LDLt);
-  printf("  Solve LUP:     %9.3f msecs, Max RMS = %e\n",
-         time_LUP.Milliseconds(), maxRMS_LUP);
-  printf("  Solve Inverse: %9.3f msecs, Max RMS = %e\n\n",
-         time_Inverse.Milliseconds(), maxRMS_Inverse);
+  wprintf(L"  Solve SVD:     %9.3f msecs, Max RMS = %e\n",
+          time_SVD.Milliseconds(), maxRMS_SVD);
+  wprintf(L"  Solve QR:      %9.3f msecs, Max RMS = %e\n",
+          time_QR.Milliseconds(), maxRMS_QR);
+  wprintf(L"  Solve LDLt:    %9.3f msecs, Max RMS = %e\n",
+          time_LDLt.Milliseconds(), maxRMS_LDLt);
+  wprintf(L"  Solve LUP:     %9.3f msecs, Max RMS = %e\n",
+          time_LUP.Milliseconds(), maxRMS_LUP);
+  wprintf(L"  Solve Inverse: %9.3f msecs, Max RMS = %e\n\n",
+          time_Inverse.Milliseconds(), maxRMS_Inverse);
 
   MTL_LESS_THAN(maxRMS_SVD, tol);
   MTL_LESS_THAN(maxRMS_LDLt, tol);

@@ -213,7 +213,7 @@ TEST(TestCastConstructor)
   t.ResetAndStart();
   DynamicVector<I32> vI32 = DynamicVector<I32>(vF64);
   t.Stop();
-  printf("  Conversion time: %.3f msecs.\n", t.Milliseconds());
+  wprintf(L"  Conversion time: %.3f msecs.\n", t.Milliseconds());
 
   for (I32 i = 0; i < N; i++)
     MTL_EQUAL_FLOAT(vI32[i], vF64[i], Epsilon<F64>());

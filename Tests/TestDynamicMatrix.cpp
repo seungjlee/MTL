@@ -92,7 +92,7 @@ TEST(TestHouseholderQR)
   DynamicMatrix<F64> temp(At);
   I32 rank = SolveHouseholderQRTransposed(b, temp);
   t.Stop();
-  printf("  Householder solver time: %.3f msecs\n", t.Milliseconds());
+  wprintf(L"  Householder solver time: %.3f msecs\n", t.Milliseconds());
 
   MTL_EQUAL(rank, 3);
   MTL_EQUAL_FLOAT(b[0],  2.5, kHouseholderTol);
@@ -104,8 +104,8 @@ TEST(TestHouseholderQR)
   t.ResetAndStart();
   SolveJacobiSVDTransposed(xx, rank, conditionNumber, At, ys);
   t.Stop();
-  printf("  Jacobi SVD solver time:  %.3f msecs\n", t.Milliseconds());
-  printf("  Condition number %lf\n", conditionNumber);
+  wprintf(L"  Jacobi SVD solver time:  %.3f msecs\n", t.Milliseconds());
+  wprintf(L"  Condition number %lf\n", conditionNumber);
 
   MTL_EQUAL_FLOAT(xx[0],  2.5, kSVDTol);
   MTL_EQUAL_FLOAT(xx[1],  0.3, kSVDTol);
@@ -180,10 +180,10 @@ TEST(TestHouseholderQR)
     t.ResetAndStart();
     optimizer.Optimize(coeffs);
     t.Stop();
-    printf("\n  Fixed-size version:\n");
-    printf("  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
-           (int)optimizer.Iterations(), t.Milliseconds());
-    printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
+    wprintf(L"\n  Fixed-size version:\n");
+    wprintf(L"  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
+            (int)optimizer.Iterations(), t.Milliseconds());
+    wprintf(L"  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
 
     MTL_EQUAL_FLOAT(coeffs[0],  2.5, kLevenbergMarquardtTol);
     MTL_EQUAL_FLOAT(coeffs[1],  0.3, kLevenbergMarquardtTol);
@@ -199,10 +199,10 @@ TEST(TestHouseholderQR)
     t.ResetAndStart();
     optimizer.Optimize(coeffs);
     t.Stop();
-    printf("\n  Dynamic version:\n");
-    printf("  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
-           (int)optimizer.Iterations(), t.Milliseconds());
-    printf("  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
+    wprintf(L"\n  Dynamic version:\n");
+    wprintf(L"  Levenberg-Marquardt optimizer finished in %d iterations, %.3f msecs\n",
+            (int)optimizer.Iterations(), t.Milliseconds());
+    wprintf(L"  Sum of squares of residuals = %e\n", optimizer.SumOfSquaresOfResiduals());
 
     MTL_EQUAL_FLOAT(coeffs[0],  2.5, kLevenbergMarquardtTol);
     MTL_EQUAL_FLOAT(coeffs[1],  0.3, kLevenbergMarquardtTol);
@@ -247,7 +247,7 @@ TEST(TestHouseholderQR_Speed)
 
     DynamicMatrix<F64> A = At.ComputeTranspose();
     DynamicVector<F64> residuals = A*x - b;
-    //printf(" RMS = %e\n", RMS(residuals));
+    //wprintf(L" RMS = %e\n", RMS(residuals));
 
     maxRMS_QR = Max(maxRMS_QR, RMS(residuals));
 
@@ -262,10 +262,10 @@ TEST(TestHouseholderQR_Speed)
     maxRMS_SVD = Max(maxRMS_SVD, RMS(residuals));
   }
 
-  printf("  QR solver:  %9.3f msecs (%d times), Max RMS = %e\n",
-         t_QR.Milliseconds(), kRepeats, maxRMS_QR);
-  printf("  SVD solver: %9.3f msecs (%d times), Max RMS = %e\n",
-         t_SVD.Milliseconds(), kRepeats, maxRMS_SVD);
+  wprintf(L"  QR solver:  %9.3f msecs (%d times), Max RMS = %e\n",
+          t_QR.Milliseconds(), kRepeats, maxRMS_QR);
+  wprintf(L"  SVD solver: %9.3f msecs (%d times), Max RMS = %e\n",
+          t_SVD.Milliseconds(), kRepeats, maxRMS_SVD);
   MTL_LESS_THAN(maxRMS_QR,  1.001);
   MTL_LESS_THAN(maxRMS_SVD, 1.001);
 }
@@ -284,14 +284,14 @@ TEST(TestMultiplyByTranspose)
   t.Restart();
   DynamicMatrix<F64> A = random.DynamicMatrix<F64>(M,N, -1, 1);
   t.Stop();
-  printf("  Random matrix creation time (%dx%d):  %9.3f msecs\n",
-         A.Rows(), A.Cols(), t.Milliseconds());
+  wprintf(L"  Random matrix creation time (%dx%d):  %9.3f msecs\n",
+          A.Rows(), A.Cols(), t.Milliseconds());
 
   DynamicMatrix<F64> P0(A.Rows(), A.Rows());
   t.Restart();
   MultiplyByTranspose(P0[0], A[0], A.Rows(), A.Cols(), P0.RowSize(), A.RowSize());
   t.Stop();
-  printf("  MultiplyByTranspose function time:        %9.3f msecs\n", t.Milliseconds());
+  wprintf(L"  MultiplyByTranspose function time:        %9.3f msecs\n", t.Milliseconds());
 
   DynamicMatrix<F64> P1(A.Rows(), A.Rows());
   t.Restart();
@@ -306,18 +306,18 @@ TEST(TestMultiplyByTranspose)
     offset += columnsToMultiply;
   }
   t.Stop();
-  printf("  Multiple AddMultiplyByTranspose time:     %9.3f msecs, blockSize = %d\n",
-         t.Milliseconds(), blockSize);
+  wprintf(L"  Multiple AddMultiplyByTranspose time:     %9.3f msecs, blockSize = %d\n",
+          t.Milliseconds(), blockSize);
 
   t.Restart();
   DynamicMatrix<F64> X = A.MultiplyByTranspose();
   t.Stop();
-  printf("  MultiplyByTranspose method time:          %9.3f msecs\n", t.Milliseconds());
+  wprintf(L"  MultiplyByTranspose method time:          %9.3f msecs\n", t.Milliseconds());
 
   t.Restart();
   DynamicMatrix<F64> P2 = A * A.ComputeTranspose();
   t.Stop();
-  printf("  Multiply with computed transpose time:    %9.3f msecs\n", t.Milliseconds());
+  wprintf(L"  Multiply with computed transpose time:    %9.3f msecs\n", t.Milliseconds());
 
   for (I32 row = 0; row < X.Rows(); row++)
   {
@@ -393,10 +393,10 @@ TEST(TestSolversIdentityMatrix)
     }
   }
 
-  printf("  QR    solver: %9.3f msecs (%d times)\n",    t_QR.Milliseconds(), kRepeats);
-  printf("  LDLt  solver: %9.3f msecs (%d times)\n",  t_LDLt.Milliseconds(), kRepeats);
-  printf("  SVD   solver: %9.3f msecs (%d times)\n",   t_SVD.Milliseconds(), kRepeats);
-  printf("  Eigen solver: %9.3f msecs (%d times)\n", t_Eigen.Milliseconds(), kRepeats);
+  wprintf(L"  QR    solver: %9.3f msecs (%d times)\n",    t_QR.Milliseconds(), kRepeats);
+  wprintf(L"  LDLt  solver: %9.3f msecs (%d times)\n",  t_LDLt.Milliseconds(), kRepeats);
+  wprintf(L"  SVD   solver: %9.3f msecs (%d times)\n",   t_SVD.Milliseconds(), kRepeats);
+  wprintf(L"  Eigen solver: %9.3f msecs (%d times)\n", t_Eigen.Milliseconds(), kRepeats);
 }
 
 TEST(TestSolvers)
@@ -445,7 +445,7 @@ TEST(TestSolvers)
       t_SVD.Start();
       SolveJacobiSVDTransposed(svdX, rank, conditionNumber, A, b);
       t_SVD.Stop();
-      printf("SVD Condition Number: %g\n", conditionNumber);
+      wprintf(L"SVD Condition Number: %g\n", conditionNumber);
     }
 
     DynamicVector<F64> eigenX;
@@ -455,7 +455,7 @@ TEST(TestSolvers)
       t_Eigen.Start();
       SolveJacobiEigenTransposed(eigenX, rank, conditionNumber, A, b);
       t_Eigen.Stop();
-      printf("Eigen Condition Number: %g\n", conditionNumber);
+      wprintf(L"Eigen Condition Number: %g\n", conditionNumber);
     }
 
     for (I32 k = 0; k < N; k++)
@@ -478,8 +478,8 @@ TEST(TestSolvers)
     }
   }
 
-  printf("  QR    solver: %9.3f msecs (%d times)\n",    t_QR.Milliseconds(), kRepeats);
-  printf("  LDLt  solver: %9.3f msecs (%d times)\n",  t_LDLt.Milliseconds(), kRepeats);
-  printf("  SVD   solver: %9.3f msecs (%d times)\n",   t_SVD.Milliseconds(), kRepeats);
-  printf("  Eigen solver: %9.3f msecs (%d times)\n", t_Eigen.Milliseconds(), kRepeats);
+  wprintf(L"  QR    solver: %9.3f msecs (%d times)\n",    t_QR.Milliseconds(), kRepeats);
+  wprintf(L"  LDLt  solver: %9.3f msecs (%d times)\n",  t_LDLt.Milliseconds(), kRepeats);
+  wprintf(L"  SVD   solver: %9.3f msecs (%d times)\n",   t_SVD.Milliseconds(), kRepeats);
+  wprintf(L"  Eigen solver: %9.3f msecs (%d times)\n", t_Eigen.Milliseconds(), kRepeats);
 }

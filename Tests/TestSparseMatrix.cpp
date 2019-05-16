@@ -189,18 +189,18 @@ TEST(TestMultiplicationWithZeroColumns)
         MTL_EQUAL_FLOAT(M5(row,col), M1[row][col], kTol);
   }
 
-  printf("\n");
-  printf("Dense  Mt x V time: %9.3f msecs.\n", timeFullMtxV.Milliseconds());
-  printf("Sparse Mt x V time: %9.3f msecs.\n", timeSparseMtxV.Milliseconds());
-  printf("Dense  Mt x M time: %9.3f msecs.\n", timeFullMtxM.Milliseconds());
-  printf("Sparse Mt x M time: %9.3f msecs.\n\n", timeSparseMtxM.Milliseconds());
-  printf("Prepare optimized sparse Mt x M time:      %9.3f msecs.\n",
-         timeOptimizeMtxM.Milliseconds());
-  printf("Optimized sparse Mt x M time (sequential): %9.3f msecs.\n",
-         timeOptimizedSequentialMtxM.Milliseconds());
-  printf("Optimized sparse Mt x M time (parallel):   %9.3f msecs.\n",
-         timeOptimizedParallelMtxM.Milliseconds());
-  printf("\n");
+  wprintf(L"\n");
+  wprintf(L"Dense  Mt x V time: %9.3f msecs.\n", timeFullMtxV.Milliseconds());
+  wprintf(L"Sparse Mt x V time: %9.3f msecs.\n", timeSparseMtxV.Milliseconds());
+  wprintf(L"Dense  Mt x M time: %9.3f msecs.\n", timeFullMtxM.Milliseconds());
+  wprintf(L"Sparse Mt x M time: %9.3f msecs.\n\n", timeSparseMtxM.Milliseconds());
+  wprintf(L"Prepare optimized sparse Mt x M time:      %9.3f msecs.\n",
+          timeOptimizeMtxM.Milliseconds());
+  wprintf(L"Optimized sparse Mt x M time (sequential): %9.3f msecs.\n",
+          timeOptimizedSequentialMtxM.Milliseconds());
+  wprintf(L"Optimized sparse Mt x M time (parallel):   %9.3f msecs.\n",
+          timeOptimizedParallelMtxM.Milliseconds());
+  wprintf(L"\n");
 }
 
 TEST(TestLargeMultiplication)
@@ -293,16 +293,16 @@ TEST(TestLargeMultiplication)
         MTL_EQUAL_FLOAT(M5(row,col), M1[row][col], kTol);
   }
 
-  printf("\n");
-  printf("Dense  Mt x V time: %9.3f msecs.\n", timeFullMtxV.Milliseconds());
-  printf("Sparse Mt x V time: %9.3f msecs.\n", timeSparseMtxV.Milliseconds());
-  printf("Dense  Mt x M time: %9.3f msecs.\n", timeFullMtxM.Milliseconds());
-  printf("Sparse Mt x M time: %9.3f msecs.\n\n", timeSparseMtxM.Milliseconds());
-  printf("Prepare optimized sparse Mt x M time:      %9.3f msecs.\n",
-         timeOptimizeMtxM.Milliseconds());
-  printf("Optimized sparse Mt x M time (sequential): %9.3f msecs.\n",
-         timeOptimizedSequentialMtxM.Milliseconds());
-  printf("Optimized sparse Mt x M time (parallel):   %9.3f msecs.\n",
-         timeOptimizedParallelMtxM.Milliseconds());
-  printf("\n");
+  wprintf(L"\n");
+  wprintf(L"Dense  Mt x V time: %9.3f msecs.\n", timeFullMtxV.Milliseconds());
+  wprintf(L"Sparse Mt x V time: %9.3f msecs.\n", timeSparseMtxV.Milliseconds());
+  wprintf(L"Dense  Mt x M time: %9.3f msecs.\n", timeFullMtxM.Milliseconds());
+  wprintf(L"Sparse Mt x M time: %9.3f msecs.\n\n", timeSparseMtxM.Milliseconds());
+  wprintf(L"Prepare optimized sparse Mt x M time:      %9.3f msecs.\n",
+          timeOptimizeMtxM.Milliseconds());
+  wprintf(L"Optimized sparse Mt x M time (sequential): %9.3f msecs.\n",
+          timeOptimizedSequentialMtxM.Milliseconds());
+  wprintf(L"Optimized sparse Mt x M time (parallel):   %9.3f msecs.\n",
+          timeOptimizedParallelMtxM.Milliseconds());
+  wprintf(L"\n");
 }
