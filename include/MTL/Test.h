@@ -36,6 +36,10 @@
 //
 // Macros.
 //
+#ifndef COLOR_ERROR
+#define COLOR_ERROR COLOR_LRED
+#endif
+
 #define TEST(TestName)                                                                             \
 class Test_ ## TestName : public MTL::Test                                                         \
 {                                                                                                  \
@@ -110,7 +114,7 @@ public:
     }
     __except(EXCEPTION_EXECUTE_HANDLER)  
     {
-      Out() << COLOR_LRED << L"ERROR: SEH exception caught!" << COLOR_RESET << std::endl;
+      Out() << COLOR_ERROR << L"ERROR: SEH exception caught!" << COLOR_RESET << std::endl;
       TotalNumberOfFailures_++;
     }
 #endif
@@ -175,8 +179,9 @@ public:
     if (!e)
     {
       TotalNumberOfFailures_++;
-      Out() << COLOR_LRED << L"[In file '" << file << L"' - line " << line  << L"]" << std::endl
-            << L"  '" << expression << L"' failed!" << COLOR_RESET <<  std::endl;
+      ColorScope c(COLOR_ERROR);
+      Out() << L"[In file '" << file << L"' - line " << line  << L"]" << std::endl
+            << L"  '" << expression << L"' failed!" <<  std::endl;
     }
   }
 
@@ -186,9 +191,10 @@ public:
     if (actual != expected)
     {
       TotalNumberOfFailures_++;
-      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+      ColorScope c(COLOR_ERROR);
+      Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual << L"' but '"
-            << expected << L"' is expected!'" << COLOR_RESET << std::endl;
+            << expected << L"' is expected!'" << std::endl;
     }
   }
 
@@ -199,10 +205,11 @@ public:
     if (MTL::Abs(difference) > tolerance || actual != actual)
     {
       TotalNumberOfFailures_++;
-      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line  << L"]" << std::endl
+      ColorScope c(COLOR_ERROR);
+      Out() << L"[File '" << file << L"' - line " << line  << L"]" << std::endl
             << L"  Actual value is " << actual << L" but " << expected
             << L" is expected; difference is: " << difference << L", tolerance is: "
-            << tolerance << COLOR_RESET << std::endl;
+            << tolerance << std::endl;
     }
   }
 
@@ -212,18 +219,20 @@ public:
     if (actual == limit)
     {
       TotalNumberOfFailures_++;
-      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+      ColorScope c(COLOR_ERROR);
+      Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual
             << L"' which is equal to the limit '"
-            << limit << L"' but it is expected to be less than this limit." << COLOR_RESET << std::endl;
+            << limit << L"' but it is expected to be less than this limit." << std::endl;
     }
     else if (actual > limit)
     {
       TotalNumberOfFailures_++;
-      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+      ColorScope c(COLOR_ERROR);
+      Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual
             << L"' which is greater the limit '"
-            << limit << L"'" << COLOR_RESET << std::endl;
+            << limit << L"'" << std::endl;
     }
   }
   template <class T1, class T2>
@@ -232,9 +241,10 @@ public:
     if (actual > limit)
     {
       TotalNumberOfFailures_++;
-      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+      ColorScope c(COLOR_ERROR);
+      Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual << L"' which is greater than the limit '"
-            << limit << L"'" << COLOR_RESET << std::endl;
+            << limit << L"'" << std::endl;
     }
   }
 
@@ -244,18 +254,20 @@ public:
     if (actual == limit)
     {
       TotalNumberOfFailures_++;
-      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
-	    << L"  Actual value is '" << actual
-	    << L"' which is equal to the limit '"
-	    << limit << L"' but it is expected to be greater than this limit." << COLOR_RESET << std::endl;
+      ColorScope c(COLOR_ERROR);
+      Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+            << L"  Actual value is '" << actual
+            << L"' which is equal to the limit '"
+            << limit << L"' but it is expected to be greater than this limit." << std::endl;
     }
     else if (actual < limit)
     {
       TotalNumberOfFailures_++;
-      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
-	    << L"  Actual value is '" << actual
-	    << L"' which is less the limit '"
-	    << limit << L"'" << COLOR_RESET << std::endl;
+      ColorScope c(COLOR_ERROR);
+      Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+            << L"  Actual value is '" << actual
+            << L"' which is less the limit '"
+            << limit << L"'" << std::endl;
     }
   }
   template <class T1, class T2>
@@ -264,9 +276,10 @@ public:
     if (actual < limit)
     {
       TotalNumberOfFailures_++;
-      Out() << COLOR_LRED << L"[File '" << file << L"' - line " << line << L"]" << std::endl
-	    << L"  Actual value is '" << actual << L"' which is less than the limit '"
-	    << limit << L"'" << COLOR_RESET << std::endl;
+      ColorScope c(COLOR_ERROR);
+      Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+            << L"  Actual value is '" << actual << L"' which is less than the limit '"
+            << limit << L"'" << std::endl;
     }
   }
 
@@ -342,32 +355,35 @@ private:
         catch (const Exception& e)
         {
           List_[i]->TotalNumberOfFailures_++;
-          Out() << COLOR_LRED << L"ERROR: " << e.Message() << COLOR_RESET << std::endl;
+          ColorScope c(COLOR_ERROR);
+          Out() << L"ERROR: " << e.Message() << std::endl;
         }
         catch (const std::exception& e)
         {
           List_[i]->TotalNumberOfFailures_++;
-          Out() << COLOR_LRED << L"std::exception: " << e.what() << COLOR_RESET << std::endl;
+          ColorScope c(COLOR_ERROR);
+          Out() << L"std::exception: " << e.what() << std::endl;
         }
         catch (...)
         {
           List_[i]->TotalNumberOfFailures_++;
-          Out() << COLOR_LRED << L"UNEXPECTED ERROR!" << COLOR_RESET << std::endl;
+          ColorScope c(COLOR_ERROR);
+          Out() << L"UNEXPECTED ERROR!" << std::endl;
         }
 
         Out() << L"[" << List_[i]->Name_ << L"]" << L" Ends.";
 
         Out() << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
-	      << std::endl << std::endl;
+              << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
       }
       Shutdown();
 
       if (TotalNumberOfFailures() == 0)
-	Out() << COLOR_LGREEN;
+        Out() << COLOR_LGREEN;
       else
-	Out() << COLOR_LRED;
+        Out() << COLOR_LRED;
 
       Out() << L"Total number of errors: " << TotalNumberOfFailures() << COLOR_RESET << std::endl;
       Out() << L"Total time: " << TotalTimeElapsed_ << L" seconds." << std::endl;
@@ -478,11 +494,13 @@ int main(int argc, char* argv[])
   }
   catch(const MTL::Exception& e)
   {
-    std::wcout << COLOR_LRED << L"ERROR: " << e.Message() << COLOR_RESET << std::endl;
+    MTL::ColorScope c(COLOR_ERROR);
+    std::wcout << L"ERROR: " << e.Message() << std::endl;
   }
   catch(...)
   {
-    std::wcout << COLOR_LRED << L"UNEXPECTED ERROR!" << COLOR_RESET << std::endl;
+    MTL::ColorScope c(COLOR_ERROR);
+    std::wcout << L"UNEXPECTED ERROR!" << std::endl;
   }
 
   return (int)MTL::Test::TotalNumberOfFailures();

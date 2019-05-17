@@ -26,23 +26,47 @@
 #ifndef MTL_COLORS_H
 #define MTL_COLORS_H
 
+#include <stdio.h>
+
 // Color macros.
 #define COLOR_RESET     L"\033[0m"
 
-#define COLOR_BLUE      L"\033[34m"
-#define COLOR_CYAN      L"\033[36m"
-#define COLOR_GREEN     L"\033[32m"
+#define COLOR_BLACK     L"\033[30m"
 #define COLOR_RED       L"\033[31m"
-#define COLOR_MAGENTA   L"\033[35m"
+#define COLOR_GREEN     L"\033[32m"
 #define COLOR_YELLOW    L"\033[33m"
+#define COLOR_BLUE      L"\033[34m"
+#define COLOR_MAGENTA   L"\033[35m"
+#define COLOR_CYAN      L"\033[36m"
 #define COLOR_WHITE     L"\033[37m"
 
-#define COLOR_LBLUE     L"\033[94m"
-#define COLOR_LCYAN     L"\033[96m"
-#define COLOR_LGREEN    L"\033[92m"
+#define COLOR_LBLACK    L"\033[90m"
 #define COLOR_LRED      L"\033[91m"
-#define COLOR_LMAGENTA  L"\033[95m"
+#define COLOR_LGREEN    L"\033[92m"
 #define COLOR_LYELLOW   L"\033[93m"
+#define COLOR_LBLUE     L"\033[94m"
+#define COLOR_LMAGENTA  L"\033[95m"
+#define COLOR_LCYAN     L"\033[96m"
 #define COLOR_LWHITE    L"\033[97m"
+
+
+namespace MTL
+{
+
+// Color helper class.
+class ColorScope
+{
+public:
+  ColorScope(const wchar_t* color)
+  {
+    wprintf(color);
+  }
+  ~ColorScope()
+  {
+    wprintf(COLOR_RESET);
+  }
+};
+
+}
 
 #endif  // MTL_COLORS_H
