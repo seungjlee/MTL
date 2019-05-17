@@ -343,7 +343,7 @@ private:
 
       for (U32 i = 0; i < List_.Size(); i++)
       {
-        Out() << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << std::endl;
+        Out() << COLOR_LBLUE << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << COLOR_RESET << std::endl;
 
         try
         {
@@ -371,10 +371,9 @@ private:
           Out() << L"UNEXPECTED ERROR!" << std::endl;
         }
 
-        Out() << L"[" << List_[i]->Name_ << L"]" << L" Ends.";
-
-        Out() << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
-              << std::endl << std::endl;
+        Out() << COLOR_LBLUE << L"[" << List_[i]->Name_ << L"]" << L" Ends.";
+        Out() << COLOR_BLUE << L"  Time: " << COLOR_LBLUE << float(List_[i]->TimeElapsed_) << L" seconds."
+	            << COLOR_RESET << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
       }
@@ -386,7 +385,7 @@ private:
         Out() << COLOR_LRED;
 
       Out() << L"Total number of errors: " << TotalNumberOfFailures() << COLOR_RESET << std::endl;
-      Out() << L"Total time: " << TotalTimeElapsed_ << L" seconds." << std::endl;
+      Out() << COLOR_LCYAN << L"Total time: " << TotalTimeElapsed_ << L" seconds." << COLOR_RESET << std::endl;
     }
     if (App_)
     {
@@ -471,7 +470,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::wcout << COLOR_CYAN << std::endl << L"Number Of Actual Cores: "
+    std::wcout << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
                << MTL::CPU::Instance().NumberOfCores() << std::endl;
     std::wcout << L"Initial Number Of OpenMP Threads: "
                << MTL::CPU::Instance().NumberOfThreads() << COLOR_RESET << std::endl;
