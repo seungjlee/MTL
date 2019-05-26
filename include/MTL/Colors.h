@@ -51,8 +51,8 @@
 #define COLOR_LWHITE    L"\033[97m"
 
 // RGB background and foreground colors.
-#define COLOR_BG(R,G,B)  L"\033[48;2;" L#R L";" L#G L";" L#B L"m"
-#define COLOR_FG(R,G,B)  L"\033[38;2;" L#R L";" L#G L";" L#B L"m"
+#define COLOR_BG(R,G,B)  L"\033[48;2;" L ## #R L";" L ## #G L";" L ## #B L"m"
+#define COLOR_FG(R,G,B)  L"\033[38;2;" L ## #R L";" L ## #G L";" L ## #B L"m"
 
 namespace MTL
 {
