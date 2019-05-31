@@ -345,6 +345,7 @@ private:
       {
         Out() << COLOR_FG(100, 100, 255) << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << COLOR_RESET << std::endl;
 
+        U64 numberOfFailuresBeforeRun = TotalNumberOfFailures_;
         try
         {
           Timer timer(true);
@@ -354,25 +355,25 @@ private:
         }
         catch (const Exception& e)
         {
-          List_[i]->TotalNumberOfFailures_++;
+          TotalNumberOfFailures_++;
           ColorScope c(COLOR_ERROR);
           Out() << L"ERROR: " << e.Message() << std::endl;
         }
         catch (const std::exception& e)
         {
-          List_[i]->TotalNumberOfFailures_++;
+          TotalNumberOfFailures_++;
           ColorScope c(COLOR_ERROR);
           Out() << L"std::exception: " << e.what() << std::endl;
         }
         catch (...)
         {
-          List_[i]->TotalNumberOfFailures_++;
+          TotalNumberOfFailures_++;
           ColorScope c(COLOR_ERROR);
           Out() << L"UNEXPECTED ERROR!" << std::endl;
         }
 
         Out() << COLOR_FG(100, 100, 255) << L"[" << List_[i]->Name_ << L"]";
-        if (List_[i]->TotalNumberOfFailures_ > 0)
+        if (TotalNumberOfFailures_ > numberOfFailuresBeforeRun)
         {
           Out() << COLOR_LRED << L" Ends with errors.";
         }
