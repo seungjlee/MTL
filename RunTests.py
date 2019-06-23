@@ -22,7 +22,7 @@ if platform.system() == 'Linux':
 else:
   TestDir = 'Build/Tests/Release/'
 
-LogFile = CurrentDir + '/TestLog_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
+LogFile = CurrentDir + '/Build/TestLog_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
 print('\nLog File: ' + LogFile)
 
 file = open(LogFile, 'wb')
