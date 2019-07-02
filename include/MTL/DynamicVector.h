@@ -62,6 +62,9 @@
 namespace MTL
 {
 
+template <class DstT, class SrcT> MTL_INLINE static void OptimizedCast_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size);
+template <class DstT, class SrcT> MTL_INLINE static void OptimizedCast(DstT* pDst, const SrcT* pSrc, SizeType size);
+
 template <class T>
 class DynamicVector
 {
@@ -128,24 +131,7 @@ public:
     T* pDst = First_;
     const T2* pSrc = rhs.Begin();
 
-    int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
-
-#if MTL_ENABLE_OPENMP
-    if (DoOpenMP<T>(size, numberOfThreads))
-    {
-      int blockSize = (int)MTL::ComputeParallelSubSizesBlockSize(size, numberOfThreads);
-      #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-      for (I32 k = 0; k < (I32)size; k++)
-        pDst[k] = T(pSrc[k]);
-    }
-    else
-#endif
-    {
-      const T* pDstEnd = pDst + size;
-
-      for (; pDst < pDstEnd; pDst++, pSrc++)
-        *pDst = T(*pSrc);
-    }
+    OptimizedCast(pDst, pSrc, size);
   }
 
   ~DynamicVector()  { DestroyAndDelete(); }
@@ -479,6 +465,19 @@ MTL_INLINE static void OptimizedCopy_Sequential(T* pDst, const T* pSrc, SizeType
 template <class T> MTL_INLINE static void OptimizedCopy(T* pDst, const T* pSrc, SizeType size)
 {
   Parallel_1Dst_1Src< T, T, OptimizedCopy_Sequential >(pDst, pSrc, size, 0);
+}
+
+template <class DstT, class SrcT>
+MTL_INLINE static void OptimizedCast_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size)
+{
+  const DstT* pDstEnd = pDst + size;
+
+  for (; pDst < pDstEnd; pDst++, pSrc++)
+    *pDst = DstT(*pSrc);
+}
+template <class DstT, class SrcT> MTL_INLINE static void OptimizedCast(DstT* pDst, const SrcT* pSrc, SizeType size)
+{
+  Parallel_1Dst_1Src<DstT, SrcT, OptimizedCast_Sequential>(pDst, pSrc, size, 0);
 }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
