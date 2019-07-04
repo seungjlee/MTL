@@ -26,6 +26,7 @@
 #ifndef MTL_STRING_HELPERS_H
 #define MTL_STRING_HELPERS_H
 
+#include <MTL/Definitions.h>
 #include <algorithm>
 #include <wctype.h>
 #include <codecvt>
