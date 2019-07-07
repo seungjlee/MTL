@@ -310,13 +310,13 @@ private:
   {
     if (Initialize_)
     {
-      Out() << COLOR_FG(25, 25, 255) << L"[Initialize_Test] Begins..." << COLOR_RESET << std::endl;
+      Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Begins..." << COLOR_RESET << std::endl;
       Timer timer(true);
       Initialize_();
       timer.Stop();
 
-      Out() << COLOR_FG(25, 25, 255) << L"[Initialize_Test] Ends.";
-      Out() << COLOR_FG(50, 50, 255) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+      Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Ends.";
+      Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
     }
   }
 
@@ -324,13 +324,13 @@ private:
   {
     if (Shutdown_)
     {
-      Out() << COLOR_FG(25, 25, 255) << L"[Shutdown_Test] Begins..." << COLOR_RESET << std::endl;
+      Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Begins..." << COLOR_RESET << std::endl;
       Timer timer(true);
       Shutdown_();
       timer.Stop();
 
-      Out() << COLOR_FG(25, 25, 255) << L"[Shutdown_Test] Ends.";
-      Out() << COLOR_FG(50, 50, 255) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+      Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Ends.";
+      Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
     }
   }
 
@@ -343,7 +343,7 @@ private:
 
       for (U32 i = 0; i < List_.Size(); i++)
       {
-        Out() << COLOR_FG(100, 100, 255) << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << COLOR_RESET << std::endl;
+        Out() << COLOR_FG(120, 100, 255) << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << COLOR_RESET << std::endl;
 
         U64 numberOfFailuresBeforeRun = TotalNumberOfFailures_;
         try
@@ -372,7 +372,7 @@ private:
           Out() << L"UNEXPECTED ERROR!" << std::endl;
         }
 
-        Out() << COLOR_FG(100, 100, 255) << L"[" << List_[i]->Name_ << L"]";
+        Out() << COLOR_FG(120, 100, 255) << L"[" << List_[i]->Name_ << L"]";
         if (TotalNumberOfFailures_ > numberOfFailuresBeforeRun)
         {
           Out() << COLOR_LRED << L" Ends with errors.";
@@ -381,7 +381,7 @@ private:
         {
           Out() << L" Ends.";
         }
-        Out() << COLOR_FG(150, 150, 255) << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
+        Out() << COLOR_FG(180, 180, 255) << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
 	            << COLOR_RESET << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
