@@ -423,7 +423,9 @@ void(*Test::App_)() = 0;
   #define _CRTDBG_MAP_ALLOC
   #include <crtdbg.h>
 
+  #ifndef WIN32_LEAN_AND_MEAN
   #define WIN32_LEAN_AND_MEAN
+  #endif
   #include <windows.h>
 
   #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
