@@ -26,16 +26,18 @@
 #ifndef MTL_EXCEPTION_H
 #define MTL_EXCEPTION_H
 
+#include <exception>
 #include "Definitions.h"
+#include "StringHelpers.h"
 
 namespace MTL
 {
 
-class Exception
+class Exception : public std::runtime_error
 {
 public:
   Exception(const String& message = L"", U64 ID = 0)
-    : Message_(message), ID_(ID)
+    : std::runtime_error(ToUTF8(message)), Message_(message), ID_(ID)
   {
   }
 

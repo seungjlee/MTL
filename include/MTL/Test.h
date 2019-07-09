@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
+// Copyright (c) 2014-2019: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -30,7 +30,6 @@
 #include "Colors.h"
 #include "DynamicVector.h"
 #include "Exception.h"
-#include "StringHelpers.h"
 #include "Timer.h"
 
 //
@@ -363,13 +362,13 @@ private:
         {
           TotalNumberOfFailures_++;
           ColorScope c(COLOR_ERROR);
-          Out() << L"std::exception: " << e.what() << std::endl;
+          Out() << L"std::exception: " << ToUTF16(e.what()) << std::endl;
         }
         catch (...)
         {
           TotalNumberOfFailures_++;
           ColorScope c(COLOR_ERROR);
-          Out() << L"UNEXPECTED ERROR!" << std::endl;
+          Out() << L"UNEXPECTED EXCEPTION!" << std::endl;
         }
 
         Out() << COLOR_FG(120, 100, 255) << L"[" << List_[i]->Name_ << L"]";
@@ -479,6 +478,8 @@ int main(int argc, char* argv[])
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+  int status = 0;
+
   try
   {
     std::wcout << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
@@ -505,15 +506,42 @@ int main(int argc, char* argv[])
   catch(const MTL::Exception& e)
   {
     MTL::ColorScope c(COLOR_ERROR);
-    std::wcout << L"ERROR: " << e.Message() << std::endl;
+    std::wcout << L"MAIN() - MTL::Exception: " << e.Message() << std::endl;
+
+#if defined(WIN32) || defined(WIN64)
+    status = 100000000;
+#else
+    status = -1;
+#endif
+  }
+  catch(const std::exception& e)
+  {
+    MTL::ColorScope c(COLOR_ERROR);
+    std::wcout << L"MAIN() - std::exception: " << MTL::ToUTF16(e.what()) << std::endl;
+
+#if defined(WIN32) || defined(WIN64)
+    status = 200000000;
+#else
+    status = -2;
+#endif
   }
   catch(...)
   {
     MTL::ColorScope c(COLOR_ERROR);
-    std::wcout << L"UNEXPECTED ERROR!" << std::endl;
+    std::wcout << L"MAIN() - UNEXPECTED EXCEPTION!" << std::endl;
+
+#if defined(WIN32) || defined(WIN64)
+    status = 300000000;
+#else
+    status = -3;
+#endif
   }
 
-  return (int)MTL::Test::TotalNumberOfFailures();
+#if defined(WIN32) || defined(WIN64)
+  return status + (int)MTL::Test::TotalNumberOfFailures();
+#else
+  return status ? status : MTL::Min(255, (int)MTL::Test::TotalNumberOfFailures());
+#endif
 }
 #endif  // #ifndef MTL_TEST_NO_MAIN
 
