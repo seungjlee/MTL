@@ -25,9 +25,9 @@
 #ifndef MTL_DEFINITIONS_H
 #define MTL_DEFINITIONS_H
 
+#include <cstdint>
 #include <iostream>
 #include <string>
-#include <stdint.h>
 
 namespace MTL
 {
@@ -46,8 +46,17 @@ typedef double F64;
 
 typedef size_t SizeType;
 
+#ifndef MTL_UTF16
+#define MTL_UTF16 1
+#endif
+
+#if MTL_UTF16
+#define ConsoleOut std::wcout
 typedef std::wstring  String;
 typedef std::wostream OutputStream;
+#else
+#error Coming soon!
+#endif
 
 #ifndef MTL_INLINE
   #define MTL_INLINE inline
@@ -73,7 +82,7 @@ typedef std::wostream OutputStream;
 #define MTL_ENABLE_AVX 0
 #endif
 
-// Note that I have not really tested the code with OpenMP disabled.
+// Note that I have not really tested builds with OpenMP disabled.
 #ifndef MTL_ENABLE_OPENMP
   #define MTL_ENABLE_OPENMP 1
 #endif

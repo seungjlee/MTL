@@ -380,7 +380,7 @@ TEST(TestSolversIdentityMatrix)
       I32 rank;
       F64 conditionNumber;
       t_Eigen.Start();
-      SolveJacobiEigenTransposed(eigenX, rank, conditionNumber, A, b);
+      SolveJacobiEigen(eigenX, rank, conditionNumber, A, b);
       t_Eigen.Stop(); 
     }
 
@@ -415,7 +415,7 @@ TEST(TestSolvers)
   Timer t_QR;
   Timer t_Eigen;
 
-  Random random;
+  Random random(777);
 
   for (I32 i = 0; i < kRepeats; i++)
   {
@@ -453,7 +453,7 @@ TEST(TestSolvers)
       I32 rank;
       F64 conditionNumber;
       t_Eigen.Start();
-      SolveJacobiEigenTransposed(eigenX, rank, conditionNumber, A, b);
+      SolveJacobiEigen(eigenX, rank, conditionNumber, A, b);
       t_Eigen.Stop();
       wprintf(L"Eigen Condition Number: %g\n", conditionNumber);
     }

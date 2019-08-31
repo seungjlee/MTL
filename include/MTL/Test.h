@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014-2019: Seung Jae Lee, https://sourceforge.net/projects/mathtemplatelibrary/
+// Copyright (c) 2014-2019: Seung Jae Lee, https://github.com/seungjlee/MTL
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -181,6 +181,7 @@ public:
       ColorScope c(COLOR_ERROR);
       Out() << L"[In file '" << file << L"' - line " << line  << L"]" << std::endl
             << L"  '" << expression << L"' failed!" <<  std::endl;
+      Out().flush();
     }
   }
 
@@ -194,6 +195,7 @@ public:
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual << L"' but '"
             << expected << L"' is expected!'" << std::endl;
+      Out().flush();
     }
   }
 
@@ -209,6 +211,7 @@ public:
             << L"  Actual value is " << actual << L" but " << expected
             << L" is expected; difference is: " << difference << L", tolerance is: "
             << tolerance << std::endl;
+      Out().flush();
     }
   }
 
@@ -223,6 +226,7 @@ public:
             << L"  Actual value is '" << actual
             << L"' which is equal to the limit '"
             << limit << L"' but it is expected to be less than this limit." << std::endl;
+      Out().flush();
     }
     else if (actual > limit)
     {
@@ -232,6 +236,7 @@ public:
             << L"  Actual value is '" << actual
             << L"' which is greater the limit '"
             << limit << L"'" << std::endl;
+      Out().flush();
     }
   }
   template <class T1, class T2>
@@ -244,6 +249,7 @@ public:
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual << L"' which is greater than the limit '"
             << limit << L"'" << std::endl;
+      Out().flush();
     }
   }
 
@@ -258,6 +264,7 @@ public:
             << L"  Actual value is '" << actual
             << L"' which is equal to the limit '"
             << limit << L"' but it is expected to be greater than this limit." << std::endl;
+      Out().flush();
     }
     else if (actual < limit)
     {
@@ -267,6 +274,7 @@ public:
             << L"  Actual value is '" << actual
             << L"' which is less the limit '"
             << limit << L"'" << std::endl;
+      Out().flush();
     }
   }
   template <class T1, class T2>
@@ -309,13 +317,34 @@ private:
   {
     if (Initialize_)
     {
-      Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Begins..." << COLOR_RESET << std::endl;
-      Timer timer(true);
-      Initialize_();
-      timer.Stop();
+      try
+      {
+	Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Begins..." << COLOR_RESET << std::endl;
+	Timer timer(true);
+	Initialize_();
+	timer.Stop();
 
-      Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Ends.";
-      Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+	Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Ends.";
+	Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+      }
+      catch (const Exception& e)
+      {
+	TotalNumberOfFailures_++;
+	ColorScope c(COLOR_ERROR);
+	Out() << L"Test::Initialize: ERROR: " << e.Message() << std::endl;
+      }
+      catch (const std::exception& e)
+      {
+	TotalNumberOfFailures_++;
+	ColorScope c(COLOR_ERROR);
+	Out() << L"Test::Initialize: std::exception: " << ToUTF16(e.what()) << std::endl;
+      }
+      catch (...)
+      {
+	TotalNumberOfFailures_++;
+	ColorScope c(COLOR_ERROR);
+	Out() << L"Test::Initialize: UNEXPECTED EXCEPTION!" << std::endl;
+      }
     }
   }
 
@@ -323,13 +352,34 @@ private:
   {
     if (Shutdown_)
     {
-      Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Begins..." << COLOR_RESET << std::endl;
-      Timer timer(true);
-      Shutdown_();
-      timer.Stop();
+      try
+      {
+	Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Begins..." << COLOR_RESET << std::endl;
+	Timer timer(true);
+	Shutdown_();
+	timer.Stop();
 
-      Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Ends.";
-      Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+	Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Ends.";
+	Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+      }
+      catch (const Exception& e)
+      {
+	TotalNumberOfFailures_++;
+	ColorScope c(COLOR_ERROR);
+	Out() << L"Test::Shutdown: ERROR: " << e.Message() << std::endl;
+      }
+      catch (const std::exception& e)
+      {
+	TotalNumberOfFailures_++;
+	ColorScope c(COLOR_ERROR);
+	Out() << L"Test::Shutdown: std::exception: " << ToUTF16(e.what()) << std::endl;
+      }
+      catch (...)
+      {
+	TotalNumberOfFailures_++;
+	ColorScope c(COLOR_ERROR);
+	Out() << L"Test::Shutdown: UNEXPECTED EXCEPTION!" << std::endl;
+      }
     }
   }
 
@@ -384,6 +434,7 @@ private:
 	            << COLOR_RESET << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
+	Out().flush();
       }
       Shutdown();
 

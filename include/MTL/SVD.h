@@ -785,26 +785,26 @@ MTL_INLINE static T SolveSVDTransposed(DynamicVector<T>& x,
 }
 
 template <class T>
-MTL_INLINE static T SolveEigenTransposed(DynamicVector<T>& x,
-                                         DynamicMatrix<T>& Ut,
-                                         DynamicVector<T>& D,
-                                         I32& rank,
-                                         const DynamicVector<T>& b,
-                                         const T& tol = T(-1.0))
+MTL_INLINE static T SolveEigen(DynamicVector<T>& x,
+                               DynamicMatrix<T>& U,
+                               DynamicVector<T>& D,
+                               I32& rank,
+                               const DynamicVector<T>& b,
+                               const T& tol = T(-1.0))
 {
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = Ut.Cols() * Epsilon<T>() * D[0];
+    tolerance = U.Cols() * Epsilon<T>() * D[0];
 
   rank = (I32)D.Size();
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
 
-  Ut.Resize(rank, Ut.Cols());
+  U.Resize(rank, U.Cols());
   D.Resize(rank);
 
-  DynamicVector<T> X = Ut * b;
+  DynamicVector<T> X = U * b;
   X /= D;
-  x = Ut.ComputeTranspose() * X;
+  x = U.ComputeTranspose() * X;
 
   return D[0] / D[rank-1];
 }
@@ -834,19 +834,24 @@ MTL_INLINE static bool SolveJacobiSVDTransposed(DynamicVector<T>& x, I32& rank,
   return fullyConverged;
 }
 template <class T>
-MTL_INLINE static bool SolveJacobiEigenTransposed(DynamicVector<T>& x, I32& rank,
-                                                  T& conditionNumber,
-                                                  const DynamicMatrix<T>& At,
-                                                  const DynamicVector<T>& b,
-                                                  const T& tolerance = T(-1.0))
+MTL_INLINE static bool SolveJacobiEigen(DynamicVector<T>& x, I32& rank,
+                                        T& conditionNumber,
+                                        const DynamicMatrix<T>& A,
+                                        const DynamicVector<T>& b,
+                                        const T& tolerance = T(-1.0))
 {
-  assert(At.Cols() == b.Size());
+  // A should be symmetric. For now, it will work even for non-symmetric matrices since calls SVD.
+  assert(A.Cols() == A.Rows());
+  assert(A.Cols() == b.Size());
 
-  DynamicMatrix<T> Ut = At;
+  DynamicMatrix<T> U = A;
   DynamicVector<T> D;
 
-  bool fullyConverged = JacobiSVDTransposed(Ut, D);
-  conditionNumber = SolveEigenTransposed(x, Ut, D, rank, b, tolerance);
+  //
+  // Should probably implement a more efficient routine for symmetric matrices.
+  //
+  bool fullyConverged = JacobiSVDTransposed(U, D);
+  conditionNumber = SolveEigen(x, U, D, rank, b, tolerance);
 
   return fullyConverged;
 }
