@@ -52,8 +52,7 @@ public:
     T vz = R[1][0] - R[0][1];
 
     // Use slower version near singularities.
-    if (Abs(vx) < Epsilon<T>() || Abs(vy) < Epsilon<T>() || Abs(vz) < Epsilon<T>() ||
-        Pow<4>(vx) < Epsilon<T>() || Pow<4>(vy) < Epsilon<T>() || Pow<4>(vz) < Epsilon<T>())
+    if (Pow<2>(Pow<2>(vx) + Pow<2>(vy) + Pow<2>(vz)) < NumericalEpsilon<T>())
     {
       RotationVector_ = ComputeFromRotationMatrixPrecise(R);
     }
@@ -188,7 +187,7 @@ private:
     if (DirtyCachedValues_)
     {
       Angle_ = RotationVector_.Length();
-      if (Angle_ < Epsilon<T>())
+      if (Angle_ < NumericalEpsilon<T>())
       {
         UnitRotationVector_.Zeros();
         SinAngle_ = T(0.0);

@@ -216,7 +216,7 @@ TEST(TestCastConstructor)
   wprintf(L"  Conversion time: %.3f msecs.\n", t.Milliseconds());
 
   for (I32 i = 0; i < N; i++)
-    MTL_EQUAL_FLOAT(vI32[i], vF64[i], Epsilon<F64>());
+    MTL_EQUAL_FLOAT(vI32[i], vF64[i], NumericalEpsilon<F64>());
 }
 
 TEST(Test_AddBack_Insert)

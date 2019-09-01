@@ -127,17 +127,31 @@ template <class T> MTL_INLINE T Epsilon();
 template <> MTL_INLINE F32 Epsilon<F32>()   { return FLT_EPSILON; }
 template <> MTL_INLINE F64 Epsilon<F64>()   { return DBL_EPSILON; }
 
+// A default factor to use with Epsilon() to ensure numerical convergence on some problems.
+// User can override this at compile time.
+#ifndef MTL_EPSILON_FACTOR
+#define MTL_EPSILON_FACTOR 2
+#endif
+template <class T> MTL_INLINE T EpsilonFactor()
+{
+  return T(MTL_EPSILON_FACTOR);
+}
+template <class T> MTL_INLINE T NumericalEpsilon()
+{
+  return EpsilonFactor<T>() * Epsilon<T>();
+}
+
+template <class T> MTL_INLINE static T NumericalEpsilonSquared()
+{
+  return Square(NumericalEpsilon<T>());
+}
+
 template <class T> MTL_INLINE T Infinity();
 template <> MTL_INLINE F32 Infinity<F32>()  { return kINF32;      }
 template <> MTL_INLINE F64 Infinity<F64>()  { return kINF;        }
 
 template <class T> MTL_INLINE bool IsFinite(const T& a)
 { return a > -Infinity<T>() && a < Infinity<T>(); }
-
-template <class T> MTL_INLINE static T EpsilonSquared()
-{
-  return Square(Epsilon<T>());
-}
 
 // Returns a * b + c
 template <class T>

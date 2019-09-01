@@ -40,7 +40,7 @@ namespace MTL
 template<I32 M, I32 N, class T>
 static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V, I32 maxIterations = 20)
 {
-  const T epsilon = 10*Epsilon<T>();
+  const T epsilon = NumericalEpsilon<T>();
   const T epsilon2 = Square(epsilon);
 
   V.Identity();
@@ -134,7 +134,7 @@ static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V, I32 maxIte
 }
 
 template <I32 N, class T>
-I32 ComputeRankFromSingularValues(const T D[N], const T& tolerance = Epsilon<T>())
+I32 ComputeRankFromSingularValues(const T D[N], const T& tolerance = NumericalEpsilon<T>())
 {
   I32 rank = N;
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
@@ -148,7 +148,7 @@ MTL_INLINE static T SolveSVD(ColumnVector<N,T>& x, const Matrix<M,N,T>& U, const
 {
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = Epsilon<T>() * D[0];
+    tolerance = NumericalEpsilon<T>();
 
   rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 
@@ -207,7 +207,7 @@ MTL_INLINE static bool SolveJacobiSVDHomogeneous(Matrix<M,N,T>& A, ColumnVector<
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = A.Rows() * Epsilon<T>() * D[0];
+    tolerance = NumericalEpsilon<T>();
 
   rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 
@@ -238,7 +238,7 @@ static Matrix<N,M,T> ComputePseudoinverseJacobiSVD(const Matrix<M,N,T>& A,
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = A.Rows() * Epsilon<T>() * D[0];
+    tolerance = NumericalEpsilon<T>();
 
   I32 rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 
@@ -259,7 +259,7 @@ static Matrix<N,M,T> ComputePseudoinverseJacobiSVD(const Matrix<M,N,T>& A,
 template<class T>
 static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 {
-  const T epsilon = 10*Epsilon<T>();
+  const T epsilon = NumericalEpsilon<T>();
   const T epsilon2 = Square(epsilon);
 
   T* Ai = At + i*rowSizeA;
@@ -426,7 +426,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
       break;
   }
 
-  //std::wcout << L"Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
+  ConsoleOut << L"Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
 
   for (I32 i = 0; i < N; i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -568,7 +568,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA,
       break;
   }
 
-  //std::wcout << L"Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
+  ConsoleOut << L"Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
 
   for (I32 i = 0; i < N; i++)
   {
@@ -738,7 +738,7 @@ MTL_INLINE static T SolveSVDTransposed(DynamicVector<T>& x,
 {
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = Ut.Cols() * Epsilon<T>() * D[0];
+    tolerance = NumericalEpsilon<T>();
 
   rank = (I32)D.Size();
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
@@ -764,7 +764,7 @@ MTL_INLINE static T SolveEigen(DynamicVector<T>& x,
 {
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = U.Cols() * Epsilon<T>() * D[0];
+    tolerance = NumericalEpsilon<T>();
 
   rank = (I32)D.Size();
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
@@ -840,7 +840,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = At.Cols() * Epsilon<T>() * D[0];
+    tolerance = NumericalEpsilon<T>();
 
   rank = (I32)D.Size();
   for(; rank > 0 && D[rank-1] < tolerance; rank--);
@@ -865,7 +865,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = At.Cols() * Epsilon<T>() * D[0];
+    tolerance = NumericalEpsilon<T>();
 
   rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 

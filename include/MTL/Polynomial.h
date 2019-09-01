@@ -165,7 +165,7 @@ public:
   // Solves f(x) = 0 where f(x) is a polynomial.
   template <I32 N, I32 MAX_ITERATIONS>
   MTL_INLINE static T Solve(const ColumnVector<N,T>& coefficients, double initial = 0,
-                            const T& tolerance = N * Epsilon<T>())
+                            const T& tolerance = NumericalEpsilon<T>())
   {
     ColumnVector<N-1> derivative = Polynomial<T>::ComputeDerivative(coefficients);
     T solution = initial;

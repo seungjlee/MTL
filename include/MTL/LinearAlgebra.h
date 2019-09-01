@@ -42,7 +42,7 @@ static bool NullSpaceSymmetric(DynamicMatrix<T>& null)
   DynamicVector<T> D;
   bool converged = JacobiSVDTransposed(null, D);
 
-  T tolerance = null.Rows() * D[0] * Epsilon<T>();
+  T tolerance = NumericalEpsilon<T>();
   I32 rank = (I32)D.Size();
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
 
@@ -64,7 +64,7 @@ static bool NullSpaceSymmetric(DynamicMatrix<T>& null, const DynamicMatrix<T>& A
   DynamicVector<T> D;
   bool converged = JacobiSVDTransposed(U, D, null);
 
-  T tolerance = null.Rows() * D[0] * Epsilon<T>();
+  T tolerance = NumericalEpsilon<T>();
   I32 rank = (I32)D.Size();
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
 

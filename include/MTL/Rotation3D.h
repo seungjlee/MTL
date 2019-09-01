@@ -134,7 +134,7 @@ public:
   //
   MTL_INLINE static Rotation3D RotationToXAxis(const Vector3D<T>& v)
   {
-    if (v.SumOfSquares() < EpsilonSquared<T>())
+    if (v.SumOfSquares() < NumericalEpsilonSquared<T>())
       return Rotation3D(Rotation3D::eIdentity);
 
     T c1, c2, s1, s2;
@@ -147,7 +147,7 @@ public:
 
   MTL_INLINE static Rotation3D RotationFromXAxis(const Vector3D<T>& v)
   {
-    if (v.SumOfSquares() < EpsilonSquared<T>())
+    if (v.SumOfSquares() < NumericalEpsilonSquared<T>())
       return Rotation3D(Rotation3D::eIdentity);
 
     T c1, c2, s1, s2;
@@ -160,7 +160,7 @@ public:
 
   MTL_INLINE static Rotation3D RotationToYAxis(const Vector3D<T>& v)
   {
-    if (v.SumOfSquares() < EpsilonSquared<T>())
+    if (v.SumOfSquares() < NumericalEpsilonSquared<T>())
       return Rotation3D(Rotation3D::eIdentity);
 
     T c1, c2, s1, s2;
@@ -173,7 +173,7 @@ public:
 
   MTL_INLINE static Rotation3D RotationFromYAxis(const Vector3D<T>& v)
   {
-    if (v.SumOfSquares() < EpsilonSquared<T>())
+    if (v.SumOfSquares() < NumericalEpsilonSquared<T>())
       return Rotation3D(Rotation3D::eIdentity);
 
     T c1, c2, s1, s2;
@@ -186,7 +186,7 @@ public:
 
   MTL_INLINE static Rotation3D RotationToZAxis(const Vector3D<T>& v)
   {
-    if (v.SumOfSquares() < EpsilonSquared<T>())
+    if (v.SumOfSquares() < NumericalEpsilonSquared<T>())
       return Rotation3D(Rotation3D::eIdentity);
 
     T c1, c2, s1, s2;
@@ -199,7 +199,7 @@ public:
 
   MTL_INLINE static Rotation3D RotationFromZAxis(const Vector3D<T>& v)
   {
-    if (v.SumOfSquares() < EpsilonSquared<T>())
+    if (v.SumOfSquares() < NumericalEpsilonSquared<T>())
       return Rotation3D(Rotation3D::eIdentity);
 
     T c1, c2, s1, s2;

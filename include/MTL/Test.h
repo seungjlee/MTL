@@ -189,7 +189,6 @@ public:
       ColorScope c(COLOR_ERROR);
       Out() << L"[In file '" << file << L"' - line " << line  << L"]" << std::endl
             << L"  '" << expression << L"' failed!" <<  std::endl;
-      Out().flush();
     }
   }
 
@@ -203,7 +202,6 @@ public:
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual << L"' but '"
             << expected << L"' is expected!'" << std::endl;
-      Out().flush();
     }
   }
 
@@ -219,7 +217,6 @@ public:
             << L"  Actual value is " << actual << L" but " << expected
             << L" is expected; difference is: " << difference << L", tolerance is: "
             << tolerance << std::endl;
-      Out().flush();
     }
   }
 
@@ -234,7 +231,6 @@ public:
             << L"  Actual value is '" << actual
             << L"' which is equal to the limit '"
             << limit << L"' but it is expected to be less than this limit." << std::endl;
-      Out().flush();
     }
     else if (actual > limit)
     {
@@ -244,7 +240,6 @@ public:
             << L"  Actual value is '" << actual
             << L"' which is greater the limit '"
             << limit << L"'" << std::endl;
-      Out().flush();
     }
   }
   template <class T1, class T2>
@@ -257,7 +252,6 @@ public:
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual << L"' which is greater than the limit '"
             << limit << L"'" << std::endl;
-      Out().flush();
     }
   }
 
@@ -272,7 +266,6 @@ public:
             << L"  Actual value is '" << actual
             << L"' which is equal to the limit '"
             << limit << L"' but it is expected to be greater than this limit." << std::endl;
-      Out().flush();
     }
     else if (actual < limit)
     {
@@ -282,7 +275,6 @@ public:
             << L"  Actual value is '" << actual
             << L"' which is less the limit '"
             << limit << L"'" << std::endl;
-      Out().flush();
     }
   }
   template <class T1, class T2>
@@ -442,7 +434,8 @@ private:
 	            << COLOR_RESET << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
-        Out().flush();
+
+        Out().flush();  // Make sure we at least flush the output at the end of every test (std::endl is supposed to flush for some streams).
       }
       Shutdown();
 
@@ -462,7 +455,7 @@ private:
 };
 
 String Test::FilePath_;
-OutputStream& Test::Output_ = std::wcout;
+OutputStream& Test::Output_ = ConsoleOut;
 DynamicVector<Test*> Test::List_;
 DynamicVector<String> Test::Arguments_;
 U64 Test::TotalNumberOfFailures_;
@@ -541,9 +534,9 @@ int main(int argc, char* argv[])
 
   try
   {
-    std::wcout << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
+    ConsoleOut << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
                << MTL::CPU::Instance().NumberOfCores() << std::endl;
-    std::wcout << L"Initial Number Of OpenMP Threads: "
+    ConsoleOut << L"Initial Number Of OpenMP Threads: "
                << MTL::CPU::Instance().NumberOfThreads() << COLOR_RESET << std::endl;
 
     MTL::DynamicVector<MTL::String>& arguments =
@@ -565,7 +558,7 @@ int main(int argc, char* argv[])
   catch(const MTL::Exception& e)
   {
     MTL::ColorScope c(COLOR_ERROR);
-    std::wcout << L"MAIN() - MTL::Exception: " << e.Message() << std::endl;
+    ConsoleOut << L"MAIN() - MTL::Exception: " << e.Message() << std::endl;
 
 #if defined(WIN32) || defined(WIN64)
     status = 100000000;
@@ -576,7 +569,7 @@ int main(int argc, char* argv[])
   catch(const std::exception& e)
   {
     MTL::ColorScope c(COLOR_ERROR);
-    std::wcout << L"MAIN() - std::exception: " << MTL::ToUTF16(e.what()) << std::endl;
+    ConsoleOut << L"MAIN() - std::exception: " << MTL::ToUTF16(e.what()) << std::endl;
 
 #if defined(WIN32) || defined(WIN64)
     status = 200000000;
@@ -587,7 +580,7 @@ int main(int argc, char* argv[])
   catch(...)
   {
     MTL::ColorScope c(COLOR_ERROR);
-    std::wcout << L"MAIN() - UNEXPECTED EXCEPTION!" << std::endl;
+    ConsoleOut << L"MAIN() - UNEXPECTED EXCEPTION!" << std::endl;
 
 #if defined(WIN32) || defined(WIN64)
     status = 300000000;

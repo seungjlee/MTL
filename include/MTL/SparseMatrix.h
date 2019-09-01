@@ -1036,7 +1036,7 @@ private:
 template <class T>
 static I32 SolveLDLt(DynamicVector<T>& x, const CompressedSparseMatrix<T>& A,
                      const DynamicVector<T>& b, SymbolicLDLt<T>& symLDLt,
-                     const T& tolerance = Epsilon<T>())
+                     const T& tolerance = NumericalEpsilon<T>())
 {
   assert(A.Cols() == A.Rows());
 

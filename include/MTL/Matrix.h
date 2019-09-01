@@ -804,7 +804,7 @@ public:
         sign = -sign;
       }
 
-      if (Abs(LU.Data_[P[row]][row]) < Epsilon<T>())
+      if (Abs(LU.Data_[P[row]][row]) < NumericalEpsilon<T>())
         return false;
 
       // Compute L and U.

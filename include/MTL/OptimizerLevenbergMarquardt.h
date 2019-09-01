@@ -43,12 +43,12 @@ class OptimizerLevenbergMarquardt : public OptimizerNonLinearLeastSquares<N,T>
 {
 public:
   OptimizerLevenbergMarquardt()
-    : LDLtRankTolerance_(N * Epsilon<T>()), InitialDampingFactor_(kDefaultInitialDampingFactor)
+    : LDLtRankTolerance_(NumericalEpsilon<T>()), InitialDampingFactor_(kDefaultInitialDampingFactor)
   {
   }
   OptimizerLevenbergMarquardt(SizeType residualsSize)
     : OptimizerNonLinearLeastSquares<N,T>(residualsSize),
-      LDLtRankTolerance_(N * Epsilon<T>()), InitialDampingFactor_(kDefaultInitialDampingFactor)
+      LDLtRankTolerance_(NumericalEpsilon<T>()), InitialDampingFactor_(kDefaultInitialDampingFactor)
   {
   }
 
@@ -130,7 +130,7 @@ public:
 
               BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
-              if (mu_ < Epsilon<T>())
+              if (mu_ < NumericalEpsilon<T>())
                 done = true;
 
               v = T(2);
@@ -203,7 +203,7 @@ public:
   virtual void Optimize(typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters& parameters)
   {
     if (LDLtRankTolerance_ < 0)
-      LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
+      LDLtRankTolerance_ = NumericalEpsilon<T>();
 
     I32 N = (I32)parameters.Size();
 
@@ -273,7 +273,7 @@ public:
 
               BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
-              if (mu_ < Epsilon<T>())
+              if (mu_ < NumericalEpsilon<T>())
                 done = true;
 
               v = T(2);
@@ -353,7 +353,7 @@ public:
     SymbolicLDLt_.reset();
 
     if (LDLtRankTolerance_ < 0)
-      LDLtRankTolerance_ = Epsilon<T>() * parameters.Size();
+      LDLtRankTolerance_ = NumericalEpsilon<T>();
 
     I32 N = (I32)parameters.Size();
     ComputeSparsityMatrix(N);
@@ -416,7 +416,7 @@ public:
 
               BestSumOfSquaresOfResiduals_ = newSumOfSquaresOfResiduals;
 
-              if (mu_ < Epsilon<T>())
+              if (mu_ < NumericalEpsilon<T>())
                 done = true;
 
               v = T(2);

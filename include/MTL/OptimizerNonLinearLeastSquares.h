@@ -39,14 +39,14 @@ public:
   typedef ColumnVector<N,T> Parameters;
 
   OptimizerNonLinearLeastSquares()
-    : MaxIterations_(100), SquaredParametersDeltaTolerance_(N * Square(Epsilon<T>())),
-      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
+    : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(NumericalEpsilon<T>())),
+      FiniteDifferenceDelta_(Sqrt(NumericalEpsilon<T>())),
       FiniteDifferenceTwoDelta_(FiniteDifferenceDelta_ * T(2))
   {
   }
   OptimizerNonLinearLeastSquares(SizeType residualsSize)
-    : MaxIterations_(100), SquaredParametersDeltaTolerance_(N * Square(Epsilon<T>())),
-      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
+    : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(NumericalEpsilon<T>())),
+      FiniteDifferenceDelta_(Sqrt(NumericalEpsilon<T>())),
       FiniteDifferenceTwoDelta_(FiniteDifferenceDelta_ * T(2))
   {
     Reset(residualsSize);
@@ -180,14 +180,14 @@ public:
   typedef DynamicVector<T> Parameters;
 
   DynamicOptimizerNonLinearLeastSquares()
-    : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(Epsilon<T>())),
-      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
+    : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(NumericalEpsilon<T>())),
+      FiniteDifferenceDelta_(Sqrt(NumericalEpsilon<T>())),
       FiniteDifferenceTwoDelta_(FiniteDifferenceDelta_ * T(2))
   {
   }
   DynamicOptimizerNonLinearLeastSquares(SizeType residualsSize)
-    : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(Epsilon<T>())),
-      FiniteDifferenceDelta_(Sqrt(Epsilon<T>())),
+    : MaxIterations_(100), SquaredParametersDeltaTolerance_(Square(NumericalEpsilon<T>())),
+      FiniteDifferenceDelta_(Sqrt(NumericalEpsilon<T>())),
       FiniteDifferenceTwoDelta_(FiniteDifferenceDelta_ * T(2))
   {
     Reset(residualsSize);

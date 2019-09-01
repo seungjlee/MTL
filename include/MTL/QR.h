@@ -35,7 +35,7 @@ namespace MTL
 // Returns the rank of matrix A.
 template <I32 M, I32 N, class T>
 static I32 SolveHouseholderQR(ColumnVector<M,T>& x, Matrix<M,N,T>& A,
-                              const T& tolerance = M * Epsilon<T>())
+                              const T& tolerance = NumericalEpsilon<T>())
 {
   assert(M >= N);
 
@@ -135,7 +135,7 @@ static I32 SolveHouseholderQR(ColumnVector<M,T>& x, Matrix<M,N,T>& A,
 // Note that A is expected to be transposed as input for computational efficiency.
 template <class T>
 static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
-                                        const T& tolerance = Epsilon<T>())
+                                        const T& tolerance = NumericalEpsilon<T>())
 {
   DynamicVector<I32> permutation(N);
   DynamicVector<T> permuteBuffer(N);
@@ -145,7 +145,7 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
 template <class T>
 static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
                                         I32* P, T* pQtb,
-                                        const T& tolerance = Epsilon<T>())
+                                        const T& tolerance = NumericalEpsilon<T>())
 {
   assert(M >= N);  // Not supporting or testing M < N cases.
 
@@ -250,7 +250,7 @@ template <class T>
 static I32 SolveHouseholderQRTransposed(DynamicVector<T>& x, DynamicMatrix<T>& At,
                                         DynamicVector<I32>& permutation,
                                         DynamicVector<T>& permuteBuffer,
-                                        const T& tolerance = Epsilon<T>())
+                                        const T& tolerance = NumericalEpsilon<T>())
 {
   I32 M = At.Cols();
   I32 N = At.Rows();
@@ -269,7 +269,7 @@ static I32 SolveHouseholderQRTransposed(DynamicVector<T>& x, DynamicMatrix<T>& A
 template <class T>
 static I32 SolveHouseholderQRTransposed(DynamicVector<T>& x,
                                         DynamicMatrix<T>& At,
-                                        const T& tolerance = Epsilon<T>())
+                                        const T& tolerance = NumericalEpsilon<T>())
 {
   I32 N = At.Rows();
 

@@ -98,7 +98,7 @@ static void SolveLDLt(ColumnVector<N,T>& x, const SquareMatrix<N,T>& L, const T 
 //
 template<I32 N, class T>
 static I32 SolveLDLt(ColumnVector<N,T>& x, SquareMatrix<N,T>& A,
-                     const T& tolerance = Epsilon<T>())
+                     const T& tolerance = NumericalEpsilon<T>())
 {
   T D[N];
   LDLt_JustForSolver(A, D);
@@ -169,7 +169,7 @@ static void SolveLDLt(T* x, T* L, const T* D, I32 N, I32 rowSize)
 
 template<class T>
 static I32 SolveLDLt(T* x, T* A, I32 N, I32 rowSize,
-                     const T& tolerance = Epsilon<T>())
+                     const T& tolerance = NumericalEpsilon<T>())
 {
   DynamicVector<T> D(N);
   LDLt_JustForSolver(A, D.Begin(), N, rowSize);
@@ -199,7 +199,7 @@ static I32 SolveLDLt(T* x, T* A, I32 N, I32 rowSize,
 //
 template<class T>
 static I32 SolveLDLt(DynamicVector<T>& x, DynamicMatrix<T>& A,
-                     const T& tolerance = Epsilon<T>())
+                     const T& tolerance = NumericalEpsilon<T>())
 {
   I32 N = A.Rows();
 
