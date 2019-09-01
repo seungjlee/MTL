@@ -102,6 +102,14 @@ public:
 
   virtual void Run() = 0;
 
+  // For tracking memory leaks with Visual Studio builds.
+  static void SetAllocationBreak(long allocationNumber)
+  {
+#if defined(WIN32) || defined(WIN64)
+    _CrtSetBreakAlloc(allocationNumber);
+#endif
+  }
+
   static void RunAll()
   {
 #if defined(WIN32) || defined(WIN64)
