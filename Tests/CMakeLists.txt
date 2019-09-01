@@ -24,10 +24,13 @@
 
 PROJECT(TestMTL)
 
+FILE(GLOB headers ../include/MTL/*.h)
 FILE(GLOB ALL_TESTS "Test*.cpp")
+
+SOURCE_GROUP(MTL FILES ${headers})
 
 FOREACH(t ${ALL_TESTS})
   STRING(REPLACE ".cpp" "" TestNameWithPath ${t})
   STRING(REGEX MATCH "([0-9_a-zA-Z]+)$" TestName ${TestNameWithPath}) 
-  ADD_EXECUTABLE( ${TestName} ${t}) 
+  ADD_EXECUTABLE( ${TestName} ${t} ${headers}) 
 ENDFOREACH(t ${ALL_TESTS})

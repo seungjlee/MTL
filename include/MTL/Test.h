@@ -319,31 +319,31 @@ private:
     {
       try
       {
-	Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Begins..." << COLOR_RESET << std::endl;
-	Timer timer(true);
-	Initialize_();
-	timer.Stop();
+        Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Begins..." << COLOR_RESET << std::endl;
+        Timer timer(true);
+        Initialize_();
+        timer.Stop();
 
-	Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Ends.";
-	Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+        Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Ends.";
+        Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
       }
       catch (const Exception& e)
       {
-	TotalNumberOfFailures_++;
-	ColorScope c(COLOR_ERROR);
-	Out() << L"Test::Initialize: ERROR: " << e.Message() << std::endl;
+        TotalNumberOfFailures_++;
+        ColorScope c(COLOR_ERROR);
+        Out() << L"Test::Initialize: ERROR: " << e.Message() << std::endl;
       }
       catch (const std::exception& e)
       {
-	TotalNumberOfFailures_++;
-	ColorScope c(COLOR_ERROR);
-	Out() << L"Test::Initialize: std::exception: " << ToUTF16(e.what()) << std::endl;
+        TotalNumberOfFailures_++;
+        ColorScope c(COLOR_ERROR);
+        Out() << L"Test::Initialize: std::exception: " << ToUTF16(e.what()) << std::endl;
       }
       catch (...)
       {
-	TotalNumberOfFailures_++;
-	ColorScope c(COLOR_ERROR);
-	Out() << L"Test::Initialize: UNEXPECTED EXCEPTION!" << std::endl;
+        TotalNumberOfFailures_++;
+        ColorScope c(COLOR_ERROR);
+        Out() << L"Test::Initialize: UNEXPECTED EXCEPTION!" << std::endl;
       }
     }
   }
@@ -354,31 +354,31 @@ private:
     {
       try
       {
-	Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Begins..." << COLOR_RESET << std::endl;
-	Timer timer(true);
-	Shutdown_();
-	timer.Stop();
+        Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Begins..." << COLOR_RESET << std::endl;
+        Timer timer(true);
+        Shutdown_();
+        timer.Stop();
 
-	Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Ends.";
-	Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+        Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Ends.";
+        Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
       }
       catch (const Exception& e)
       {
-	TotalNumberOfFailures_++;
-	ColorScope c(COLOR_ERROR);
-	Out() << L"Test::Shutdown: ERROR: " << e.Message() << std::endl;
+        TotalNumberOfFailures_++;
+        ColorScope c(COLOR_ERROR);
+        Out() << L"Test::Shutdown: ERROR: " << e.Message() << std::endl;
       }
       catch (const std::exception& e)
       {
-	TotalNumberOfFailures_++;
-	ColorScope c(COLOR_ERROR);
-	Out() << L"Test::Shutdown: std::exception: " << ToUTF16(e.what()) << std::endl;
+        TotalNumberOfFailures_++;
+        ColorScope c(COLOR_ERROR);
+        Out() << L"Test::Shutdown: std::exception: " << ToUTF16(e.what()) << std::endl;
       }
       catch (...)
       {
-	TotalNumberOfFailures_++;
-	ColorScope c(COLOR_ERROR);
-	Out() << L"Test::Shutdown: UNEXPECTED EXCEPTION!" << std::endl;
+        TotalNumberOfFailures_++;
+        ColorScope c(COLOR_ERROR);
+        Out() << L"Test::Shutdown: UNEXPECTED EXCEPTION!" << std::endl;
       }
     }
   }
@@ -434,7 +434,7 @@ private:
 	            << COLOR_RESET << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
-	Out().flush();
+        Out().flush();
       }
       Shutdown();
 
