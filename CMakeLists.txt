@@ -72,7 +72,7 @@ else(MSVC)
   message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
   message(STATUS "")
 
-  SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11 -fpermissive")
+  SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11")
 
   if(MTL_ENABLE_SSE)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMTL_ENABLE_SSE=1")

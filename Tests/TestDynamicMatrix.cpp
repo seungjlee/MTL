@@ -336,7 +336,7 @@ TEST(TestSolversIdentityMatrix)
   enum
   {
     N = 639,
-    kRepeats = 1
+    kRepeats = 10
   };
 
   DynamicMatrix<F64> A(N,N);
@@ -404,7 +404,7 @@ TEST(TestSolvers)
   enum
   {
     N = 639,
-    kRepeats = 1
+    kRepeats = 3
   };
 
   DynamicMatrix<F64> A;
@@ -415,7 +415,7 @@ TEST(TestSolvers)
   Timer t_QR;
   Timer t_Eigen;
 
-  Random random(777);
+  Random random(11);
 
   for (I32 i = 0; i < kRepeats; i++)
   {

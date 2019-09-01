@@ -38,12 +38,10 @@ namespace MTL
 // matrices and S is a diagonal matrix with ordered singular values.
 //
 template<I32 M, I32 N, class T>
-static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V)
+static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V, I32 maxIterations = 20)
 {
-  enum { kMaxIterations = M > 30 ? M : 30 };
-
-  T epsilon = Epsilon<T>();
-  T epsilon2 = Square(epsilon);
+  const T epsilon = 10*Epsilon<T>();
+  const T epsilon2 = Square(epsilon);
 
   V.Identity();
 
@@ -51,7 +49,7 @@ static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V)
     W[i] = A.ColumnSumOfSquares(i);
 
   I32 iteration;
-  for (iteration = 0; iteration < kMaxIterations; iteration++)
+  for (iteration = 0; iteration < maxIterations; iteration++)
   {
     bool changed = false;
 
@@ -91,18 +89,9 @@ static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V)
 
         changed = true;
 
-        if (iteration < 10)
-        {
-          GivensRotation<M,N>(A, i, j, c, s);
-          W[i] += delta;
-          W[j] -= delta;
-        }
-        else
-        {
-          GivensRotation<M,N>(A, i, j, c, s, W[i], W[j]);
-          W[i] += delta * T(0.5);
-          W[j] -= delta * T(0.5);
-        }
+        GivensRotation<M,N>(A, i, j, c, s);
+        W[i] += delta;
+        W[j] -= delta;
 
         GivensRotation<N,N>(V, i, j, c, s);
       }
@@ -141,7 +130,7 @@ static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V)
       A.ColumnMultiply(i, T(1)/W[i]);
   }
 
-  return iteration < kMaxIterations;
+  return iteration < maxIterations;
 }
 
 template <I32 N, class T>
@@ -159,7 +148,7 @@ MTL_INLINE static T SolveSVD(ColumnVector<N,T>& x, const Matrix<M,N,T>& U, const
 {
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = M * Epsilon<T>() * D[0];
+    tolerance = Epsilon<T>() * D[0];
 
   rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 
@@ -268,10 +257,9 @@ static Matrix<N,M,T> ComputePseudoinverseJacobiSVD(const Matrix<M,N,T>& A,
 }
 
 template<class T>
-static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T* At, T* W,
-                                      I32 M, I32 N, I32 rowSizeA)
+static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 {
-  const T epsilon = Epsilon<T>();
+  const T epsilon = 10*Epsilon<T>();
   const T epsilon2 = Square(epsilon);
 
   T* Ai = At + i*rowSizeA;
@@ -309,26 +297,13 @@ static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T
   if (delta <= 0)
     return false;
 
-  if (iteration < 10)
-  {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-    GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
+  GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
 #else
-    GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
+  GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
 #endif
-    W[i] += delta;
-    W[j] -= delta;
-  }
-  else
-  {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-    GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M, W[i], W[j]);
-#else
-    GivensRotation_Sequential(Ai, Aj, c, s, Ai + M, W[i], W[j]);
-#endif
-    W[i] += delta * T(0.5);
-    W[j] -= delta * T(0.5);
-  }
+  W[i] += delta;
+  W[j] -= delta;
 
   return true;
 }
@@ -337,7 +312,6 @@ static void ComputeJacobiParallelPairs(DynamicVector<DynamicVector<Point2D<I32>>
 {
   DynamicVector<Point2D<I32>> allPairs;
   allPairs.Reserve((N-1)*N/2);
-  I32 index = 0;
   for (I32 i = 0; i < N-1; i++)
   {
     for (I32 j = i+1; j < N; j++)
@@ -373,10 +347,8 @@ static void ComputeJacobiParallelPairs(DynamicVector<DynamicVector<Point2D<I32>>
 // Dynamic matrix version of SVD. Note that it takes A transposed. It expects At and Vt to be
 // memory aligned.
 template<class T>
-static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N,
-                                        I32 rowSizeA, I32 rowSizeV)
+static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, I32 rowSizeV, I32 maxIterations)
 {
-  I32 maxIterations = Max(M, 30);
   I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
 
   OptimizedZeros(Vt, N*rowSizeV);
@@ -418,13 +390,11 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N,
           setChanged[k] = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
           if (setChanged[k])
           {
-
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
             GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
 #else
             GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
 #endif
-            changed = true;
           }
         }
 
@@ -456,6 +426,8 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N,
       break;
   }
 
+  //std::wcout << L"Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
+
   for (I32 i = 0; i < N; i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     W[i] = Sqrt(SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M));
@@ -476,11 +448,8 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N,
   return iteration < maxIterations;
 }
 template<class T>
-static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, I32 rowSizeV)
+static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, I32 rowSizeV, I32 maxIterations)
 {
-  I32 maxIterations = Max(M, 30);
-  I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
-
   OptimizedZeros(Vt, N*rowSizeV);
 
   for (I32 i = 0; i < N; i++)
@@ -538,10 +507,10 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 
   return iteration < maxIterations;
 }
+
 template<class T>
-static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
+static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA, I32 maxIterations)
 {
-  I32 maxIterations = Max(M, 30);
   I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
   
   for (I32 i = 0; i < N; i++)
@@ -561,7 +530,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
   for (iteration = 0; iteration < maxIterations; iteration++)
   {
     bool changed = false;
-    
+
     for (const auto& set : parallelPairs)
     {
       if (set.Size() > 1)
@@ -571,11 +540,13 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
         I32 blockSize = (I32)MTL::ComputeParallelSubSizesBlockSize(set.Size(), numberOfThreads);
 
         #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-        for (I32 i = 0; i < (I32)set.Size(); i++)
+        for (I32 k = 0; k < (I32)set.Size(); k++)
         {
+          int i = set[k].x();
+          int j = set[k].y();
           T c, s;
-          setChanged[i] = JacobiRotationsTransposed(c, s, set[i].x(), set[i].y(), iteration,
-                                                    At, W, M, N, rowSizeA);
+
+          setChanged[k] = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
         }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -596,6 +567,8 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
     if (!changed)
       break;
   }
+
+  //std::wcout << L"Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
 
   for (I32 i = 0; i < N; i++)
   {
@@ -703,18 +676,16 @@ static void SortSingularValuesDescending(T* At, T* W, I32 M, I32 N, I32 rowSizeA
 }
 
 template <class T>
-MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
-                                           DynamicVector<T>& D,
-                                           DynamicMatrix<T>& Vt,
-                                           bool sortAscending = false)
+static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
+                                DynamicVector<T>& D,
+                                DynamicMatrix<T>& Vt,
+                                int maxIterations = 20,
+                                bool sortAscending = false)
 {
   Vt.Resize(Ut.Rows(), Ut.Rows());
   D.Resize(Ut.Rows());
   bool converged = JacobiSVDTransposedParallel(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
-                                               Ut.RowSize(), Vt.RowSize());
-  //bool converged = JacobiSVDTransposed(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
-  //                                     Ut.RowSize(), Vt.RowSize());
-
+                                               Ut.RowSize(), Vt.RowSize(), maxIterations);
   if (sortAscending)
   {
     SortSingularValuesAscending(Ut[0], D.Begin(), Vt[0], Ut.Cols(), Ut.Rows(),
@@ -729,13 +700,14 @@ MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
 }
 
 template <class T>
-MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
-                                           DynamicVector<T>& D,
-                                           bool sortAscending = false)
+static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
+                                DynamicVector<T>& D,
+                                int maxIterations = 20,
+                                bool sortAscending = false)
 {
   D.Resize(Ut.Rows());
   bool converged = JacobiSVDTransposedParallel(Ut[0], D.Begin(), Ut.Cols(), Ut.Rows(),
-                                               Ut.RowSize());
+                                               Ut.RowSize(), maxIterations);
 
   if (sortAscending)
   {
@@ -750,11 +722,9 @@ MTL_INLINE static bool JacobiSVDTransposed(DynamicMatrix<T>& Ut,
 
 // Eigen value decomposition for positive definite matrices.
 template <class T>
-MTL_INLINE static bool JacobiEigenTransposed(DynamicMatrix<T>& Ut,
-                                             DynamicVector<T>& D,
-                                             bool sortAscending = true)
+static bool JacobiEigen(DynamicMatrix<T>& U, DynamicVector<T>& D, int maxIterations = 20, bool sortAscending = true)
 {
-  return JacobiSVDTransposed(Ut, D, sortAscending);
+  return JacobiSVDTransposed(U, D, maxIterations, sortAscending);
 }
 
 template <class T>
@@ -820,7 +790,8 @@ MTL_INLINE static bool SolveJacobiSVDTransposed(DynamicVector<T>& x, I32& rank,
                                                 T& conditionNumber,
                                                 const DynamicMatrix<T>& At,
                                                 const DynamicVector<T>& b,
-                                                const T& tolerance = T(-1.0))
+                                                const T& tolerance = T(-1.0),
+                                                I32 maxIterations = 20)
 {
   assert(At.Cols() == b.Size());
 
@@ -828,7 +799,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposed(DynamicVector<T>& x, I32& rank,
   DynamicMatrix<T> Vt;
   DynamicVector<T> D;
 
-  bool fullyConverged = JacobiSVDTransposed(Ut, D, Vt);
+  bool fullyConverged = JacobiSVDTransposed(Ut, D, Vt, maxIterations);
   conditionNumber = SolveSVDTransposed(x, Ut, D, Vt, rank, b, tolerance);
 
   return fullyConverged;
@@ -838,7 +809,8 @@ MTL_INLINE static bool SolveJacobiEigen(DynamicVector<T>& x, I32& rank,
                                         T& conditionNumber,
                                         const DynamicMatrix<T>& A,
                                         const DynamicVector<T>& b,
-                                        const T& tolerance = T(-1.0))
+                                        const T& tolerance = T(-1.0),
+                                        I32 maxIterations = 20)
 {
   // A should be symmetric. For now, it will work even for non-symmetric matrices since calls SVD.
   assert(A.Cols() == A.Rows());
@@ -850,7 +822,7 @@ MTL_INLINE static bool SolveJacobiEigen(DynamicVector<T>& x, I32& rank,
   //
   // Should probably implement a more efficient routine for symmetric matrices.
   //
-  bool fullyConverged = JacobiSVDTransposed(U, D);
+  bool fullyConverged = JacobiSVDTransposed(U, D, maxIterations);
   conditionNumber = SolveEigen(x, U, D, rank, b, tolerance);
 
   return fullyConverged;
@@ -858,13 +830,13 @@ MTL_INLINE static bool SolveJacobiEigen(DynamicVector<T>& x, I32& rank,
 
 template <class T>
 MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
-(DynamicVector<T>& x, DynamicMatrix<T>& At, I32& rank, T& conditionNumber, const T& tol = T(-1.0))
+(DynamicVector<T>& x, DynamicMatrix<T>& At, I32& rank, T& conditionNumber, const T& tol = T(-1.0), I32 maxIterations = 20)
 {
   DynamicMatrix<T> Vt(At.Rows(), At.Rows());
   DynamicVector<T> D(At.Rows());
 
   bool fullyConverged = JacobiSVDTransposed(At[0], D.Begin(), Vt[0], At.Cols(), At.Rows(),
-                                            At.RowSize(), Vt.RowSize());
+                                            At.RowSize(), Vt.RowSize(), maxIterations);
 
   T tolerance = tol;
   if (tolerance < 0)
@@ -881,8 +853,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
 }
 template <int N, class T>
 MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
-(ColumnVector<N,T>& x, DynamicMatrix<T>& At,
- I32& rank, T& conditionNumber, const T& tol = T(-1.0))
+(ColumnVector<N,T>& x, DynamicMatrix<T>& At, I32& rank, T& conditionNumber, const T& tol = T(-1.0), I32 maxIterations = 20)
 {
   assert(N == At.Rows());
 
@@ -890,7 +861,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
   T D[N];
 
   bool fullyConverged = JacobiSVDTransposed(At[0], D, Vt[0], At.Cols(), N,
-                                            At.RowSize(), Vt.RowSize());
+                                            At.RowSize(), Vt.RowSize(), maxIterations);
 
   T tolerance = tol;
   if (tolerance < 0)

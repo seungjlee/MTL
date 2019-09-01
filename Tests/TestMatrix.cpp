@@ -156,7 +156,7 @@ TEST(TestInverseAndDeterminant)
 
 TEST(TestPseudoinverse)
 {
-  static const double kTol = 1e-14;
+  static const double kTol = 2e-14;
 
   enum
   {
@@ -287,7 +287,7 @@ void TestSolvers(const T& tol)
 
 TEST(TestSolversF32)
 {
-  static const float kTol = 1e-6f;
+  static const float kTol = 2e-6f;
 
   TestSolvers< 3,F32>(kTol);
   TestSolvers< 4,F32>(kTol);
@@ -299,7 +299,7 @@ TEST(TestSolversF32)
 
 TEST(TestSolversF64)
 {
-  static const double kTol = 1e-14;
+  static const double kTol = 2e-14;
 
   TestSolvers< 3,F64>(kTol);
   TestSolvers< 4,F64>(kTol);

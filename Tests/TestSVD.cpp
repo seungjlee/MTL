@@ -82,7 +82,7 @@ TEST(TestSVD)
       MTL_EQUAL_FLOAT(A1[row][col], A[row][col], kTol);
   
   Ut1 = A;
-  converged = JacobiSVDTransposed(Ut1, D1, Vt1, true);
+  converged = JacobiSVDTransposed(Ut1, D1, Vt1, 20, true);
   MTL_VERIFY(converged);
   
   for (int row = 0; row < Ut1.Rows(); row++)
@@ -100,7 +100,7 @@ TEST(TestSVD)
 
   DynamicMatrix<F64> Ut2 = A;
   DynamicVector<F64> D2;
-  converged = JacobiEigenTransposed(Ut2, D2);
+  converged = JacobiEigen(Ut2, D2);
 
   for (int i = 0; i < D1.Size(); i++)
     MTL_EQUAL_FLOAT(D2[i], D1[i], kTol);
