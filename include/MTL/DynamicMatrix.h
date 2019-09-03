@@ -264,7 +264,7 @@ public:
     Cols_ = cols;
 
     RowSize_ =
-      ((Cols_ * sizeof(T) + byteAlignment - 1) / byteAlignment) * byteAlignment / sizeof(T);
+      ((Cols_ * (I32)sizeof(T) + byteAlignment - 1) / byteAlignment) * byteAlignment / (I32)sizeof(T);
 
     Data_.Resize(Rows_ * RowSize_);
     pData_ = Data_.Begin();

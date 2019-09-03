@@ -69,7 +69,7 @@ TEST(TestMemoryBandwitdh)
     bestTime = kINF;
     for (long i = 0; i < kTries; i++)
     {
-      tempV += numberOfThreads;  // Dirty the cache memory.
+      tempV += (double)numberOfThreads;  // Dirty the cache memory.
 
       t.ResetAndStart();
       testV2.Zeros();
@@ -84,7 +84,7 @@ TEST(TestMemoryBandwitdh)
     bestTime = kINF;
     for (long i = 0; i < kTries; i++)
     {
-      tempV += numberOfThreads;  // Dirty the cache memory.
+      tempV += (double)numberOfThreads;  // Dirty the cache memory.
 
       t.ResetAndStart();
       testV2.SetAll(101);
@@ -99,7 +99,7 @@ TEST(TestMemoryBandwitdh)
     bestTime = kINF;
     for (long i = 0; i < kTries; i++)
     {
-      tempV += numberOfThreads;  // Dirty the cache memory.
+      tempV += (double)numberOfThreads;  // Dirty the cache memory.
 
       t.ResetAndStart();
       testV2 = testV1;
@@ -115,7 +115,7 @@ TEST(TestMemoryBandwitdh)
     for (long i = 0; i < kTries; i++)
     {
       testV2 = testV1;
-      tempV += numberOfThreads;  // Dirty the cache memory.
+      tempV += (double)numberOfThreads;  // Dirty the cache memory.
 
       t.ResetAndStart();
       testV2 += 17;
@@ -131,7 +131,7 @@ TEST(TestMemoryBandwitdh)
     for (long i = 0; i < kTries; i++)
     {
       testV2 = testV1;
-      tempV += numberOfThreads;  // Dirty the cache memory.
+      tempV += (double)numberOfThreads;  // Dirty the cache memory.
 
       t.ResetAndStart();
       testV2 *= 7;
@@ -147,7 +147,7 @@ TEST(TestMemoryBandwitdh)
     for (long i = 0; i < kTries; i++)
     {
       testV2 = testV1;
-      tempV += numberOfThreads;  // Dirty the cache memory.
+      tempV += (double)numberOfThreads;  // Dirty the cache memory.
 
       t.ResetAndStart();
       testV2 /= 2;
@@ -164,7 +164,7 @@ TEST(TestMemoryBandwitdh)
     {
       testV1.SetAll(-123.456);
       testV2.SetAll(9999.777);
-      tempV += numberOfThreads;  // Dirty the cache memory.
+      tempV += (double)numberOfThreads;  // Dirty the cache memory.
 
       t.ResetAndStart();
       testV2 += testV1;
@@ -181,7 +181,7 @@ TEST(TestMemoryBandwitdh)
     {
       testV1.SetAll(-123.456);
       testV2.SetAll(9999.777);
-      tempV += numberOfThreads;  // Dirty the cache memory.
+      tempV += (double)numberOfThreads;  // Dirty the cache memory.
 
       t.ResetAndStart();
       testV2 *= testV1;

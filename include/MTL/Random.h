@@ -54,7 +54,7 @@ public:
   template<class T>
   MTL_INLINE T GetNextInRange(T start, T range)
   {
-    return (GetNext() / T(U32(-1))) * range + start;
+    return (T(GetNext()) / T(U32(-1))) * range + start;
   }
 
   template<class T>

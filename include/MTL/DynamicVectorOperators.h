@@ -368,7 +368,7 @@ template <class T> MTL_INLINE static T Variance(const DynamicVector<T>& v, const
 
   DynamicVector<T> deltas = v;
   deltas -= mean;
-  return SumOfSquares(deltas) / (deltas.Size()-1);
+  return SumOfSquares(deltas) / T(deltas.Size()-1);
 }
 
 #pragma warning(push)
@@ -376,7 +376,7 @@ template <class T> MTL_INLINE static T Variance(const DynamicVector<T>& v, const
 template <class T> MTL_INLINE static T RMS(const DynamicVector<T>& v)
 {
   if (v.Size() > 0)
-    return Sqrt(SumOfSquares(v) / v.Size());
+    return Sqrt(SumOfSquares(v) / T(v.Size()));
   else
     return T(kINF);
 }

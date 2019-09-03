@@ -195,7 +195,7 @@ public:
   template <class T1, class T2>
   static void Equal(const T1& actual, const T2& expected, const String& file, U64 line)
   {
-    if (actual != expected)
+    if (T2(actual) != expected)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -223,7 +223,7 @@ public:
   template <class T1, class T2>
   static void LessThan(const T1& actual, const T2& limit, const String& file, U64 line)
   {
-    if (actual == limit)
+    if (T2(actual) == limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -232,7 +232,7 @@ public:
             << L"' which is equal to the limit '"
             << limit << L"' but it is expected to be less than this limit." << std::endl;
     }
-    else if (actual > limit)
+    else if (T2(actual) > limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -245,7 +245,7 @@ public:
   template <class T1, class T2>
   static void LessThanOrEqualTo(const T1& actual, const T2& limit, const String& file, U64 line)
   {
-    if (actual > limit)
+    if (T2(actual) > limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -258,7 +258,7 @@ public:
   template <class T1, class T2>
   static void GreaterThan(const T1& actual, const T2& limit, const String& file, U64 line)
   {
-    if (actual == limit)
+    if (T2(actual) == limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -267,7 +267,7 @@ public:
             << L"' which is equal to the limit '"
             << limit << L"' but it is expected to be greater than this limit." << std::endl;
     }
-    else if (actual < limit)
+    else if (T2(actual) < limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -280,7 +280,7 @@ public:
   template <class T1, class T2>
   static void GreterThanOrEqualTo(const T1& actual, const T2& limit, const String& file, U64 line)
   {
-    if (actual < limit)
+    if (T2(actual) < limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);

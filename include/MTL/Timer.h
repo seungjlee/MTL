@@ -112,7 +112,7 @@ private:
       std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<I64,std::ratio<1,1000000000>> t = now.time_since_epoch();
-    return t.count() * 1e-6;
+    return double(t.count()) * 1e-6;
 #endif
   }
 

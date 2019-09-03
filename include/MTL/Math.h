@@ -100,7 +100,7 @@ template <class T> MTL_INLINE static void Swap(T& a, T& b)
 
 template <class T> MTL_INLINE static T Abs(const T& a)
 {
-  return abs(a);
+  return std::abs(a);
 }
 
 template <class T> MTL_INLINE static T Sqrt(const T& a);
@@ -110,13 +110,8 @@ template <class T>
 MTL_INLINE static T Hypotenuse(const T& a, const T& b)
 {
   T aa, bb;
-#ifdef WIN32  // This does not work with g++ currently.
   aa = MTL::Abs(a);
   bb = MTL::Abs(b);
-#else
-  aa = std::abs(a);
-  bb = std::abs(b);
-#endif
   if (aa > bb)
     return aa * Sqrt(T(1.0) + Square(bb/aa));
   else
