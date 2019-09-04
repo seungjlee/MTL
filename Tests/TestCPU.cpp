@@ -44,19 +44,19 @@ TEST(TestCPU)
 
 TEST(TestMemoryBandwitdh)
 {
-  static const long kVectorSize = 4*1024*1024;
-  static const long kTries = 5;
+  static const long kVectorSize = 3*1024*1024;
+  static const long kTries = 4;
 
   Timer t;
   double bestTime;
 
-  U64 maxNumberOfThreads = CPU::Instance().NumberOfThreads();
+  int maxNumberOfThreads = Min(8, (int)CPU::Instance().NumberOfThreads());
 
   // Used for overwriting the cache since we are trying to just test memory bandwidth.
   DynamicVector<double> tempV(kVectorSize);
   tempV.Zeros();
 
-  for (long numberOfThreads = 1; numberOfThreads <= maxNumberOfThreads; numberOfThreads++)
+  for (int numberOfThreads = 1; numberOfThreads <= maxNumberOfThreads; numberOfThreads++)
   {
     DynamicVector<double> testV1(kVectorSize, 11);
     DynamicVector<double> testV2(kVectorSize, 22);
@@ -199,14 +199,14 @@ TEST(TestStreamPerformance)
 {
   static const long kVectorSize = 32*1024;
   static const long kIterations = 1000;
-  static const long kTries = 30;
+  static const long kTries = 20;
 
   Timer t;
   double bestTime;
 
-  U64 maxNumberOfThreads = CPU::Instance().NumberOfThreads();
+  int maxNumberOfThreads = Min(8, (int)CPU::Instance().NumberOfThreads());
 
-  for (long numberOfThreads = 1; numberOfThreads <= maxNumberOfThreads; numberOfThreads++)
+  for (int numberOfThreads = 1; numberOfThreads <= maxNumberOfThreads; numberOfThreads++)
   {
     DynamicVector<double> testV1(kVectorSize, -1);
     DynamicVector<double> testV2(kVectorSize, -2);
