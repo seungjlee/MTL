@@ -51,7 +51,7 @@ static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V, I32 maxIte
   I32 iteration;
   for (iteration = 0; iteration < maxIterations; iteration++)
   {
-    bool changed = false;
+    T sumOfDeltasSquared = 0;
 
     for (I32 i = 0; i < N-1; i++)
     {
@@ -87,7 +87,7 @@ static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V, I32 maxIte
         if (delta <= 0)
           continue;
 
-        changed = true;
+        sumOfDeltasSquared += Square(delta);
 
         GivensRotation<M,N>(A, i, j, c, s);
         W[i] += delta;
@@ -97,9 +97,16 @@ static bool JacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V, I32 maxIte
       }
     }
 
-    if (!changed)
+#ifdef DEBUG_SVD_CONVERGENCE
+    wprintf(L"sumOfDeltasSquared = %.12e\n", sumOfDeltasSquared);
+#endif
+    if (sumOfDeltasSquared < epsilon2)
       break;
   }
+
+#ifdef DEBUG_SVD_CONVERGENCE
+  ConsoleOut << L"(1) Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
+#endif
 
   for (I32 i = 0; i < N; i++)
     W[i] = Sqrt(A.ColumnSumOfSquares(i));
@@ -148,7 +155,7 @@ MTL_INLINE static T SolveSVD(ColumnVector<N,T>& x, const Matrix<M,N,T>& U, const
 {
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = NumericalEpsilon<T>();
+    tolerance = M * Epsilon<T>() * D[0];
 
   rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 
@@ -207,7 +214,7 @@ MTL_INLINE static bool SolveJacobiSVDHomogeneous(Matrix<M,N,T>& A, ColumnVector<
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = NumericalEpsilon<T>();
+    tolerance = A.Rows() * Epsilon<T>() * D[0];
 
   rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 
@@ -238,7 +245,7 @@ static Matrix<N,M,T> ComputePseudoinverseJacobiSVD(const Matrix<M,N,T>& A,
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = NumericalEpsilon<T>();
+    tolerance = A.Rows() * Epsilon<T>() * D[0];
 
   I32 rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 
@@ -257,7 +264,7 @@ static Matrix<N,M,T> ComputePseudoinverseJacobiSVD(const Matrix<M,N,T>& A,
 }
 
 template<class T>
-static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T* At, T* W, I32 M, I32 N, I32 rowSizeA)
+static T JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 {
   const T epsilon = NumericalEpsilon<T>();
   const T epsilon2 = Square(epsilon);
@@ -275,7 +282,7 @@ static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T
   T pp = p*p;
 
   if (pp <= epsilon2*a*b)
-    return false;
+    return T(0);
 
   T beta = a - b;
   T gamma = Sqrt(T(4)*pp + beta*beta);
@@ -295,7 +302,7 @@ static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T
   }
 
   if (delta <= 0)
-    return false;
+    return T(0);
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
   GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
@@ -305,7 +312,7 @@ static bool JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T
   W[i] += delta;
   W[j] -= delta;
 
-  return true;
+  return delta;
 }
 
 static void ComputeJacobiParallelPairs(DynamicVector<DynamicVector<Point2D<I32>>>& pairs, I32 N)
@@ -338,7 +345,6 @@ static void ComputeJacobiParallelPairs(DynamicVector<DynamicVector<Point2D<I32>>
         used[pair.y()] = 1;
         pair.x(-1);
         count++;
-        //break;
       }
     }
   }
@@ -365,43 +371,44 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
 
   DynamicVector<DynamicVector<Point2D<I32>>> parallelPairs;
   ComputeJacobiParallelPairs(parallelPairs, N);
-  DynamicVector<I32> setChanged;
+  DynamicVector<T> deltas;
 
   I32 iteration;
   for (iteration = 0; iteration < maxIterations; iteration++)
   {
-    bool changed = false;
+    T sumOfDeltasSquared = 0;
     
     for (const auto& set : parallelPairs)
     {
       if (set.Size() > 1)
       {
-        setChanged.Resize(set.Size());
-
-        I32 blockSize = (I32)MTL::ComputeParallelSubSizesBlockSize(set.Size(), numberOfThreads);
-
-        #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-        for (I32 k = 0; k < (I32)set.Size(); k++)
+        deltas.Resize(set.Size());
         {
-          int i = set[k].x();
-          int j = set[k].y();
-          T c, s;
+          I32 blockSize = (I32)MTL::ComputeParallelSubSizesBlockSize(set.Size(), numberOfThreads);
 
-          setChanged[k] = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
-          if (setChanged[k])
+          #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+          for (I32 k = 0; k < (I32)set.Size(); k++)
           {
+            int i = set[k].x();
+            int j = set[k].y();
+            T c, s;
+
+            deltas[k] = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+            if (deltas[k] > 0)
+            {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-            GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
+              GivensRotation_StreamAligned_Sequential(Vt + i * rowSizeV, Vt + j * rowSizeV, c, s, N);
 #else
-            GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
+              GivensRotation_Sequential(Vt + i * rowSizeV, Vt + j * rowSizeV, c, s, Vt + i * rowSizeV + N);
 #endif
+            }
           }
         }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        changed |= Sum_StreamAligned_Sequential(setChanged.Begin(), setChanged.Size()) > 0;
+        sumOfDeltasSquared += SumOfSquares_StreamAligned_Sequential(deltas.Begin(), deltas.Size());
 #else
-        changed |= Sum_Sequential(setChanged.Begin(), setChanged.End()) > 0;
+        sumOfDeltasSquared += SumOfSquares_Sequential(deltas.Begin(), deltas.End());
 #endif
       }
       else
@@ -410,23 +417,29 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
         int j = set[0].y();
         T c, s;
 
-        if (JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA))
+        T delta = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+        if (delta > 0)
         {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
           GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
 #else
           GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
 #endif
-          changed = true;
+          sumOfDeltasSquared += Square(delta);
         }
       }
     }
 
-    if (!changed)
+#ifdef DEBUG_SVD_CONVERGENCE
+    wprintf(L"sumOfDeltasSquared = %.12e\n", sumOfDeltasSquared);
+#endif
+    if (sumOfDeltasSquared < NumericalEpsilonSquared<T>())
       break;
   }
 
-  ConsoleOut << L"Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
+#ifdef DEBUG_SVD_CONVERGENCE
+  ConsoleOut << L"(2) Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
+#endif
 
   for (I32 i = 0; i < N; i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -465,28 +478,32 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
   I32 iteration;
   for (iteration = 0; iteration < maxIterations; iteration++)
   {
-    bool changed = false;
+    T sumOfDeltasSquared = 0;
 
     for (I32 i = 0; i < N-1; i++)
     {
       for (I32 j = i+1; j < N; j++)
       {
         T c, s;
-        if (JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA))
+        T delta = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+        if (delta > 0)
         {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
           GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
 #else
           GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
 #endif
-          changed = true;
+          sumOfDeltasSquared += Square(delta);
         }
       }
     }
 
-    if (!changed)
+    wprintf(L"sumOfDeltasSquared = %.12e\n", sumOfDeltasSquared);
+    if (sumOfDeltasSquared < Epsilon<T>())
       break;
   }
+
+  ConsoleOut << L"Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
 
   for (I32 i = 0; i < N; i++)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -524,51 +541,56 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA,
 
   DynamicVector<DynamicVector<Point2D<I32>>> parallelPairs;
   ComputeJacobiParallelPairs(parallelPairs, N);
-  DynamicVector<I32> setChanged;
+  DynamicVector<T> deltas;
 
   I32 iteration;
   for (iteration = 0; iteration < maxIterations; iteration++)
   {
-    bool changed = false;
+    T sumOfDeltasSquared = 0;
 
     for (const auto& set : parallelPairs)
     {
       if (set.Size() > 1)
       {
-        setChanged.Resize(set.Size());
-
-        I32 blockSize = (I32)MTL::ComputeParallelSubSizesBlockSize(set.Size(), numberOfThreads);
-
-        #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
-        for (I32 k = 0; k < (I32)set.Size(); k++)
+        deltas.Resize(set.Size());
         {
-          int i = set[k].x();
-          int j = set[k].y();
-          T c, s;
+          I32 blockSize = (I32)MTL::ComputeParallelSubSizesBlockSize(set.Size(), numberOfThreads);
 
-          setChanged[k] = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+          #pragma omp parallel for num_threads(numberOfThreads) schedule(dynamic, blockSize)
+          for (I32 k = 0; k < (I32)set.Size(); k++)
+          {
+            int i = set[k].x();
+            int j = set[k].y();
+            T c, s;
+
+            deltas[k] = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+          }
         }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        changed |= Sum_StreamAligned_Sequential(setChanged.Begin(), setChanged.Size()) > 0;
+        sumOfDeltasSquared += SumOfSquares_StreamAligned_Sequential(deltas.Begin(), deltas.Size());
 #else
-        changed |= Sum_Sequential(setChanged.Begin(), setChanged.End()) > 0;
+        sumOfDeltasSquared += SumOfSquares_Sequential(deltas.Begin(), deltas.End());
 #endif
       }
       else
       {
         T c, s;
-        if (JacobiRotationsTransposed(c, s, set[0].x(), set[0].y(), iteration,
-                                      At, W, M, N, rowSizeA))
-          changed = true;
+        T delta = JacobiRotationsTransposed(c, s, set[0].x(), set[0].y(), iteration, At, W, M, N, rowSizeA);
+        sumOfDeltasSquared += Square(delta);
       }
     }
 
-    if (!changed)
+#ifdef DEBUG_SVD_CONVERGENCE
+    wprintf(L"sumOfDeltasSquared = %.12e\n", sumOfDeltasSquared);
+#endif
+    if (sumOfDeltasSquared < NumericalEpsilonSquared<T>())
       break;
   }
 
-  ConsoleOut << L"Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
+#ifdef DEBUG_SVD_CONVERGENCE
+  ConsoleOut << L"(3) Iterations: " << iteration << L", Max: " << maxIterations << std::endl;
+#endif
 
   for (I32 i = 0; i < N; i++)
   {
@@ -738,7 +760,7 @@ MTL_INLINE static T SolveSVDTransposed(DynamicVector<T>& x,
 {
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = NumericalEpsilon<T>();
+    tolerance = Ut.Cols() * Epsilon<T>() * D[0];
 
   rank = (I32)D.Size();
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
@@ -764,7 +786,7 @@ MTL_INLINE static T SolveEigen(DynamicVector<T>& x,
 {
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = NumericalEpsilon<T>();
+    tolerance = U.Cols() * Epsilon<T>() * D[0];
 
   rank = (I32)D.Size();
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
@@ -840,7 +862,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = NumericalEpsilon<T>();
+    tolerance = At.Cols() * Epsilon<T>() * D[0];
 
   rank = (I32)D.Size();
   for(; rank > 0 && D[rank-1] < tolerance; rank--);
@@ -865,7 +887,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposedHomogeneous
 
   T tolerance = tol;
   if (tolerance < 0)
-    tolerance = NumericalEpsilon<T>();
+    tolerance = At.Cols() * Epsilon<T>() * D[0];
 
   rank = ComputeRankFromSingularValues<N,T>(D, tolerance);
 

@@ -35,14 +35,14 @@ namespace MTL
 // Assumes the input matrix is symmetric.
 // Return true if decomposition of the matrix converged.
 template<class T>
-static bool NullSpaceSymmetric(DynamicMatrix<T>& null)
+static bool NullSpaceSymmetric(DynamicMatrix<T>& null, I32 maxIterations = 20)
 {
   assert(null.Rows() == null.Cols());
 
   DynamicVector<T> D;
-  bool converged = JacobiSVDTransposed(null, D);
+  bool converged = JacobiSVDTransposed(null, D, maxIterations);
 
-  T tolerance = NumericalEpsilon<T>();
+  T tolerance = null.Rows() * D[0] * Epsilon<T>();
   I32 rank = (I32)D.Size();
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
 
@@ -56,15 +56,15 @@ static bool NullSpaceSymmetric(DynamicMatrix<T>& null)
 }
 // This is the more stable version in case A is singular or nearly singular.
 template<class T>
-static bool NullSpaceSymmetric(DynamicMatrix<T>& null, const DynamicMatrix<T>& A)
+static bool NullSpaceSymmetric(DynamicMatrix<T>& null, const DynamicMatrix<T>& A, I32 maxIterations = 20)
 {
   assert(A.Rows() == A.Cols());
 
   DynamicMatrix<T> U = A;
   DynamicVector<T> D;
-  bool converged = JacobiSVDTransposed(U, D, null);
+  bool converged = JacobiSVDTransposed(U, D, null, maxIterations);
 
-  T tolerance = NumericalEpsilon<T>();
+  T tolerance = null.Rows() * D[0] * Epsilon<T>();
   I32 rank = (I32)D.Size();
   for (; rank > 0 && D[rank-1] < tolerance; rank--);
 
@@ -78,12 +78,12 @@ static bool NullSpaceSymmetric(DynamicMatrix<T>& null, const DynamicMatrix<T>& A
 }
 
 // Compute null space transform of a row vector.
-template<I32 N, class T> static Matrix<N,N-1,T> NullSpace(const RowVector<N,T>& v)
+template<I32 N, class T> static Matrix<N,N-1,T> NullSpace(const RowVector<N,T>& v, I32 maxIterations = 20)
 {
   T S[N];
   SquareMatrix<N,T> V;
   RowVector<N,T> temp(v);
-  JacobiSVD<1,N>(temp, S, V);
+  JacobiSVD<1,N>(temp, S, V, maxIterations);
 
   return V.template SubMatrix<0,1,N,(N-1)>();
 }
