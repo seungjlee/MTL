@@ -243,7 +243,7 @@ TEST(TestHouseholderQR_Speed)
     DynamicMatrix<F64> temp(At);
     I32 rank = SolveHouseholderQRTransposed(x, temp);
     t_QR.Stop();
-    MTL_EQUAL(rank, N);
+    MTL_EQUAL(rank, (I32)N);
 
     DynamicMatrix<F64> A = At.ComputeTranspose();
     DynamicVector<F64> residuals = A*x - b;

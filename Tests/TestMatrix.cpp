@@ -339,10 +339,10 @@ TEST(Test_ColumnVector_MaxNorm)
   ColumnVector4D V2(v2);
   ColumnVector4D V3(v3);
   ColumnVector4D V4(v4);
-  MTL_EQUAL(V1.MaxNorm(), 5);
-  MTL_EQUAL(V2.MaxNorm(), 7);
-  MTL_EQUAL(V3.MaxNorm(), 8);
-  MTL_EQUAL(V4.MaxNorm(), 9);
+  MTL_EQUAL(V1.MaxNorm(), 5.0);
+  MTL_EQUAL(V2.MaxNorm(), 7.0);
+  MTL_EQUAL(V3.MaxNorm(), 8.0);
+  MTL_EQUAL(V4.MaxNorm(), 9.0);
 }
 
 TEST(Test_SetAll)

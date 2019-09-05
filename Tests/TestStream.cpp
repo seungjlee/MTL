@@ -69,8 +69,8 @@ TEST(TestToFloat)
 
   for (int i = 0; i < size; i++)
   {
-    MTL_EQUAL(v32[i], u[i]);
-    MTL_EQUAL(v64[i], u[i]);
+    MTL_EQUAL(v32[i], (MTL::F32)u[i]);
+    MTL_EQUAL(v64[i], (MTL::F64)u[i]);
   }
 #endif
 }

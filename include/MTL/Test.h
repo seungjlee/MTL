@@ -192,10 +192,10 @@ public:
     }
   }
 
-  template <class T1, class T2>
-  static void Equal(const T1& actual, const T2& expected, const String& file, U64 line)
+  template <class T>
+  static void Equal(const T& actual, const T& expected, const String& file, U64 line)
   {
-    if (T2(actual) != expected)
+    if (actual != expected)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -220,10 +220,10 @@ public:
     }
   }
 
-  template <class T1, class T2>
-  static void LessThan(const T1& actual, const T2& limit, const String& file, U64 line)
+  template <class T>
+  static void LessThan(const T& actual, const T& limit, const String& file, U64 line)
   {
-    if (T2(actual) == limit)
+    if (actual == limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -232,7 +232,7 @@ public:
             << L"' which is equal to the limit '"
             << limit << L"' but it is expected to be less than this limit." << std::endl;
     }
-    else if (T2(actual) > limit)
+    else if (actual > limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -242,10 +242,10 @@ public:
             << limit << L"'" << std::endl;
     }
   }
-  template <class T1, class T2>
-  static void LessThanOrEqualTo(const T1& actual, const T2& limit, const String& file, U64 line)
+  template <class T>
+  static void LessThanOrEqualTo(const T& actual, const T& limit, const String& file, U64 line)
   {
-    if (T2(actual) > limit)
+    if (actual > limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -255,10 +255,10 @@ public:
     }
   }
 
-  template <class T1, class T2>
-  static void GreaterThan(const T1& actual, const T2& limit, const String& file, U64 line)
+  template <class T>
+  static void GreaterThan(const T& actual, const T& limit, const String& file, U64 line)
   {
-    if (T2(actual) == limit)
+    if (actual == limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -267,7 +267,7 @@ public:
             << L"' which is equal to the limit '"
             << limit << L"' but it is expected to be greater than this limit." << std::endl;
     }
-    else if (T2(actual) < limit)
+    else if (actual < limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);
@@ -277,10 +277,10 @@ public:
             << limit << L"'" << std::endl;
     }
   }
-  template <class T1, class T2>
-  static void GreterThanOrEqualTo(const T1& actual, const T2& limit, const String& file, U64 line)
+  template <class T>
+  static void GreterThanOrEqualTo(const T& actual, const T& limit, const String& file, U64 line)
   {
-    if (T2(actual) < limit)
+    if (actual < limit)
     {
       TotalNumberOfFailures_++;
       ColorScope c(COLOR_ERROR);

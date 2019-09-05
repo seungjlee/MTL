@@ -68,7 +68,7 @@ TEST(TestMultiplication)
 
   CompressedSparseMatrix<F64> A(fullA);
 
-  MTL_EQUAL(A.NumberOfElements(), 8);
+  MTL_EQUAL((int)A.NumberOfElements(), 8);
 
   DynamicVector<F64> C;
   A.MultiplyTransposed(C, B);

@@ -82,7 +82,7 @@ TEST(TestSVD)
       MTL_EQUAL_FLOAT(A1[row][col], A[row][col], kTol);
   
   Ut1 = A;
-  converged = JacobiSVDTransposed(Ut1, D1, Vt1, 20, true);
+  converged = JacobiSVDTransposed(Ut1, D1, Vt1, true);
   MTL_VERIFY(converged);
   
   for (int row = 0; row < Ut1.Rows(); row++)

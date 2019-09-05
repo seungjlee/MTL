@@ -243,16 +243,16 @@ TEST(Test_AddBack_Insert)
   }
 
   FOR_EACH_INDEX(v)
-    MTL_EQUAL(v[vIndex], vIndex);
+    MTL_EQUAL(v[vIndex], (int)vIndex);
 
   v.Insert(&v[11], 777);
 
   FOR_EACH_INDEX(v)
   {
     if (vIndex < 11)
-      MTL_EQUAL(v[vIndex], vIndex);
+      MTL_EQUAL(v[vIndex], (int)vIndex);
     else if(vIndex > 11)
-      MTL_EQUAL(v[vIndex], vIndex-1);
+      MTL_EQUAL(v[vIndex], (int)vIndex-1);
     else
       MTL_EQUAL(v[vIndex], 777);
   }

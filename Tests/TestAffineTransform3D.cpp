@@ -37,9 +37,9 @@ TEST(TestRotationTranslation3D)
                                Vector3D<F64>(1,2,3));
   T.ScaleVector(3);
 
-  MTL_EQUAL(T.Vector().x(), 3);
-  MTL_EQUAL(T.Vector().y(), 6);
-  MTL_EQUAL(T.Vector().z(), 9);
+  MTL_EQUAL(T.Vector().x(), 3.0);
+  MTL_EQUAL(T.Vector().y(), 6.0);
+  MTL_EQUAL(T.Vector().z(), 9.0);
 }
 
 
