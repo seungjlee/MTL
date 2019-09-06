@@ -59,6 +59,6 @@ private:
   bool Ready_;
 };
 
-}
+}  // namespace MTL
 
 #endif  // MTL_EVENT_H

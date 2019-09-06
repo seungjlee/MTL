@@ -40,8 +40,6 @@ static bool SetThreadName(unsigned long dwThreadID, char* threadName);
 namespace MTL
 {
 
-class Exception;
-
 template<class DataType>
 class WorkerThread
 {
@@ -189,7 +187,7 @@ private:
   }
 };
 
-}
+}  // namespace MTL
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
