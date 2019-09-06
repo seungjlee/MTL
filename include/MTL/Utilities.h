@@ -34,7 +34,7 @@ namespace MTL
 struct ProgressData
 {
   ProgressData() {}
-  ProgressData(double percent, bool showFractions, int barLength, wchar_t* color, int indent)
+  ProgressData(double percent, bool showFractions, int barLength, const wchar_t* color, int indent)
     : Percent(percent), ShowFractions(showFractions), BarLength(barLength), Color(color), Indent(indent)
   {
   }
@@ -42,7 +42,7 @@ struct ProgressData
   double Percent;
   bool ShowFractions;
   int BarLength;
-  wchar_t* Color;
+  const wchar_t* Color;
   int Indent;
 };
 
@@ -80,7 +80,7 @@ protected:
 
 private:
   int LastIntegerPercentage_;
-  void ShowProgressBar(double percent, bool showFractions, int barLength, wchar_t* color, int indent)
+  void ShowProgressBar(double percent, bool showFractions, int barLength, const wchar_t* color, int indent)
   {
     int numberOfBlocksToPrint = int(barLength * percent);
 
@@ -112,7 +112,8 @@ private:
   }
 };
 
-static void ShowProgressBar(double percent, bool showFractions = false, int barLength = 50, wchar_t* color = COLOR_FG(0, 255, 0), int indent = 2)
+static void ShowProgressBar(double percent, bool showFractions = false, int barLength = 50,
+                            const wchar_t* color = COLOR_FG(0, 255, 0), int indent = 2)
 {
   static ProgressBarWorker worker;
   worker.QueueWork(ProgressData(percent, showFractions, barLength, color, indent));
