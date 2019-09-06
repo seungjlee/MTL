@@ -58,6 +58,8 @@ typedef std::wostream OutputStream;
 #error Coming soon!
 #endif
 
+}  // namespace MTL
+
 #ifndef MTL_INLINE
   #define MTL_INLINE inline
 #endif
@@ -87,7 +89,11 @@ typedef std::wostream OutputStream;
   #define MTL_ENABLE_OPENMP 1
 #endif
 
-}  // namespace MTL
-
+#define MTL_THROW(MSG)                                                                               \
+{                                                                                                    \
+  char _msg_[1024];                                                                                  \
+  std::snprintf(_msg_, sizeof(_msg_), "%s, %s, line %d: %s", __FUNCTION__, __FILE__, __LINE__, MSG); \
+  throw MTL::Exception(MTL::ToUTF16(_msg_));                                                         \
+}
 
 #endif  // MTL_DEFINITIONS_H

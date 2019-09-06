@@ -335,7 +335,7 @@ TEST(TestSolversIdentityMatrix)
 {
   enum
   {
-    N = 639,
+    N = 711,
     kRepeats = 10
   };
 
@@ -391,7 +391,10 @@ TEST(TestSolversIdentityMatrix)
       MTL_EQUAL_FLOAT(  svdX[k], b[k], kTol);
       MTL_EQUAL_FLOAT(eigenX[k], b[k], kTol);
     }
+
+    ShowProgressBar(double(i + 1) / kRepeats);
   }
+  Out() << std::endl;
 
   wprintf(L"  QR    solver: %9.3f msecs (%d times)\n",    t_QR.Milliseconds(), kRepeats);
   wprintf(L"  LDLt  solver: %9.3f msecs (%d times)\n",  t_LDLt.Milliseconds(), kRepeats);

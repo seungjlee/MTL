@@ -194,7 +194,10 @@ TEST(TestHouseholderQR_Speed)
       MTL_EQUAL_FLOAT(v2[vIndex], Square(v[vIndex]), kTol);
       MTL_EQUAL_FLOAT(v1[vIndex], Abs(v[vIndex]), kTol);
     }
+
+    ShowProgressBar(double(i + 1) / kRepeats);
   }
+  Out() << std::endl;
 }
 
 TEST(TestCastConstructor)
@@ -265,7 +268,7 @@ TEST(Test_SumOfSquaredDifferences)
   enum
   {
     N = 128*1024,
-    kRepeats = 1000
+    kRepeats = 777
   };
 
   Random random;
@@ -279,5 +282,8 @@ TEST(Test_SumOfSquaredDifferences)
     F64 s2 = SumOfSquaredDifferences(v1, v2);
 
     MTL_EQUAL_FLOAT(s1, s2, kTol);
+
+    ShowProgressBar(double(i + 1) / kRepeats);
   }
+  Out() << std::endl;
 }

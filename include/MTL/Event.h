@@ -1,8 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee, https://github.com/seungjlee/MTL
-//
+// Copyright (c) 2019: Seung Jae Lee, https://github.com/seungjlee/MTL
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -23,32 +22,43 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MTL_EXCEPTION_H
-#define MTL_EXCEPTION_H
 
-#include <MTL/StringHelpers.h>
-#include <exception>
+#ifndef MTL_EVENT_H
+#define MTL_EVENT_H
+
+#include <condition_variable>
 
 namespace MTL
 {
 
-class Exception : public std::runtime_error
+class Event
 {
 public:
-  Exception(const String& message = L"", U64 ID = 0)
-    : std::runtime_error(MTL::ToUTF8(message)), Message_(message), ID_(ID)
+  Event() : Ready_(false)
   {
   }
 
-  const String& Message() const  { return Message_; }
-  U64 ID() const  { return ID_;}
+  void Wait()
+  {
+    std::lock_guard<std::mutex> lock(Mutex_);
+    while (!Ready_)
+      ConditionVariable_.wait(Mutex_);
+    Ready_ = false;
+  }
+
+  void Signal()
+  {
+    std::lock_guard<std::mutex> lock(Mutex_);
+    Ready_ = true;
+    ConditionVariable_.notify_all();
+  }
 
 private:
-  String Message_;
-  U64 ID_;
+  std::mutex Mutex_;
+  std::condition_variable_any ConditionVariable_;
+  bool Ready_;
 };
 
-}  // namespace MTL
+}
 
-
-#endif  // MTL_EXCEPTION_H
+#endif  // MTL_EVENT_H
