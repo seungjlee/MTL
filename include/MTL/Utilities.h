@@ -80,6 +80,7 @@ protected:
 
 private:
   int LastIntegerPercentage_;
+
   void ShowProgressBar(double percent, bool showFractions, int barLength, const wchar_t* color, int indent)
   {
     int numberOfBlocksToPrint = int(barLength * percent);
@@ -112,11 +113,15 @@ private:
   }
 };
 
+static bool ProgressBarEnabled = true;
 static void ShowProgressBar(double percent, bool showFractions = false, int barLength = 50,
                             const wchar_t* color = COLOR_FG(0, 255, 0), int indent = 2)
 {
-  static ProgressBarWorker worker;
-  worker.QueueWork(ProgressData(percent, showFractions, barLength, color, indent));
+  if (ProgressBarEnabled)
+  {
+    static ProgressBarWorker worker;
+    worker.QueueWork(ProgressData(percent, showFractions, barLength, color, indent));
+  }
 }
 
 }  // namespace MTL

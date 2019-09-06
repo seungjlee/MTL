@@ -14,7 +14,7 @@ totalStartTime = time.time()
 
 SkipTestList = []
 
-TestArguments = ['-NoDisplay']
+TestArguments = ['-NoDisplay -DisableProgressBar']
 TestSeparator = '{:-<80}\n'.format('').encode()
 CurrentDir = os.getcwd();
 Pattern = '*'

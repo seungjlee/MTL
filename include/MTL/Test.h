@@ -26,11 +26,12 @@
 #ifndef MTL_TEST_H
 #define MTL_TEST_H
 
-#include "CPU.h"
-#include "Colors.h"
-#include "DynamicVector.h"
-#include "Exception.h"
-#include "Timer.h"
+#include <MTL/CPU.h>
+#include <MTL/Colors.h>
+#include <MTL/DynamicVector.h>
+#include <MTL/Exception.h>
+#include <MTL/Timer.h>
+#include <MTL/Utilities.h>
 
 //
 // Macros.
@@ -387,6 +388,9 @@ private:
   {
     if (List_.Size() > 0)
     {
+      if (FindArgumentIgnoreCase(L"-DisableProgressBar") > 0)
+        ProgressBarEnabled = false;
+
       Out() << std::endl;
       Initialize();
 
