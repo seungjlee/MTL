@@ -65,15 +65,16 @@ MTL_INLINE static void GivensRotation(Matrix<M,N,T>& A, I32 i, I32 j, const T& c
   }
 }
 
-template<class T>
-MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, const T* xEnd)
+template<class T> MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, const T* xEnd)
 {
   for (; x < xEnd; x++, y++)
     GivensRotation(*x, *y, c, s);
 }
-template<class T>
-MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, const T* xEnd,
-                                                 T& a, T& b)
+template<class T> MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, SizeType N)
+{
+  GivensRotation_Sequential(x, y, c, s, x + N);
+}
+template<class T> MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, const T* xEnd, T& a, T& b)
 {
   for (; x < xEnd; x++, y++)
   {
@@ -81,6 +82,10 @@ MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T
     b += Square(*y);
     GivensRotation(*x, *y, c, s);
   }
+}
+template<class T> MTL_INLINE static void GivensRotation_Sequential(T* x, T* y, const T& c, const T& s, SizeType N, T& a, T& b)
+{
+  GivensRotation_Sequential(x, y, c, s, x + N, a, b);
 }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX

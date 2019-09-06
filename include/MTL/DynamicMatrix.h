@@ -43,7 +43,7 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     P[i*rowSizeP + i] = SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
 #else
-    P[i*rowSizeP + i] = SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
+    P[i*rowSizeP + i] = SumOfSquares_Sequential(M + i*rowSizeM, cols);
 #endif
 
     for (I32 j = i + 1; j < rows; j++)
@@ -53,7 +53,7 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
                                                               M + j*rowSizeM, cols);
 #else
       P[i*rowSizeP + j] = DotProduct_Sequential(M + i*rowSizeM,
-                                                M + j*rowSizeM, M + i*rowSizeM + cols);
+                                                M + j*rowSizeM, cols);
 #endif
       P[j*rowSizeP + i] = P[i*rowSizeP + j];
     }
@@ -80,7 +80,7 @@ MTL_INLINE static void AddMultiplyByTranspose(T* P, const T* M, I32 rows, I32 co
                                                                M + j*rowSizeM, cols);
 #else
       P[i*rowSizeP + j] += DotProduct_Sequential(M + i*rowSizeM,
-                                                 M + j*rowSizeM, M + i*rowSizeM + cols);
+                                                 M + j*rowSizeM, cols);
 #endif
     }
   }
@@ -104,17 +104,15 @@ MTL_INLINE static void MultiplyByTranspose_LowerMatrix(T* P, const T* M, I32 row
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         P[i*rowSizeP + j] = SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
 #else
-        P[i*rowSizeP + j] = SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
+        P[i*rowSizeP + j] = SumOfSquares_Sequential(M + i*rowSizeM, cols);
 #endif
       }
       else
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        P[j*rowSizeP + i] = DotProduct_StreamAligned_Sequential(M + i*rowSizeM,
-                                                                M + j*rowSizeM, cols);
+        P[j*rowSizeP + i] = DotProduct_StreamAligned_Sequential(M + i*rowSizeM, M + j*rowSizeM, cols);
 #else
-        P[j*rowSizeP + i] = DotProduct_Sequential(M + i*rowSizeM,
-                                                  M + j*rowSizeM, M + i*rowSizeM + cols);
+        P[j*rowSizeP + i] = DotProduct_Sequential(M + i*rowSizeM, M + j*rowSizeM, cols);
 #endif
       }
     }
@@ -148,11 +146,9 @@ MTL_INLINE static void MultiplyTransposed(T* P, const T* A, const T* Bt,
     for (I32 col = 0; col < cols; col++)
     {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      P[row*rowSizeP + col] = DotProduct_StreamAligned_Sequential(A + row*rowSizeA,
-                                                                  Bt + col*rowSizeBt, N);
+      P[row*rowSizeP + col] = DotProduct_StreamAligned_Sequential(A + row*rowSizeA, Bt + col*rowSizeBt, N);
 #else
-      P[row*rowSizeP + col] = DotProduct_Sequential(A + row*rowSizeA,
-	                                            Bt + col*rowSizeBt, A + row*rowSizeA + N);
+      P[row*rowSizeP + col] = DotProduct_Sequential(A + row*rowSizeA, Bt + col*rowSizeBt, N);
 #endif
     }
   }
@@ -168,11 +164,9 @@ MTL_INLINE static void AddMultiplyTransposed(T* P, const T* A, const T* Bt,
     for (I32 col = 0; col < cols; col++)
     {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-      P[row*rowSizeP + col] += DotProduct_StreamAligned_Sequential(A + row*rowSizeA,
-                                                                   Bt + col*rowSizeBt, N);
+      P[row*rowSizeP + col] += DotProduct_StreamAligned_Sequential(A + row*rowSizeA, Bt + col*rowSizeBt, N);
 #else
-      P[row*rowSizeP + col] += DotProduct_Sequential(A + row*rowSizeA,
-                                                     Bt + col*rowSizeBt, A + row*rowSizeA + N);
+      P[row*rowSizeP + col] += DotProduct_Sequential(A + row*rowSizeA, Bt + col*rowSizeBt, N);
 #endif
     }
   }
@@ -320,7 +314,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       result[i] = DotProduct_StreamAligned_Sequential((*this)[i], v.Begin(), Cols());
 #else
-      result[i] = DotProduct_Sequential((*this)[i], v.Begin(), (*this)[i] + Cols());
+      result[i] = DotProduct_Sequential((*this)[i], v.Begin(), Cols());
 #endif
 
     return result;
@@ -396,7 +390,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       Addition_StreamAligned_Sequential((*this)[i], B[i], Cols());
 #else
-      Addition_Sequential((*this)[i], B[i], (*this)[i] + Cols());
+      Addition_Sequential((*this)[i], B[i], Cols());
 #endif
 
     return *this;
@@ -421,7 +415,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       Subtraction_StreamAligned_Sequential((*this)[i], B[i], Cols());
 #else
-      Subtraction_Sequential((*this)[i], B[i], (*this)[i] + Cols());
+      Subtraction_Sequential((*this)[i], B[i], Cols());
 #endif
 
     return *this;
@@ -445,7 +439,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       UnaryMinus_StreamAligned_Sequential(A[i], A.Cols());
 #else
-      UnaryMinus_Sequential(A[i], A[i] + A.Cols());
+      UnaryMinus_Sequential(A[i], A.Cols());
 #endif
 
     return A;
@@ -460,7 +454,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarAddition_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
-    ScalarAddition_Sequential(A[i], scalar, A[i] + A.Cols());
+    ScalarAddition_Sequential(A[i], scalar, A.Cols());
 #endif
 
     return *this;
@@ -481,7 +475,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarSubtraction_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
-      ScalarSubtraction_Sequential(A[i], scalar, A[i] + A.Cols());
+      ScalarSubtraction_Sequential(A[i], scalar, A.Cols());
 #endif
 
     return *this;
@@ -502,7 +496,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarMultiplication_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
-      ScalarMultiplication_Sequential(A[i], scalar, A[i] + A.Cols());
+      ScalarMultiplication_Sequential(A[i], scalar, A.Cols());
 #endif
 
     return *this;
@@ -523,7 +517,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarDivision_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
-      ScalarDivision_Sequential(A[i], scalar, A[i] + A.Cols());
+      ScalarDivision_Sequential(A[i], scalar, A.Cols());
 #endif
 
     return *this;
@@ -546,7 +540,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       sum += Sum_StreamAligned_Sequential((*this)[i], Cols());
 #else
-      sum += Sum_Sequential((*this)[i], (*this)[i] + Cols());
+      sum += Sum_Sequential((*this)[i], Cols());
 #endif
 
     return sum;
@@ -561,7 +555,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       sum += SumOfSquares_StreamAligned_Sequential((*this)[i], Cols());
 #else
-      sum += SumOfSquares_Sequential((*this)[i], (*this)[i] + Cols());
+      sum += SumOfSquares_Sequential((*this)[i], Cols());
 #endif
 
     return sum;
@@ -582,7 +576,7 @@ public:
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       T sum = SumOfAbsolutes_StreamAligned_Sequential((*this)[i], Cols());
 #else
-      T sum = SumOfAbsolutes_Sequential((*this)[i], (*this)[i] + Cols());
+      T sum = SumOfAbsolutes_Sequential((*this)[i], Cols());
 #endif
       if (sum > max)
         max = sum;

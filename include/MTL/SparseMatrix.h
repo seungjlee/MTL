@@ -356,10 +356,9 @@ public:
           if (i == j)
           {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-            T sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
-                                                          numberOfThreads);
+            T sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
-            T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+            T sum = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #endif
             sparseRows[i].PushBack(i);
             sparseValues[i].PushBack(sum);
@@ -398,7 +397,7 @@ public:
               T sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
                                                             numberOfThreads);
 #else
-              T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+              T sum = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #endif
               sparseRows[i].PushBack(i);
               sparseValues[i].PushBack(sum);
@@ -493,7 +492,7 @@ public:
             T sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
                                                           numberOfThreads);
 #else
-            T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+            T sum = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #endif
             sparseRows[i].PushBack(i);
             sparseValues[i].PushBack(sum);
@@ -533,7 +532,7 @@ public:
               T sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
                                                             numberOfThreads);
 #else
-              T sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+              T sum = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #endif
               sparseRows[i].PushBack(i);
               sparseValues[i].PushBack(sum);
@@ -615,10 +614,9 @@ public:
             if (ap[i+1] > ap[i])
             {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-              sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
-                                                          numberOfThreads);
+              sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
-              sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+              sum = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #endif
             }
             P[i][i] = sum;
@@ -648,10 +646,9 @@ public:
       for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        P[i][i] = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
-                                                        numberOfThreads);
+        P[i][i] = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
-        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #endif
 
         for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++)
@@ -717,10 +714,9 @@ public:
             if (ap[i+1] > ap[i])
             {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-              sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
-                                                          numberOfThreads);
+              sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
-              sum = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+              sum = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #endif
             }
             P[i][i] = sum;
@@ -751,10 +747,9 @@ public:
       for (I32 i = 0; i < N; i++)
       {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-        P[i][i] = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
-                                                        numberOfThreads);
+        P[i][i] = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
-        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ax + ap[i+1]);
+        P[i][i] = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
 #endif
 
         for (I32 j = i + 1; j < SparseMatrix<T>::Cols_; j++)

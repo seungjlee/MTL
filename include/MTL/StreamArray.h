@@ -231,6 +231,98 @@ void AdditionScaled_Sequential(T* pDst, const T* pSrc, const T& scalar, const T*
     *pDst = MultiplyAndAdd(*pSrc, scalar, *pDst);
 }
 
+//
+// Variations
+//
+template <class T> MTL_INLINE void UnaryMinus_Sequential(T* pDst, SizeType size)
+{
+  UnaryMinus_Sequential(pDst, pDst + size);
+}
+template <class T> MTL_INLINE void ScalarAddition_Sequential(T* pDst, const T& scalar, SizeType size)
+{
+  ScalarAddition_Sequential(pDst, scalar, pDst + size);
+}
+template <class T> MTL_INLINE void ScalarSubtraction_Sequential(T* pDst, const T& scalar, SizeType size)
+{
+  ScalarSubtraction_Sequential(pDst, scalar, pDst + size);
+}
+template <class T> MTL_INLINE void ScalarMultiplication_Sequential(T* pDst, const T& scalar, SizeType size)
+{
+  ScalarMultiplication_Sequential(pDst, scalar, pDst + size);
+}
+template <class T> MTL_INLINE void ScalarDivision_Sequential(T* pDst, const T& scalar, SizeType size)
+{
+  ScalarDivision_Sequential(pDst, scalar, pDst + size);
+}
+template <class DstT, class SrcT> MTL_INLINE void Addition_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size)
+{
+  Addition_Sequential(pDst, pSrc, pDst + size);
+}
+template <class DstT, class SrcT> MTL_INLINE void Subtraction_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size)
+{
+  Subtraction_Sequential(pDst, pSrc, pDst + size);
+}
+template <class DstT, class SrcT> MTL_INLINE void Multiplication_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size)
+{
+  Multiplication_Sequential(pDst, pSrc, pDst + size);
+}
+template <class DstT, class SrcT> MTL_INLINE void Division_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size)
+{
+  Division_Sequential(pDst, pSrc, pDst + size);
+}
+template <class T> MTL_INLINE void Min_Sequential(T* pDst, const T* pSrc, SizeType size)
+{
+  Min_Sequential(pDst, pSrc, pDst + size);
+}
+template <class T> MTL_INLINE void Max_Sequential(T* pDst, const T* pSrc, SizeType size)
+{
+  Max_Sequential(pDst, pSrc, pDst + size);
+}
+template <class DstT, class SrcT> void Convert_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size)
+{
+  Convert_Sequential(pDst, pSrc, pDst + size);
+}
+template <class T> MTL_INLINE T Sum_Sequential(const T* p, SizeType size)
+{
+  return Sum_Sequential(p, p + size);
+}
+template <class T> MTL_INLINE T SumOfAbsolutes_Sequential(const T* p, SizeType size)
+{
+  return SumOfAbsolutes_Sequential(p, p + size);
+}
+template <class T> MTL_INLINE T SumOfSquares_Sequential(const T* p, SizeType size)
+{
+  return SumOfSquares_Sequential(p, p + size);
+}
+template <class T> MTL_INLINE T SumOfSquaredDifferences_Sequential(const T* p1, const T* p2, SizeType size)
+{
+  return SumOfSquaredDifferences_Sequential(pi, p2, p1 + size);
+}
+template <class T> MTL_INLINE T Min_Sequential(const T* p, SizeType size)
+{
+  return Min_Sequential(p, p + size);
+}
+template <class T> MTL_INLINE T Max_Sequential(const T* p, SizeType size)
+{
+  return Max_Sequential(p, p + size);
+}
+template <class T> MTL_INLINE T MinOfAbsolutes_Sequential(const T* p, SizeType size)
+{
+  return MinOfAbsolutes_Sequential(p, p + size);
+}
+template <class T> MTL_INLINE T MaxOfAbsolutes_Sequential(const T* p, SizeType size)
+{
+  return MaxOfAbsolutes_Sequential(p, p + size);
+}
+template <class T> MTL_INLINE T DotProduct_Sequential(const T* p1, const T* p2, SizeType size)
+{
+  return DotProduct_Sequential(p1, p2, p1 + size);
+}
+template <class T> MTL_INLINE void AdditionScaled_Sequential(T* pDst, const T* pSrc, const T& scalar, SizeType size)
+{
+  return AdditionScaled_Sequential(pDst, pSrc, scalar, pDst + size);
+}
+
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 //

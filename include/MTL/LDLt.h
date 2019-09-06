@@ -156,7 +156,7 @@ static void SolveLDLt(T* x, T* L, const T* D, I32 N, I32 rowSize)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
   Division_StreamAligned_Sequential(x, D, N);
 #else
-  Division_Sequential(x, D, x + N);
+  Division_Sequential(x, D, N);
 #endif
 
   // Finally, compute Inv(Lt) * x using back substitution.

@@ -281,7 +281,7 @@ static T JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T* A
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
   T p = DotProduct_StreamAligned_Sequential(Ai, Aj, M);
 #else
-  T p = DotProduct_Sequential(Ai, Aj, Ai + M);
+  T p = DotProduct_Sequential(Ai, Aj, M);
 #endif
   T pp = p*p;
 
@@ -311,7 +311,7 @@ static T JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T* A
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
   GivensRotation_StreamAligned_Sequential(Ai, Aj, c, s, M);
 #else
-  GivensRotation_Sequential(Ai, Aj, c, s, Ai + M);
+  GivensRotation_Sequential(Ai, Aj, c, s, M);
 #endif
   W[i] += delta;
   W[j] -= delta;
@@ -369,7 +369,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     W[i] = SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M);
 #else
-    W[i] = SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M);
+    W[i] = SumOfSquares_Sequential(At + i*rowSizeA, M);
 #endif
   }
 
@@ -403,7 +403,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
               GivensRotation_StreamAligned_Sequential(Vt + i * rowSizeV, Vt + j * rowSizeV, c, s, N);
 #else
-              GivensRotation_Sequential(Vt + i * rowSizeV, Vt + j * rowSizeV, c, s, Vt + i * rowSizeV + N);
+              GivensRotation_Sequential(Vt + i * rowSizeV, Vt + j * rowSizeV, c, s, N);
 #endif
             }
           }
@@ -412,7 +412,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         sumOfDeltasSquared += SumOfSquares_StreamAligned_Sequential(deltas.Begin(), deltas.Size());
 #else
-        sumOfDeltasSquared += SumOfSquares_Sequential(deltas.Begin(), deltas.End());
+        sumOfDeltasSquared += SumOfSquares_Sequential(deltas.Begin(), deltas.Size());
 #endif
       }
       else
@@ -427,7 +427,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
           GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
 #else
-          GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
+          GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
 #endif
           sumOfDeltasSquared += Square(delta);
         }
@@ -449,7 +449,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     W[i] = Sqrt(SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M));
 #else
-    W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M));
+    W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, M));
 #endif
 
   for (I32 i = 0; i < N; i++)
@@ -458,7 +458,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarMultiplication_StreamAligned_Sequential(At + i*rowSizeA, T(1)/W[i], M);
 #else
-      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
+      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], M);
 #endif
   }
 
@@ -475,7 +475,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     W[i] = SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M);
 #else
-    W[i] = SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M);
+    W[i] = SumOfSquares_Sequential(At + i*rowSizeA, M);
 #endif
   }
 
@@ -495,7 +495,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
           GivensRotation_StreamAligned_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
 #else
-          GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, Vt + i*rowSizeV + N);
+          GivensRotation_Sequential(Vt + i*rowSizeV, Vt + j*rowSizeV, c, s, N);
 #endif
           sumOfDeltasSquared += Square(delta);
         }
@@ -517,7 +517,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     W[i] = Sqrt(SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M));
 #else
-    W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M));
+    W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, M));
 #endif
 
   for (I32 i = 0; i < N; i++)
@@ -526,7 +526,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarMultiplication_StreamAligned_Sequential(At + i*rowSizeA, T(1)/W[i], M);
 #else
-      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
+      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], M);
 #endif
   }
 
@@ -543,7 +543,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     W[i] = SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M);
 #else
-    W[i] = SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M);
+    W[i] = SumOfSquares_Sequential(At + i*rowSizeA, M);
 #endif
   }
 
@@ -578,7 +578,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
         sumOfDeltasSquared += SumOfSquares_StreamAligned_Sequential(deltas.Begin(), deltas.Size());
 #else
-        sumOfDeltasSquared += SumOfSquares_Sequential(deltas.Begin(), deltas.End());
+        sumOfDeltasSquared += SumOfSquares_Sequential(deltas.Begin(), deltas.Size());
 #endif
       }
       else
@@ -605,14 +605,14 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     W[i] = Sqrt(SumOfSquares_StreamAligned_Sequential(At + i*rowSizeA, M));
 #else
-    W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, At + i*rowSizeA + M));
+    W[i] = Sqrt(SumOfSquares_Sequential(At + i*rowSizeA, M));
 #endif
 
     if (W[i] > 0)
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
       ScalarMultiplication_StreamAligned_Sequential(At + i*rowSizeA, T(1)/W[i], M);
 #else
-      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], At + i*rowSizeA + M);
+      ScalarMultiplication_Sequential(At + i*rowSizeA, T(1)/W[i], M);
 #endif
   }
 

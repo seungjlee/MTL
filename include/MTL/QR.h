@@ -177,7 +177,7 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     T sumOfSquares = SumOfSquares_StreamUnaligned_Parallel(pV + 1, Mi - 1, numberOfThreads);
 #else
-    T sumOfSquares = SumOfSquares_Sequential(pV + 1, pV + Mi);
+    T sumOfSquares = SumOfSquares_Sequential(pV + 1, Mi - 1);
 #endif
 
     T normAii = Sqrt(Pow<2>(Aii) + sumOfSquares);
@@ -194,7 +194,7 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     ScalarMultiplication_StreamUnaligned_Parallel(pV, div, Mi, numberOfThreads);
 #else
-    ScalarMultiplication_Sequential(pV, div, pV + Mi);
+    ScalarMultiplication_Sequential(pV, div, Mi);
 #endif
 
     T dotAii = (Aii * (Aii - normAii) + sumOfSquares) * div;
@@ -205,7 +205,7 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
       AdditionScaled_StreamUnaligned_Parallel(At + P[j]*rowSize + i, pV, T(-2) * dotA, Mi,
                                               numberOfThreads);
 #else
-      T dotA = DotProduct_Sequential(pV, At + P[j]*rowSize + i, pV + Mi);
+      T dotA = DotProduct_Sequential(pV, At + P[j]*rowSize + i, Mi);
       AdditionScaled_Sequential(At + P[j]*rowSize + i, pV, T(-2) * dotA, At + P[j]*rowSize + i + Mi);
 #endif
     }
@@ -214,7 +214,7 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
     AdditionScaled_StreamUnaligned_Parallel(x + i, pV, T(-2) * dotB, Mi, numberOfThreads);
 #else
     T dotB = DotProduct_Sequential(pV, x + i, pV + Mi);
-    AdditionScaled_Sequential(x + i, pV, T(-2) * dotB, x + i + Mi);
+    AdditionScaled_Sequential(x + i, pV, T(-2) * dotB, Mi);
 #endif
 
     *pV = Aii + *pV * T(-2) * dotAii;
