@@ -40,17 +40,20 @@
 #define COLOR_ERROR COLOR_FG(255,55,55)
 #endif
 
-#define TEST(TestName)                                                                             \
+#define TEST_MACRO(TestName, Enabled)                                                              \
 class Test_ ## TestName : public MTL::Test                                                         \
 {                                                                                                  \
 public:                                                                                            \
   Test_ ## TestName(const MTL::String& testName)                                                   \
-    : Test(testName)  { FilePath_ = MTL__FILE__; }                                                 \
+    : Test(testName, Enabled)  { FilePath_ = MTL__FILE__; }                                        \
   virtual void Run();                                                                              \
 };                                                                                                 \
 static Test_ ## TestName                                                                           \
  Test_ ## TestName ## _Instance_(MTL::String(TOWCHAR(#TestName)));                                 \
 void Test_ ## TestName::Run()
+
+#define TEST(TestName)           TEST_MACRO(TestName, true)
+#define DISABLED_TEST(TestName)  TEST_MACRO(TestName, false)
 
 #define TEST_INITIALIZE()                                                                          \
 static void MTL_TestInitialize_();                                                                 \
@@ -95,9 +98,12 @@ namespace MTL
 class Test
 {
 public:
-  Test(const String& name)
+  Test(const String& name, bool enabled)
     : Name_(name), TimeElapsed_(0)
-  { List_.PushBack(this); }
+  {
+    if (enabled)
+      List_.PushBack(this);
+  }
 
   virtual ~Test()  {}
 
