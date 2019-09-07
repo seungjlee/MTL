@@ -14,7 +14,7 @@ totalStartTime = time.time()
 
 SkipTestList = []
 
-TestArguments = ['-NoDisplay -DisableProgressBar']
+TestArguments = ['-NoDisplay', '-DisableProgressBar']
 TestSeparator = '{:-<80}\n'.format('').encode()
 CurrentDir = os.getcwd();
 Pattern = '*'
@@ -60,7 +60,7 @@ for test in TestList:
     testResult = 'OK'
 
     startTime = time.time()
-    processResult = subprocess.run(["./" + test] + TestArguments, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    processResult = subprocess.run(['./' + test] + TestArguments, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
     endTime = time.time()
 
     file.write(TestSeparator)
