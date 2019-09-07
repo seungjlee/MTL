@@ -38,7 +38,7 @@ static bool ProgressBarEnabled = true;
 struct ProgressData
 {
   ProgressData() {}
-  ProgressData(double percent, bool showFractions, int barLength, const wchar_t* color, int indent)
+  ProgressData(double percent, bool showFractions, int barLength, const RGB& color, int indent)
     : Percent(percent), ShowFractions(showFractions), BarLength(barLength), Color(color), Indent(indent)
   {
   }
@@ -46,7 +46,7 @@ struct ProgressData
   double Percent;
   bool ShowFractions;
   int BarLength;
-  const wchar_t* Color;
+  RGB Color;
   int Indent;
 };
 
@@ -92,7 +92,7 @@ private:
   int LastIntegerPercentage_;
   Event Finish_;
 
-  void ShowProgressBar(double percent, bool showFractions, int barLength, const wchar_t* color, int indent)
+  void ShowProgressBar(double percent, bool showFractions, int barLength, const RGB& color, int indent)
   {
     int numberOfBlocksToPrint = int(barLength * percent);
 
@@ -121,23 +121,27 @@ private:
     ColorScope cs(color);
     std::wcout << buf;
 #else
+    String fgColor = RGB::ForegroundColor(color);
+    String bgColor = RGB::BackgroundColor(color);
+    String endColor = RGB::BackgroundColor(color * 0.2);
+
     std::wcout << "\r";
     for (int i = 0; i < indent; i++)
       std::wcout << " ";
-    std::wcout << COLOR_FG(0,0,0)  << COLOR_BG(0,100,50);
+    std::wcout << endColor;
     std::wcout << " ";
-    std::wcout << COLOR_FG(0,0,0)  << COLOR_BG(0,200,0);
+    std::wcout << bgColor;
     int i = 0;
     for (; i < numberOfBlocksToPrint; i++)
       std::wcout << " ";
 
-    std::wcout << COLOR_FG(0,0,0)  << COLOR_BG(0,0,0);
+    std::wcout << COLOR_BG(0,0,0);
     for (; i < barLength; i++)
       std::wcout << " ";
 
-    std::wcout << COLOR_FG(0,0,0)  << COLOR_BG(0,100,50);
+    std::wcout << endColor;
     std::wcout << " " << COLOR_RESET;
-    std::wcout << COLOR_FG(0,200,200);
+    std::wcout << fgColor;
     const char* format = showFractions ? " %.1f%%" : " %.0f%%";
     int bytes = snprintf(&buf[0], MAX_PROGRESS_BUFFER_SIZE, format, float(100.0 * percent));
     std::wcout << buf << COLOR_RESET;
@@ -150,7 +154,7 @@ private:
 };
 
 static void ShowProgressBar(double percent, bool showFractions = false, int barLength = 50,
-                            const wchar_t* color = COLOR_FG(0, 255, 0), int indent = 2)
+                            const RGB& color = RGB(0, 255, 0), int indent = 2)
 {
   if (ProgressBarEnabled)
   {

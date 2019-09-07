@@ -26,7 +26,7 @@
 #ifndef MTL_COLORS_H
 #define MTL_COLORS_H
 
-#include <MTL/Definitions.h>
+#include <MTL/StringHelpers.h>
 #include <stdio.h>
 
 // Color macros.
@@ -57,6 +57,50 @@
 namespace MTL
 {
 
+struct RGB
+{
+  RGB(uint8_t r = 0, uint8_t g = 0, uint8_t b = 0)
+    : R(r), G(g), B(b)
+  {
+  }
+
+  static std::wstring ForegroundColor(const RGB& color)
+  {
+    char buf[128];
+    snprintf(buf, sizeof(buf), "\033[38;2;%d;%d;%dm", color.R, color.G, color.B);
+    return ToUTF16(buf);
+  }
+  static std::wstring BackgroundColor(const RGB& color)
+  {
+    char buf[128];
+    snprintf(buf, sizeof(buf), "\033[48;2;%d;%d;%dm", color.R, color.G, color.B);
+    return ToUTF16(buf);
+  }
+
+  RGB& operator*=(double scale)
+  {
+    R = uint8_t(R * scale);
+    G = uint8_t(G * scale);
+    B = uint8_t(B * scale);
+    return *this;
+  }
+  RGB operator*(double scale) const
+  {
+    RGB scaled = *this;
+    scaled *= scale;
+    return scaled;
+  }
+
+  uint8_t R;
+  uint8_t G;
+  uint8_t B;
+};
+static RGB operator*(double scale, const RGB& color)
+{
+  return color * scale;
+}
+
+
 // Color helper class.
 class ColorScope
 {
@@ -64,6 +108,10 @@ public:
   ColorScope(const wchar_t* color)
   {
     wprintf(color);
+  }
+  ColorScope(const RGB& color)
+  {
+    std::wcout << RGB::ForegroundColor(color);
   }
   ~ColorScope()
   {
