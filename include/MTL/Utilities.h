@@ -97,7 +97,8 @@ private:
     int numberOfBlocksToPrint = int(barLength * percent);
 
     char buf[MAX_PROGRESS_BUFFER_SIZE];
-
+#ifdef WIN32
+    // This code does not work on Ubuntu with default settings.
     int index = 0;
     buf[index++] = '\r';
     for (int i = 0; i < indent; i++)
@@ -111,7 +112,6 @@ private:
       else
         buf[index++] = ' ';
     }
-
     const char* format = showFractions ? "] %.1f%%" : "] %.0f%%";
     int bytes = snprintf(&buf[index], MAX_PROGRESS_BUFFER_SIZE - index, format, float(100.0 * percent));
     assert(bytes > 0);
@@ -120,6 +120,28 @@ private:
 
     ColorScope cs(color);
     std::wcout << buf;
+#else
+    std::wcout << "\r";
+    for (int i = 0; i < indent; i++)
+      std::wcout << " ";
+    std::wcout << COLOR_FG(0,0,0)  << COLOR_BG(0,100,50);
+    std::wcout << " ";
+    std::wcout << COLOR_FG(0,0,0)  << COLOR_BG(0,200,0);
+    int i = 0;
+    for (; i < numberOfBlocksToPrint; i++)
+      std::wcout << " ";
+
+    std::wcout << COLOR_FG(0,0,0)  << COLOR_BG(0,0,0);
+    for (; i < barLength; i++)
+      std::wcout << " ";
+
+    std::wcout << COLOR_FG(0,0,0)  << COLOR_BG(0,100,50);
+    std::wcout << " " << COLOR_RESET;
+    std::wcout << COLOR_FG(0,200,200);
+    const char* format = showFractions ? " %.1f%%" : " %.0f%%";
+    int bytes = snprintf(&buf[0], MAX_PROGRESS_BUFFER_SIZE, format, float(100.0 * percent));
+    std::wcout << buf << COLOR_RESET;
+#endif
     std::wcout.flush();
 
     if (ProgressBarFinalUpdateIsSynchronous && percent >= 1.0)

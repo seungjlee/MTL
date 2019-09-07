@@ -391,6 +391,11 @@ private:
       if (FindArgumentIgnoreCase(L"-DisableProgressBar") > 0)
         ProgressBarEnabled = false;
 
+      Out() << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
+            << MTL::CPU::Instance().NumberOfCores() << std::endl;
+      Out() << L"Initial Number Of OpenMP Threads: "
+            << MTL::CPU::Instance().NumberOfThreads() << COLOR_RESET << std::endl;
+
       Out() << std::endl;
       Initialize();
 
@@ -538,11 +543,6 @@ int main(int argc, char* argv[])
 
   try
   {
-    ConsoleOut << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
-               << MTL::CPU::Instance().NumberOfCores() << std::endl;
-    ConsoleOut << L"Initial Number Of OpenMP Threads: "
-               << MTL::CPU::Instance().NumberOfThreads() << COLOR_RESET << std::endl;
-
     MTL::DynamicVector<MTL::String>& arguments =
       const_cast<MTL::DynamicVector<MTL::String>&>(MTL::Test::Arguments());
 
