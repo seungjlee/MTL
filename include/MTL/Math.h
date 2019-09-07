@@ -64,6 +64,12 @@ template <class T> MTL_INLINE static T Min(const T& a, const T& b, const T& c, c
   return Min(Min(a,b),Min(c,d));
 }
 
+// Returns input value within range.
+template <class T> MTL_INLINE static T Limit(const T& input, const T& minValid, const T& maxValid)
+{
+  return Min(Max(input, minValid), maxValid);
+}
+
 //
 // Recursive helper classes.
 //

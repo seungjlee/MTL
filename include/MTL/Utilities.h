@@ -30,6 +30,10 @@
 
 namespace MTL
 {
+// If true and percent == 1.0, the update call is synchronous.
+// Note that this should only be changed during set up since it could cause undesired waits without any signals.
+static bool ProgressBarFinalUpdateIsSynchronous = true;
+static bool ProgressBarEnabled = true;
 
 struct ProgressData
 {
@@ -58,14 +62,20 @@ public:
     MaxWorkQueueSize(1);
   }
 
-  virtual void QueueWork(const ProgressData& data)
+  virtual void QueueWork(const ProgressData& dataIn)
   {
+    ProgressData data = dataIn;
+    data.Percent = Limit(data.Percent, 0.0, 1.0);
+
     int resolution = data.ShowFractions ? 1000 : 100;
 
     if (data.Percent == 0.0 || LastIntegerPercentage_ != int(resolution * data.Percent))
     {
       LastIntegerPercentage_ = int(resolution * data.Percent);
       WorkerThread<ProgressData>::QueueWork(data);
+
+      if (ProgressBarFinalUpdateIsSynchronous && data.Percent == 1.0)
+        Finish_.Wait();
     }
   }
 
@@ -80,6 +90,7 @@ protected:
 
 private:
   int LastIntegerPercentage_;
+  Event Finish_;
 
   void ShowProgressBar(double percent, bool showFractions, int barLength, const wchar_t* color, int indent)
   {
@@ -110,10 +121,12 @@ private:
     ColorScope cs(color);
     std::wcout << buf;
     std::wcout.flush();
+
+    if (ProgressBarFinalUpdateIsSynchronous && percent >= 1.0)
+      Finish_.Signal();
   }
 };
 
-static bool ProgressBarEnabled = true;
 static void ShowProgressBar(double percent, bool showFractions = false, int barLength = 50,
                             const wchar_t* color = COLOR_FG(0, 255, 0), int indent = 2)
 {
