@@ -296,7 +296,7 @@ template <class T> MTL_INLINE T SumOfSquares_Sequential(const T* p, SizeType siz
 }
 template <class T> MTL_INLINE T SumOfSquaredDifferences_Sequential(const T* p1, const T* p2, SizeType size)
 {
-  return SumOfSquaredDifferences_Sequential(pi, p2, p1 + size);
+  return SumOfSquaredDifferences_Sequential(p1, p2, p1 + size);
 }
 template <class T> MTL_INLINE T Min_Sequential(const T* p, SizeType size)
 {
