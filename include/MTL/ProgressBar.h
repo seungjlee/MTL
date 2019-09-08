@@ -180,7 +180,7 @@ public:
   }
 
   void Update(double percent, bool showFractions = false, int barLength = 50,
-              const ColorRGB& barColor = ColorRGB(0, 255, 0), const ColorRGB& textColor = ColorRGB(0, 255, 255), int indent = 2)
+              const ColorRGB& barColor = ColorRGB(0, 255, 0), const ColorRGB& textColor = ColorRGB(0, 255, 255), uint16_t indent = 2)
   {
     worker.QueueWork(ProgressData(percent, showFractions, barLength, barColor, textColor, indent));
   }
