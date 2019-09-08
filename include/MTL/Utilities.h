@@ -96,9 +96,9 @@ private:
   void ShowProgressBar(double percent, bool showFractions, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, int indent)
   {
     int numberOfBlocksToPrint = int(barLength * percent);
+    char buf[MAX_PROGRESS_BUFFER_SIZE];
 
 #ifdef WIN32
-    char buf[MAX_PROGRESS_BUFFER_SIZE];
     // This code does not work on Ubuntu with default settings.
     {
       ColorScope cs(barColor);
