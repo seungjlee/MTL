@@ -57,36 +57,36 @@
 namespace MTL
 {
 
-struct RGB
+struct ColorRGB
 {
-  RGB(uint8_t r = 0, uint8_t g = 0, uint8_t b = 0)
+  ColorRGB(uint8_t r = 0, uint8_t g = 0, uint8_t b = 0)
     : R(r), G(g), B(b)
   {
   }
 
-  static std::wstring ForegroundColor(const RGB& color)
+  static std::wstring ForegroundColor(const ColorRGB& color)
   {
     char buf[128];
     snprintf(buf, sizeof(buf), "\033[38;2;%d;%d;%dm", color.R, color.G, color.B);
     return ToUTF16(buf);
   }
-  static std::wstring BackgroundColor(const RGB& color)
+  static std::wstring BackgroundColor(const ColorRGB& color)
   {
     char buf[128];
     snprintf(buf, sizeof(buf), "\033[48;2;%d;%d;%dm", color.R, color.G, color.B);
     return ToUTF16(buf);
   }
 
-  RGB& operator*=(double scale)
+  ColorRGB& operator*=(double scale)
   {
     R = uint8_t(R * scale);
     G = uint8_t(G * scale);
     B = uint8_t(B * scale);
     return *this;
   }
-  RGB operator*(double scale) const
+  ColorRGB operator*(double scale) const
   {
-    RGB scaled = *this;
+    ColorRGB scaled = *this;
     scaled *= scale;
     return scaled;
   }
@@ -95,7 +95,7 @@ struct RGB
   uint8_t G;
   uint8_t B;
 };
-static RGB operator*(double scale, const RGB& color)
+static ColorRGB operator*(double scale, const ColorRGB& color)
 {
   return color * scale;
 }
@@ -109,9 +109,9 @@ public:
   {
     wprintf(color);
   }
-  ColorScope(const RGB& color)
+  ColorScope(const ColorRGB& color)
   {
-    std::wcout << RGB::ForegroundColor(color);
+    std::wcout << ColorRGB::ForegroundColor(color);
   }
   ~ColorScope()
   {

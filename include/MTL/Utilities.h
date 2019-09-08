@@ -38,15 +38,16 @@ static bool ProgressBarEnabled = true;
 struct ProgressData
 {
   ProgressData() {}
-  ProgressData(double percent, bool showFractions, int barLength, const RGB& color, int indent)
-    : Percent(percent), ShowFractions(showFractions), BarLength(barLength), Color(color), Indent(indent)
+  ProgressData(double percent, bool showFractions, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, int indent)
+    : Percent(percent), ShowFractions(showFractions), BarLength(barLength), BarColor(barColor), TextColor(textColor), Indent(indent)
   {
   }
 
   double Percent;
   bool ShowFractions;
   int BarLength;
-  RGB Color;
+  ColorRGB BarColor;
+  ColorRGB TextColor;
   int Indent;
 };
 
@@ -84,7 +85,7 @@ protected:
   {
     for (const ProgressData& d : data)
     {
-      ShowProgressBar(d.Percent, d.ShowFractions, d.BarLength, d.Color, d.Indent);
+      ShowProgressBar(d.Percent, d.ShowFractions, d.BarLength, d.BarColor, d.TextColor, d.Indent);
     }
   }
 
@@ -92,38 +93,46 @@ private:
   int LastIntegerPercentage_;
   Event Finish_;
 
-  void ShowProgressBar(double percent, bool showFractions, int barLength, const RGB& color, int indent)
+  void ShowProgressBar(double percent, bool showFractions, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, int indent)
   {
     int numberOfBlocksToPrint = int(barLength * percent);
 
-    char buf[MAX_PROGRESS_BUFFER_SIZE];
 #ifdef WIN32
+    char buf[MAX_PROGRESS_BUFFER_SIZE];
     // This code does not work on Ubuntu with default settings.
-    int index = 0;
-    buf[index++] = '\r';
-    for (int i = 0; i < indent; i++)
-      buf[index++] = ' ';
-    buf[index++] = '[';
-
-    for (int i = 0; i < barLength; i++)
     {
-      if (i < numberOfBlocksToPrint)
-        buf[index++] = '\xFE';
-      else
-        buf[index++] = ' ';
-    }
-    const char* format = showFractions ? "] %.1f%%" : "] %.0f%%";
-    int bytes = snprintf(&buf[index], MAX_PROGRESS_BUFFER_SIZE - index, format, float(100.0 * percent));
-    assert(bytes > 0);
-    index += bytes;
-    buf[index] = 0;
+      ColorScope cs(barColor);
 
-    ColorScope cs(color);
-    std::wcout << buf;
+      int index = 0;
+      buf[index++] = '\r';
+      for (int i = 0; i < indent; i++)
+        buf[index++] = ' ';
+      buf[index++] = '[';
+
+      for (int i = 0; i < barLength; i++)
+      {
+        if (i < numberOfBlocksToPrint)
+          buf[index++] = '\xFE';
+        else
+          buf[index++] = ' ';
+      }
+      buf[index++] = ']';
+      buf[index] = 0;
+      std::wcout << buf;
+    }
+    {
+      ColorScope cs(textColor);
+
+      const char* format = showFractions ? " %.1f%%" : " %.0f%%";
+      int bytes = snprintf(&buf[0], sizeof(buf), format, float(100.0 * percent));
+      buf[bytes] = 0;
+
+      std::wcout << buf;
+    }
 #else
-    String fgColor = RGB::ForegroundColor(color);
-    String bgColor = RGB::BackgroundColor(color);
-    String endColor = RGB::BackgroundColor(color * 0.2);
+    String fgColor = ColorRGB::ForegroundColor(textColor);
+    String bgColor = ColorRGB::BackgroundColor(barColor);
+    String endColor = ColorRGB::BackgroundColor(barColor * 0.2);
 
     std::wcout << "\r";
     for (int i = 0; i < indent; i++)
@@ -154,12 +163,12 @@ private:
 };
 
 static void ShowProgressBar(double percent, bool showFractions = false, int barLength = 50,
-                            const RGB& color = RGB(0, 255, 0), int indent = 2)
+                            const ColorRGB& barColor = ColorRGB(0, 255, 0), const ColorRGB& textColor = ColorRGB(0, 255, 255), int indent = 2)
 {
   if (ProgressBarEnabled)
   {
     static ProgressBarWorker worker;
-    worker.QueueWork(ProgressData(percent, showFractions, barLength, color, indent));
+    worker.QueueWork(ProgressData(percent, showFractions, barLength, barColor, textColor, indent));
   }
 }
 
