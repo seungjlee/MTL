@@ -25,7 +25,6 @@
 #include <MTL/Test.h>
 #include <MTL/DynamicVectorOperators.h>
 #include <MTL/Random.h>
-#include <MTL/Utilities.h>
 
 using namespace MTL;
 

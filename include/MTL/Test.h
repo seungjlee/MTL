@@ -31,7 +31,7 @@
 #include <MTL/DynamicVector.h>
 #include <MTL/Exception.h>
 #include <MTL/Timer.h>
-#include <MTL/Utilities.h>
+#include <MTL/ProgressBar.h>
 
 //
 // Macros.
@@ -94,6 +94,14 @@ static void MTL_App_()
 
 namespace MTL
 {
+
+static ProgressBar TestProgressBar;
+
+static void ShowProgressBar(double percent, bool showFractions = false, int barLength = 50,
+                            const ColorRGB& barColor = ColorRGB(0, 255, 0), const ColorRGB& textColor = ColorRGB(0, 255, 255), uint16_t indent = 2)
+{
+  TestProgressBar.Update(percent, showFractions, barLength, barColor, textColor, indent);
+}
 
 class Test
 {
@@ -395,7 +403,7 @@ private:
     if (List_.Size() > 0)
     {
       if (FindArgumentIgnoreCase(L"-DisableProgressBar") > 0)
-        ProgressBarEnabled = false;
+        TestProgressBar.Disable();
 
       Out() << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
             << MTL::CPU::Instance().NumberOfCores() << std::endl;

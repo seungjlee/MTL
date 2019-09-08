@@ -28,7 +28,6 @@
 #include <MTL/QR.h>
 #include <MTL/SVD.h>
 #include <MTL/LDLt.h>
-#include <MTL/Utilities.h>
 
 using namespace MTL;
 

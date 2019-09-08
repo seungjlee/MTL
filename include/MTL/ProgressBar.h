@@ -28,17 +28,17 @@
 
 #include <MTL/WorkerThread.h>
 
+#ifndef MAX_PROGRESS_BUFFER_SIZE
+#define MAX_PROGRESS_BUFFER_SIZE 512
+#endif
+
 namespace MTL
 {
-// If true and percent == 1.0, the update call is synchronous.
-// Note that this should only be changed during set up since it could cause undesired waits without any signals.
-static bool ProgressBarFinalUpdateIsSynchronous = true;
-static bool ProgressBarEnabled = true;
 
 struct ProgressData
 {
   ProgressData() {}
-  ProgressData(double percent, bool showFractions, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, int indent)
+  ProgressData(double percent, bool showFractions, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
     : Percent(percent), ShowFractions(showFractions), BarLength(barLength), BarColor(barColor), TextColor(textColor), Indent(indent)
   {
   }
@@ -48,37 +48,41 @@ struct ProgressData
   int BarLength;
   ColorRGB BarColor;
   ColorRGB TextColor;
-  int Indent;
+  uint16_t Indent;
 };
-
-#ifndef MAX_PROGRESS_BUFFER_SIZE
-#define MAX_PROGRESS_BUFFER_SIZE 512
-#endif
 
 class ProgressBarWorker : public WorkerThread<ProgressData>
 {
 public:
-  ProgressBarWorker() : WorkerThread<ProgressData>(L"ProgressBarWorker"), LastIntegerPercentage_(0)
+  ProgressBarWorker(bool finalUpdateIsSynchronous = false)
+    : WorkerThread<ProgressData>(L"ProgressBarWorker"), LastIntegerPercentage_(0),
+      FinalUpdateIsSynchronous_(finalUpdateIsSynchronous), Enabled_(true)
   {
     MaxWorkQueueSize(1);
   }
 
   virtual void QueueWork(const ProgressData& dataIn)
   {
-    ProgressData data = dataIn;
-    data.Percent = Limit(data.Percent, 0.0, 1.0);
-
-    int resolution = data.ShowFractions ? 1000 : 100;
-
-    if (data.Percent == 0.0 || LastIntegerPercentage_ != int(resolution * data.Percent))
+    if (Enabled_)
     {
-      LastIntegerPercentage_ = int(resolution * data.Percent);
-      WorkerThread<ProgressData>::QueueWork(data);
+      ProgressData data = dataIn;
+      data.Percent = Limit(data.Percent, 0.0, 1.0);
 
-      if (ProgressBarFinalUpdateIsSynchronous && data.Percent == 1.0)
-        Finish_.Wait();
+      int resolution = data.ShowFractions ? 1000 : 100;
+
+      if (data.Percent == 0.0 || LastIntegerPercentage_ != int(resolution * data.Percent))
+      {
+        LastIntegerPercentage_ = int(resolution * data.Percent);
+        WorkerThread<ProgressData>::QueueWork(data);
+
+        if (FinalUpdateIsSynchronous_ && data.Percent == 1.0)
+          Finish_.Wait();
+      }
     }
   }
+
+  void Disable()  { Enabled_ = false; }
+  void Enable()   { Enabled_ = true;  }
 
 protected:
   virtual void ProcessWork(const MTL::DynamicVector<ProgressData>& data)
@@ -90,10 +94,12 @@ protected:
   }
 
 private:
+  bool Enabled_;
+  bool FinalUpdateIsSynchronous_;
   int LastIntegerPercentage_;
   Event Finish_;
 
-  void ShowProgressBar(double percent, bool showFractions, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, int indent)
+  void ShowProgressBar(double percent, bool showFractions, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
   {
     int numberOfBlocksToPrint = int(barLength * percent);
     char buf[MAX_PROGRESS_BUFFER_SIZE];
@@ -105,7 +111,7 @@ private:
 
       int index = 0;
       buf[index++] = '\r';
-      for (int i = 0; i < indent; i++)
+      for (uint16_t i = 0; i < indent; i++)
         buf[index++] = ' ';
       buf[index++] = '[';
 
@@ -135,7 +141,7 @@ private:
     String endColor = ColorRGB::BackgroundColor(barColor * 0.2);
 
     std::wcout << "\r";
-    for (int i = 0; i < indent; i++)
+    for (uint16_t i = 0; i < indent; i++)
       std::wcout << " ";
     std::wcout << endColor;
     std::wcout << " ";
@@ -157,20 +163,33 @@ private:
 #endif
     std::wcout.flush();
 
-    if (ProgressBarFinalUpdateIsSynchronous && percent >= 1.0)
+    if (FinalUpdateIsSynchronous_ && percent >= 1.0)
       Finish_.Signal();
   }
 };
 
-static void ShowProgressBar(double percent, bool showFractions = false, int barLength = 50,
-                            const ColorRGB& barColor = ColorRGB(0, 255, 0), const ColorRGB& textColor = ColorRGB(0, 255, 255), int indent = 2)
+class ProgressBar
 {
-  if (ProgressBarEnabled)
+public:
+  // If true and percent == 1.0, the update call is synchronous.
+  // Note that this should only be changed during set up since it could cause undesired waits without any signals.
+  bool FinalUpdateIsSynchronous = true;
+
+  ProgressBar(bool FinalUpdateIsSynchronous = true)
   {
-    static ProgressBarWorker worker;
+  }
+
+  void Update(double percent, bool showFractions = false, int barLength = 50,
+              const ColorRGB& barColor = ColorRGB(0, 255, 0), const ColorRGB& textColor = ColorRGB(0, 255, 255), int indent = 2)
+  {
     worker.QueueWork(ProgressData(percent, showFractions, barLength, barColor, textColor, indent));
   }
-}
+  
+  void Disable()  { worker.Disable(); }
+  void Enable()   { worker.Enable();  }
+private:
+  ProgressBarWorker worker;
+};
 
 }  // namespace MTL
 
