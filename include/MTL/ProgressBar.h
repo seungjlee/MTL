@@ -54,7 +54,7 @@ struct ProgressData
 class ProgressBarWorker : public WorkerThread<ProgressData>
 {
 public:
-  ProgressBarWorker(bool finalUpdateIsSynchronous = false)
+  ProgressBarWorker(bool finalUpdateIsSynchronous = true)
     : WorkerThread<ProgressData>(L"ProgressBarWorker"), LastIntegerPercentage_(0),
       FinalUpdateIsSynchronous_(finalUpdateIsSynchronous), Enabled_(true)
   {
@@ -176,19 +176,20 @@ public:
   bool FinalUpdateIsSynchronous = true;
 
   ProgressBar(bool FinalUpdateIsSynchronous = true)
+    : Worker_(FinalUpdateIsSynchronous)
   {
   }
 
   void Update(double percent, bool showFractions = false, int barLength = 50,
               const ColorRGB& barColor = ColorRGB(0, 255, 0), const ColorRGB& textColor = ColorRGB(0, 255, 255), uint16_t indent = 2)
   {
-    worker.QueueWork(ProgressData(percent, showFractions, barLength, barColor, textColor, indent));
+    Worker_.QueueWork(ProgressData(percent, showFractions, barLength, barColor, textColor, indent));
   }
   
-  void Disable()  { worker.Disable(); }
-  void Enable()   { worker.Enable();  }
+  void Disable()  { Worker_.Disable(); }
+  void Enable()   { Worker_.Enable();  }
 private:
-  ProgressBarWorker worker;
+  ProgressBarWorker Worker_;
 };
 
 }  // namespace MTL
