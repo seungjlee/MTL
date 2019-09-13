@@ -164,7 +164,12 @@ private:
     std::wcout.flush();
 
     if (FinalUpdateIsSynchronous_ && percent >= 1.0)
+    {
       Finish_.Signal();
+      return;
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 };
 
