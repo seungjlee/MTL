@@ -38,13 +38,13 @@ namespace MTL
 struct ProgressData
 {
   ProgressData() {}
-  ProgressData(double percent, bool showFractions, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
-    : Percent(percent), ShowFractions(showFractions), BarLength(barLength), BarColor(barColor), TextColor(textColor), Indent(indent)
+  ProgressData(double percent, const String& message, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
+    : Percent(percent), Message(message), BarLength(barLength), BarColor(barColor), TextColor(textColor), Indent(indent)
   {
   }
 
   double Percent;
-  bool ShowFractions;
+  String Message;
   int BarLength;
   ColorRGB BarColor;
   ColorRGB TextColor;
@@ -68,7 +68,7 @@ public:
       ProgressData data = dataIn;
       data.Percent = Limit(data.Percent, 0.0, 1.0);
 
-      int resolution = data.ShowFractions ? 1000 : 100;
+      const int resolution = 1000;
 
       if (data.Percent == 0.0 || LastIntegerPercentage_ != int(resolution * data.Percent))
       {
@@ -89,7 +89,7 @@ protected:
   {
     for (const ProgressData& d : data)
     {
-      ShowProgressBar(d.Percent, d.ShowFractions, d.BarLength, d.BarColor, d.TextColor, d.Indent);
+      ShowProgressBar(d.Percent, d.Message, d.BarLength, d.BarColor, d.TextColor, d.Indent);
     }
   }
 
@@ -99,7 +99,7 @@ private:
   int LastIntegerPercentage_;
   Event Finish_;
 
-  void ShowProgressBar(double percent, bool showFractions, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
+  void ShowProgressBar(double percent, const String& message, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
   {
     int numberOfBlocksToPrint = int(barLength * percent);
     char buf[MAX_PROGRESS_BUFFER_SIZE];
@@ -129,8 +129,7 @@ private:
     {
       ColorScope cs(textColor);
 
-      const char* format = showFractions ? " %.1f%%" : " %.0f%%";
-      int bytes = snprintf(&buf[0], sizeof(buf), format, float(100.0 * percent));
+      int bytes = snprintf(&buf[0], sizeof(buf), " %.1f%%", float(100.0 * percent));
       buf[bytes] = 0;
 
       std::wcout << buf;
@@ -157,10 +156,11 @@ private:
     std::wcout << endColor;
     std::wcout << " " << COLOR_RESET;
     std::wcout << fgColor;
-    const char* format = showFractions ? " %.1f%%" : " %.0f%%";
-    int bytes = snprintf(&buf[0], MAX_PROGRESS_BUFFER_SIZE, format, float(100.0 * percent));
+    int bytes = snprintf(&buf[0], MAX_PROGRESS_BUFFER_SIZE, " %.1f%%", float(100.0 * percent));
     std::wcout << buf << COLOR_RESET;
 #endif
+
+    std::wcout << " " << message;
     std::wcout.flush();
 
     if (FinalUpdateIsSynchronous_ && percent >= 1.0)
@@ -180,10 +180,10 @@ public:
   {
   }
 
-  void Update(double percent, bool showFractions = false, int barLength = 50,
+  void Update(double percent, const String& message = L"", int barLength = 50,
               const ColorRGB& barColor = ColorRGB(0, 255, 0), const ColorRGB& textColor = ColorRGB(0, 255, 255), uint16_t indent = 2)
   {
-    Worker_.QueueWork(ProgressData(percent, showFractions, barLength, barColor, textColor, indent));
+    Worker_.QueueWork(ProgressData(percent, message, barLength, barColor, textColor, indent));
   }
   
   void Disable()  { Worker_.Disable(); }

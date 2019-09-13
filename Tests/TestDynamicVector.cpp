@@ -177,6 +177,8 @@ TEST(TestHouseholderQR_Speed)
     kRepeats = 100
   };
 
+  Timer t(true);
+  char buffer[16];
   Random random;
 
   for (I32 i = 0; i < kRepeats; i++)
@@ -195,7 +197,8 @@ TEST(TestHouseholderQR_Speed)
       MTL_EQUAL_FLOAT(v1[vIndex], Abs(v[vIndex]), kTol);
     }
 
-    ShowProgressBar(double(i + 1) / kRepeats);
+    snprintf(buffer, sizeof(buffer), "- %.3f secs.", t.Seconds());
+    ShowProgressBar(double(i + 1) / kRepeats, buffer);
   }
   Out() << std::endl;
 }
@@ -271,6 +274,8 @@ TEST(Test_SumOfSquaredDifferences)
     kRepeats = 777
   };
 
+  Timer t(true);
+  char buffer[16];
   Random random;
 
   for (I32 i = 0; i < kRepeats; i++)
@@ -283,7 +288,8 @@ TEST(Test_SumOfSquaredDifferences)
 
     MTL_EQUAL_FLOAT(s1, s2, kTol);
 
-    ShowProgressBar(double(i + 1) / kRepeats);
+    snprintf(buffer, sizeof(buffer), "- %.3f secs.", t.Seconds());
+    ShowProgressBar(double(i + 1) / kRepeats, buffer);
   }
   Out() << std::endl;
 }
