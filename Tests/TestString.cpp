@@ -35,6 +35,9 @@ TEST(TestStringFunctions)
   std::wcout << ToLowerCase(L"AbC\n");
   std::wcout << ToUpperCase(L"AbC\n");
 
+  std::wcout << ToUTF16(ToUTF8(ToLowerCase(L"AbC\n")));
+  std::wcout << ToUTF16(ToUTF8(ToUpperCase(L"AbC\n")));
+
   MTL_EQUAL(ToUTF16(ToLowerCase("xYz")), ToUTF16(ToLowerCase("xyZ")));
   MTL_EQUAL(ToLowerCase(L"xYz"), ToLowerCase(L"xyZ"));
 }
