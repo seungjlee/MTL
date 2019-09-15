@@ -27,4 +27,9 @@
 
 using namespace MTL;
 
-static const double kTol = 1e-12;
+TEST(TestPoin2D)
+{
+  Point2D<double> pt1(1.0,2.0);
+  MTL_EQUAL(pt1.x(), 1.0);
+  MTL_EQUAL(pt1.y(), 2.0);
+}
