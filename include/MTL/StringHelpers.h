@@ -35,6 +35,12 @@
 namespace MTL
 {
 
+// Call this to switch between std::cout (printf) and std::wcout (wprintf).
+static MTL_INLINE void ResetOutputStream()
+{
+  FILE* f = freopen(nullptr, "w", stdout);
+}
+
 static MTL_INLINE void SetToLowerCase(std::wstring& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), towlower);

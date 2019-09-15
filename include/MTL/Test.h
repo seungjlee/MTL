@@ -425,25 +425,35 @@ private:
         U64 numberOfFailuresBeforeRun = TotalNumberOfFailures_;
         try
         {
+          ResetOutputStream();
+
           Timer timer(true);
           List_[i]->Run();
           timer.Stop();
           List_[i]->TimeElapsed_ = timer.Seconds();
+
+          ResetOutputStream();
         }
         catch (const Exception& e)
         {
+          ResetOutputStream();
+
           TotalNumberOfFailures_++;
           ColorScope c(COLOR_ERROR);
           Out() << L"ERROR: " << e.Message() << std::endl;
         }
         catch (const std::exception& e)
         {
+          ResetOutputStream();
+
           TotalNumberOfFailures_++;
           ColorScope c(COLOR_ERROR);
           Out() << L"std::exception: " << ToUTF16(e.what()) << std::endl;
         }
         catch (...)
         {
+          ResetOutputStream();
+
           TotalNumberOfFailures_++;
           ColorScope c(COLOR_ERROR);
           Out() << L"UNEXPECTED EXCEPTION!" << std::endl;
@@ -459,7 +469,7 @@ private:
           Out() << L" Ends.";
         }
         Out() << COLOR_FG(180, 180, 255) << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
-	            << COLOR_RESET << std::endl << std::endl;
+	      << COLOR_RESET << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
 

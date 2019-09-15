@@ -29,8 +29,10 @@ using namespace MTL;
 
 TEST(TestStringFunctions)
 {
+  ResetOutputStream();
   std::cout << ToLowerCase("AbC\n");
   std::cout << ToUpperCase("AbC\n");
+  ResetOutputStream();
 
   std::wcout << ToLowerCase(L"AbC\n");
   std::wcout << ToUpperCase(L"AbC\n");
