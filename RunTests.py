@@ -42,7 +42,7 @@ else:
 LogFile = BuildDir + '/TestLog_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
 print('\nLog File: ' + LogFile)
 
-file = open(LogFile, 'wb')
+file = open(LogFile, 'w')
 
 os.chdir(TestDir)
 print(os.getcwd())
@@ -75,9 +75,6 @@ for test in TestList:
     processResult = subprocess.run(['./' + test] + TestArguments, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
     endTime = time.time()
 
-    file.write(TestSeparator)
-    file.write(processResult.stdout)
-
     Output.write(TestSeparator.decode('utf-8'))
     Output.write(processResult.stdout.decode('utf-8'))
 
@@ -88,7 +85,6 @@ for test in TestList:
     print('{:<7}'.format(testResult), end='')
     print(' %8.3f secs.' % (endTime - startTime,))
 
-file.write(TestSeparator)
 Output.write(TestSeparator.decode('utf-8'))
 totalEndTime = time.time()
 
@@ -110,15 +106,19 @@ else:
     print(' %.3f secs.' % seconds, end='')
 
   print(' (%.3f secs.)' % totalSeconds)
-  
+
 if args.ConsoleOut:
   print('')
   print(TestSeparatorString)
   print('Tests Output:')
-  Output.seek(0)
-  for line in Output.readlines():
-    line = line.replace('\r', '', 1)
-    line = line.replace('\n', '', 1)
+
+Output.seek(0)
+for line in Output.readlines():
+  line = line.replace('\r', '', 1)
+  line = line.replace('\n', '', 1)
+  file.write(line)
+  file.write('\n')
+  if args.ConsoleOut:
     print(line)
   
 sys.exit(errorCount)
