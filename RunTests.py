@@ -8,31 +8,39 @@ import os
 import subprocess
 import sys
 import time
+import argparse
 import platform
 
 totalStartTime = time.time()
+
+parser = argparse.ArgumentParser(description='Run all tests or a subset of tests specified by a pattern.')
+parser.add_argument('-p', dest='Pattern', metavar='<pattern>', default='*', type=str,
+                    help="Only test names that match this pattern will be run. For example: " +
+                    "'Test*'. Default pattern: '*'.")
+parser.add_argument('-b', dest='BuildDir', metavar='<build path>',
+                    default='Build', type=str,
+                    help="Specifies the build directory where the tests are. Default path: 'Build'.")
+parser.add_argument("-ConsoleOut", action='store_true', help='Full output to console after summary.')
+args = parser.parse_args()
+
+Pattern  = args.Pattern;
+BuildDir = args.BuildDir;
 
 SkipTestList = []
 
 TestArguments = ['-NoDisplay', '-DisableProgressBar']
 TestSeparator = '{:-<80}\n'.format('').encode()
 CurrentDir = os.getcwd();
-Pattern = '*'
 
 if platform.system() == 'Linux':
-  TestDir = 'Build/Tests/'
+  TestDir = BuildDir + '/Tests/'
 else:
-  TestDir = 'Build/Tests/Release/'
+  TestDir = BuildDir + '/Tests/Release/'
 
-LogFile = CurrentDir + '/Build/TestLog_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
+LogFile = BuildDir + '/TestLog_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
 print('\nLog File: ' + LogFile)
 
 file = open(LogFile, 'wb')
-
-NumberOfArguments = len(sys.argv)
-
-if NumberOfArguments == 2:
-  Pattern = sys.argv[1]
 
 os.chdir(TestDir)
 print(os.getcwd())
@@ -52,6 +60,8 @@ TestList.sort()
 errorCount = 0
 print()
 
+Output = ''
+
 for test in TestList:
   if (test != '') & (fnmatch.fnmatch(test, Pattern)):
     print('{:.<60}'.format(test), end='')
@@ -65,6 +75,7 @@ for test in TestList:
 
     file.write(TestSeparator)
     file.write(processResult.stdout)
+    Output = Output + str(TestSeparator, 'utf-8') + str(processResult.stdout, 'utf-8')
 
     if processResult.returncode != 0:
       testResult = 'FAILED'
@@ -94,4 +105,8 @@ else:
 
   print(' (%.3f secs.)' % totalSeconds)
 
+if args.ConsoleOut:
+  print('\nTests Output:')
+  print(Output)
+  
 sys.exit(errorCount)
