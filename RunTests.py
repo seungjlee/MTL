@@ -30,7 +30,8 @@ BuildDir = args.BuildDir;
 SkipTestList = []
 
 TestArguments = ['-NoDisplay', '-DisableProgressBar']
-TestSeparator = '{:-<80}\n'.format('').encode()
+TestSeparatorString = '{:-<100}'.format('')
+TestSeparator = TestSeparatorString.encode() + b'\n'
 CurrentDir = os.getcwd();
 
 if platform.system() == 'Linux':
@@ -61,7 +62,7 @@ TestList.sort()
 errorCount = 0
 print()
 
-Output = io.BytesIO()
+Output = io.StringIO()
 
 for test in TestList:
   if (test != '') & (fnmatch.fnmatch(test, Pattern)):
@@ -76,8 +77,9 @@ for test in TestList:
 
     file.write(TestSeparator)
     file.write(processResult.stdout)
-    Output.write(TestSeparator)
-    Output.write(processResult.stdout)
+
+    Output.write(TestSeparator.decode('utf-8'))
+    Output.write(processResult.stdout.decode('utf-8'))
 
     if processResult.returncode != 0:
       testResult = 'FAILED'
@@ -86,6 +88,8 @@ for test in TestList:
     print('{:<7}'.format(testResult), end='')
     print(' %8.3f secs.' % (endTime - startTime,))
 
+file.write(TestSeparator)
+Output.write(TestSeparator.decode('utf-8'))
 totalEndTime = time.time()
 
 if errorCount > 0:
@@ -108,8 +112,13 @@ else:
   print(' (%.3f secs.)' % totalSeconds)
   
 if args.ConsoleOut:
-  print('\nTests Output:')
+  print('')
+  print(TestSeparatorString)
+  print('Tests Output:')
   Output.seek(0)
-  print(str(Output.read(), 'utf-8'))
+  for line in Output.readlines():
+    line = line.replace('\r', '', 1)
+    line = line.replace('\n', '', 1)
+    print(line)
   
 sys.exit(errorCount)
