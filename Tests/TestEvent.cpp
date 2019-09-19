@@ -22,58 +22,14 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <MTL/Test.h>
+#include <MTL/Event.h>
 
-#ifndef MTL_EVENT_H
-#define MTL_EVENT_H
+using namespace MTL;
 
-#include <condition_variable>
-
-namespace MTL
+TEST(TestEventWaitMilliseconds)
 {
-
-class Event
-{
-public:
-  Event() : Ready_(false)
-  {
-  }
-
-  void Wait()
-  {
-    std::lock_guard<std::mutex> lock(Mutex_);
-    while (!Ready_)
-      ConditionVariable_.wait(Mutex_);
-    Ready_ = false;
-  }
-
-  // Returns false if it times out (TimeOut in milliseconds).
-  bool Wait(int64_t TimeOut)
-  {
-    std::lock_guard<std::mutex> lock(Mutex_);
-    while (!Ready_)
-    {
-      std::cv_status status = ConditionVariable_.wait_for(Mutex_, std::chrono::milliseconds(TimeOut));
-      if (status == std::cv_status::timeout)
-        return false;
-    }
-
-    Ready_ = false;
-    return true;
-  }
-
-  void Signal()
-  {
-    std::lock_guard<std::mutex> lock(Mutex_);
-    Ready_ = true;
-    ConditionVariable_.notify_all();
-  }
-
-private:
-  std::mutex Mutex_;
-  std::condition_variable_any ConditionVariable_;
-  bool Ready_;
-};
-
-}  // namespace MTL
-
-#endif  // MTL_EVENT_H
+  Event event;
+  bool signaled = event.Wait(50);
+  MTL_EQUAL(signaled, false);
+}
