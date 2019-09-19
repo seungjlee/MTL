@@ -10,6 +10,7 @@ import sys
 import time
 import argparse
 import platform
+import io
 
 totalStartTime = time.time()
 
@@ -60,7 +61,7 @@ TestList.sort()
 errorCount = 0
 print()
 
-Output = ''
+Output = io.BytesIO()
 
 for test in TestList:
   if (test != '') & (fnmatch.fnmatch(test, Pattern)):
@@ -75,7 +76,8 @@ for test in TestList:
 
     file.write(TestSeparator)
     file.write(processResult.stdout)
-    Output = Output + str(TestSeparator, 'utf-8') + str(processResult.stdout, 'utf-8')
+    Output.write(TestSeparator)
+    Output.write(processResult.stdout)
 
     if processResult.returncode != 0:
       testResult = 'FAILED'
@@ -104,9 +106,10 @@ else:
     print(' %.3f secs.' % seconds, end='')
 
   print(' (%.3f secs.)' % totalSeconds)
-
+  
 if args.ConsoleOut:
   print('\nTests Output:')
-  print(Output)
+  Output.seek(0)
+  print(str(Output.read(), 'utf-8'))
   
 sys.exit(errorCount)
