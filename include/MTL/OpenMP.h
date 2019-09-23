@@ -66,7 +66,7 @@ MTL_INLINE static bool DoOpenMP(SizeType size, SizeType numberOfThreads)
 //
 MTL_INLINE static SizeType ComputeParallelSubSizesBlockSize(SizeType size, U64 numberOfThreads)
 {
-  SizeType blockSize = size / numberOfThreads;
+  SizeType blockSize = size / SizeType(numberOfThreads);
 
   if (blockSize * numberOfThreads < size)
     blockSize++;
@@ -82,9 +82,9 @@ template <class T> MTL_INLINE static void ComputeParallelSubSizes
   assert(numberOfThreads <= MTL_MAX_THREADS);
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
-  SizeType chunkSize = MTL::XX<T>::StreamSize(totalSize / numberOfThreads);
+  SizeType chunkSize = MTL::XX<T>::StreamSize(totalSize / SizeType(numberOfThreads));
 #else
-  SizeType chunkSize = totalSize / numberOfThreads;
+  SizeType chunkSize = totalSize / SizeType(numberOfThreads);
 #endif
 
   for (U64 i = 0; i < numberOfThreads; i++)
@@ -94,7 +94,7 @@ template <class T> MTL_INLINE static void ComputeParallelSubSizes
   }
 
   // Doing the laziest thing for now. Add the leftover to the last chunk.
-  SizeType remainder = totalSize - chunkSize * numberOfThreads;
+  SizeType remainder = totalSize - chunkSize * SizeType(numberOfThreads);
   subSizes[numberOfThreads - 1] += remainder;
 
   // Compute offsets.
@@ -108,7 +108,7 @@ MTL_INLINE static void ComputeParallelSubHeights
   assert(numberOfThreads <= MTL_MAX_THREADS);
 
   SizeType effectiveHeight = height - overlap;
-  SizeType chunkHeight = effectiveHeight / numberOfThreads;
+  SizeType chunkHeight = effectiveHeight / SizeType(numberOfThreads);
 
   for (U64 i = 0; i < numberOfThreads; i++)
   {
@@ -117,7 +117,7 @@ MTL_INLINE static void ComputeParallelSubHeights
   }
 
   // Distribute the remainder.
-  SizeType remainder = effectiveHeight - chunkHeight * numberOfThreads;
+  SizeType remainder = effectiveHeight - chunkHeight * SizeType(numberOfThreads);
   for (SizeType i = 0; i < remainder; i++)
     subHeights[i]++;
 
@@ -135,7 +135,7 @@ MTL_INLINE static void Parallel_1Dst(T* p, SizeType size, I64 numberOfThreads)
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
-  if (DoOpenMP<T>(size, numberOfThreads))
+  if (DoOpenMP<T>(size, SizeType(numberOfThreads)))
   {
     SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
@@ -162,7 +162,7 @@ MTL_INLINE static void Parallel_1Dst_1Src(DstT* pDst, const SrcT* pSrc, SizeType
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
-  if (DoOpenMP<DstT>(size, numberOfThreads))
+  if (DoOpenMP<DstT>(size, SizeType(numberOfThreads)))
   {
     SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<DstT>(subSizes, offsets, size, numberOfThreads);
@@ -185,7 +185,7 @@ MTL_INLINE static void Parallel_1Dst_1Val(T* p, const T& val, SizeType size, I64
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
-  if (DoOpenMP<T>(size, numberOfThreads))
+  if (DoOpenMP<T>(size, SizeType(numberOfThreads)))
   {
     SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
@@ -209,7 +209,7 @@ MTL_INLINE static void Parallel_1Dst_1Src_1Val(T* pDst, const T* pSrc, const T& 
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
-  if (DoOpenMP<T>(size, numberOfThreads))
+  if (DoOpenMP<T>(size, SizeType(numberOfThreads)))
   {
     SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
@@ -233,7 +233,7 @@ MTL_INLINE static void ParallelReduction_1Src(ReductionT* subResults, SizeType& 
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
-  if (DoOpenMP<T>(size, numberOfThreads))
+  if (DoOpenMP<T>(size, SizeType(numberOfThreads)))
   {
     SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
@@ -242,7 +242,7 @@ MTL_INLINE static void ParallelReduction_1Src(ReductionT* subResults, SizeType& 
     for (I32 i = 0; i < numberOfThreads; i++)
       subResults[i] = Func(pSrc + offsets[i], subSizes[i]);
 
-    subResultsSize = numberOfThreads;
+    subResultsSize = SizeType(numberOfThreads);
   }
   else
 #endif
@@ -263,7 +263,7 @@ MTL_INLINE static void ParallelReduction_2Src(ReductionT* subResults, SizeType& 
   if (numberOfThreads > MTL_MAX_THREADS)
     numberOfThreads = MTL_MAX_THREADS;
 
-  if (DoOpenMP<T>(size, numberOfThreads))
+  if (DoOpenMP<T>(size, SizeType(numberOfThreads)))
   {
     SizeType subSizes[MTL_MAX_THREADS], offsets[MTL_MAX_THREADS];
     ComputeParallelSubSizes<T>(subSizes, offsets, size, numberOfThreads);
@@ -272,7 +272,7 @@ MTL_INLINE static void ParallelReduction_2Src(ReductionT* subResults, SizeType& 
     for (I32 i = 0; i < numberOfThreads; i++)
       subResults[i] = Func(pSrc1 + offsets[i], pSrc2 + offsets[i], subSizes[i]);
 
-    subResultsSize = numberOfThreads;
+    subResultsSize = SizeType(numberOfThreads);
   }
   else
 #endif

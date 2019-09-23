@@ -961,7 +961,7 @@ private:
           RowIndexPairs_[i].Resize(startIndex + addSize);
 
           Point2D<I32>* pPairs = &RowIndexPairs_[i][startIndex];
-          for (I32 k = 0; k < addSize; k++)
+          for (I32 k = 0; k < (I32)addSize; k++)
           {
             pPairs[k].x(p);
             pPairs[k].y(q + ai[p]);
@@ -979,7 +979,7 @@ private:
           RowIndexPairs_[i].Resize(startIndex + addSize);
 
           Point2D<I32>* pPairs = &RowIndexPairs_[i][startIndex];
-          for (I32 k = 0; k < addSize; k++)
+          for (I32 k = 0; k < (I32)addSize; k++)
           {
             pPairs[k].x(p + ai[q]);
             pPairs[k].y(q);

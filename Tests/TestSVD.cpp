@@ -70,7 +70,7 @@ TEST(TestSVD)
     for (int col = 0; col < Ut1.Cols(); col++)
       MTL_EQUAL_FLOAT(Ut1[row][col], Vt1[row][col], kTol);
 
-  for (int i = 0; i < D1.Size() - 1; i++)
+  for (int i = 0; i < (int)D1.Size() - 1; i++)
     MTL_LESS_THAN(D1[i+1], D1[i]);
 
   DynamicMatrix<F64> S(A.Rows(), A.Cols(), DynamicMatrix<F64>::eZeros);
@@ -89,7 +89,7 @@ TEST(TestSVD)
     for (int col = 0; col < Ut1.Cols(); col++)
       MTL_EQUAL_FLOAT(Ut1[row][col], Vt1[row][col], kTol);
 
-  for (int i = 0; i < D1.Size() - 1; i++)
+  for (int i = 0; i < (int)D1.Size() - 1; i++)
     MTL_LESS_THAN(D1[i], D1[i+1]);
 
   S.SetDiagonals(D1);
@@ -102,7 +102,7 @@ TEST(TestSVD)
   DynamicVector<F64> D2;
   converged = JacobiEigen(Ut2, D2);
 
-  for (int i = 0; i < D1.Size(); i++)
+  for (int i = 0; i < (int)D1.Size(); i++)
     MTL_EQUAL_FLOAT(D2[i], D1[i], kTol);
 
   for (int row = 0; row < Ut1.Rows(); row++)

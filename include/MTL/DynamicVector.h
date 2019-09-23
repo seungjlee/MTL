@@ -54,7 +54,7 @@
 #endif
 
 // Loop helpers.
-#define FOR_EACH(Index, Initial, Size)  for(MTL::SizeType Index = Initial; Index < Size; Index++)
+#define FOR_EACH(Index, Initial, Size)  for(MTL::SizeType Index = Initial; Index < (MTL::SizeType)Size; Index++)
 #define FOR_EACH_(V, Index)             FOR_EACH(Index, 0, V.Size())
 #define FOR_EACH_INDEX(V)               FOR_EACH_(V, V##Index)
 

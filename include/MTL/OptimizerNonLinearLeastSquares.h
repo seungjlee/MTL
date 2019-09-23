@@ -224,7 +224,7 @@ protected:
   void ComputeJacobianForwardFiniteDifference(DynamicMatrix<T>& Jt,
                                               const Parameters& parameters)
   {
-    for (I32 i = 0; i < parameters.Size(); i++)
+    for (I32 i = 0; i < (I32)parameters.Size(); i++)
     {
       Parameters forwardDifferenceParameters = parameters;
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
@@ -243,7 +243,7 @@ protected:
   void ComputeJacobianCentralFiniteDifference(DynamicMatrix<T>& Jt,
                                               const Parameters& parameters)
   {
-    for (I32 i = 0; i < parameters.Size(); i++)
+    for (I32 i = 0; i < (I32)parameters.Size(); i++)
     {
       Parameters centralDifferenceParameters = parameters;
       DynamicVector<T> residualsMinusDelta(CurrentResiduals_.Size());
@@ -266,7 +266,7 @@ protected:
                                                       const Parameters& parameters)
   {
     MTL_PARALLEL_FOR_BLOCKS(parameters.Size())
-    for (I32 i = 0; i < parameters.Size(); i++)
+    for (I32 i = 0; i < (I32)parameters.Size(); i++)
     {
       Parameters forwardDifferenceParameters = parameters;
       DynamicVector<T> residualsPlusDelta(CurrentResiduals_.Size());
@@ -286,7 +286,7 @@ protected:
                                                        const Parameters& parameters)
   {
     MTL_PARALLEL_FOR_BLOCKS(parameters.Size())
-    for (I32 i = 0; i < parameters.Size(); i++)
+    for (I32 i = 0; i < (I32)parameters.Size(); i++)
     {
       Parameters centralDifferenceParameters = parameters;
       DynamicVector<T> residualsMinusDelta(CurrentResiduals_.Size());
