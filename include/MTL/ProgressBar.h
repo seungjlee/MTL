@@ -87,8 +87,9 @@ public:
 protected:
   virtual void ProcessWork(const MTL::DynamicVector<ProgressData>& data)
   {
-    for (const ProgressData& d : data)
+    if (Enabled_)
     {
+      const ProgressData& d = data.Back();
       ShowProgressBar(d.Percent, d.Message, d.BarLength, d.BarColor, d.TextColor, d.Indent);
     }
   }
