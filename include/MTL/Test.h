@@ -108,11 +108,11 @@ static void ShowProgressBar(double percent, const std::string& message, int barL
   ShowProgressBar(percent, ToUTF16(message), barLength, barColor, textColor, indent);
 }
 
-static wchar_t* ErrorColor = COLOR_ERROR;
-static wchar_t* InitializeShutdownColor     = COLOR_FG(60, 120, 240);
-static wchar_t* InitializeShutdownTimeColor = COLOR_FG(60, 200, 240);
-static wchar_t* TestBeginEndColor           = COLOR_FG(120, 100, 255);
-static wchar_t* TestEndTimeColor            = COLOR_FG(180, 180, 255);
+static const wchar_t* ErrorColor = COLOR_ERROR;
+static const wchar_t* InitializeShutdownColor     = COLOR_FG(60, 120, 240);
+static const wchar_t* InitializeShutdownTimeColor = COLOR_FG(60, 200, 240);
+static const wchar_t* TestBeginEndColor           = COLOR_FG(120, 100, 255);
+static const wchar_t* TestEndTimeColor            = COLOR_FG(180, 180, 255);
 
 class Test
 {
