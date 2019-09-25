@@ -80,7 +80,10 @@ for test in TestList:
     endTime = time.time()
 
     Output.write(TestSeparator.decode('utf-8'))
+    Output.write(test + '\n')
+    Output.write(TestSeparator.decode('utf-8'))
     Output.write(processResult.stdout.decode('utf-8'))
+    Output.write('\n\n')
 
     if processResult.returncode != 0:
       testResult = 'FAILED'
