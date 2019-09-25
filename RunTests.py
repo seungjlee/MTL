@@ -22,6 +22,7 @@ parser.add_argument('-b', dest='BuildDir', metavar='<build path>',
                     default='Build', type=str,
                     help="Specifies the build directory where the tests are. Default path: 'Build'.")
 parser.add_argument("-ConsoleOut", action='store_true', help='Full output to console after summary.')
+parser.add_argument("-NoColorRGB24", action='store_true', help='Disable 24-bit RGB colors on test output.')
 args = parser.parse_args()
 
 Pattern  = args.Pattern;
@@ -29,7 +30,10 @@ BuildDir = args.BuildDir;
 
 SkipTestList = []
 
-TestArguments = ['-NoDisplay', '-DisableProgressBar', '-DisableColorRGB24']
+TestArguments = ['-NoDisplay', '-DisableProgressBar']
+if args.NoColorRGB24:
+  TestArguments.append('-DisableColorRGB24')
+
 TestSeparatorString = '{:-<100}'.format('')
 TestSeparator = TestSeparatorString.encode() + b'\n'
 CurrentDir = os.getcwd();
