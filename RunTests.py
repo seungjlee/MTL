@@ -116,8 +116,10 @@ else:
 
 if args.ConsoleOut:
   print('')
-  print(TestSeparatorString)
+  print('-------------')
   print('Tests Output:')
+  print('-------------')
+  print('')
 
 Output.seek(0)
 for line in Output.readlines():
