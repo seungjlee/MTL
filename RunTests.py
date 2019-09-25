@@ -29,7 +29,7 @@ BuildDir = args.BuildDir;
 
 SkipTestList = []
 
-TestArguments = ['-NoDisplay', '-DisableProgressBar']
+TestArguments = ['-NoDisplay', '-DisableProgressBar', '-DisableColorRGB24']
 TestSeparatorString = '{:-<100}'.format('')
 TestSeparator = TestSeparatorString.encode() + b'\n'
 CurrentDir = os.getcwd();

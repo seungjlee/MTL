@@ -108,6 +108,12 @@ static void ShowProgressBar(double percent, const std::string& message, int barL
   ShowProgressBar(percent, ToUTF16(message), barLength, barColor, textColor, indent);
 }
 
+static wchar_t* ErrorColor = COLOR_ERROR;
+static wchar_t* InitializeShutdownColor     = COLOR_FG(60, 120, 240);
+static wchar_t* InitializeShutdownTimeColor = COLOR_FG(60, 200, 240);
+static wchar_t* TestBeginEndColor           = COLOR_FG(120, 100, 255);
+static wchar_t* TestEndTimeColor            = COLOR_FG(180, 180, 255);
+
 class Test
 {
 public:
@@ -141,7 +147,7 @@ public:
     }
     __except(EXCEPTION_EXECUTE_HANDLER)  
     {
-      Out() << COLOR_ERROR << L"ERROR: SEH exception caught!" << COLOR_RESET << std::endl;
+      Out() << ErrorColor << L"ERROR: SEH exception caught!" << COLOR_RESET << std::endl;
       TotalNumberOfFailures_++;
     }
 #endif
@@ -206,7 +212,7 @@ public:
     if (!e)
     {
       TotalNumberOfFailures_++;
-      ColorScope c(COLOR_ERROR);
+      ColorScope c(ErrorColor);
       Out() << L"[In file '" << file << L"' - line " << line  << L"]" << std::endl
             << L"  '" << expression << L"' failed!" <<  std::endl;
     }
@@ -218,7 +224,7 @@ public:
     if (actual != expected)
     {
       TotalNumberOfFailures_++;
-      ColorScope c(COLOR_ERROR);
+      ColorScope c(ErrorColor);
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual << L"' but '"
             << expected << L"' is expected!'" << std::endl;
@@ -232,7 +238,7 @@ public:
     if (MTL::Abs(difference) > tolerance || actual != actual)
     {
       TotalNumberOfFailures_++;
-      ColorScope c(COLOR_ERROR);
+      ColorScope c(ErrorColor);
       Out() << L"[File '" << file << L"' - line " << line  << L"]" << std::endl
             << L"  Actual value is " << actual << L" but " << expected
             << L" is expected; difference is: " << difference << L", tolerance is: "
@@ -246,7 +252,7 @@ public:
     if (actual == limit)
     {
       TotalNumberOfFailures_++;
-      ColorScope c(COLOR_ERROR);
+      ColorScope c(ErrorColor);
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual
             << L"' which is equal to the limit '"
@@ -255,7 +261,7 @@ public:
     else if (actual > limit)
     {
       TotalNumberOfFailures_++;
-      ColorScope c(COLOR_ERROR);
+      ColorScope c(ErrorColor);
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual
             << L"' which is greater the limit '"
@@ -268,7 +274,7 @@ public:
     if (actual > limit)
     {
       TotalNumberOfFailures_++;
-      ColorScope c(COLOR_ERROR);
+      ColorScope c(ErrorColor);
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual << L"' which is greater than the limit '"
             << limit << L"'" << std::endl;
@@ -281,7 +287,7 @@ public:
     if (actual == limit)
     {
       TotalNumberOfFailures_++;
-      ColorScope c(COLOR_ERROR);
+      ColorScope c(ErrorColor);
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual
             << L"' which is equal to the limit '"
@@ -290,7 +296,7 @@ public:
     else if (actual < limit)
     {
       TotalNumberOfFailures_++;
-      ColorScope c(COLOR_ERROR);
+      ColorScope c(ErrorColor);
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual
             << L"' which is less the limit '"
@@ -303,7 +309,7 @@ public:
     if (actual < limit)
     {
       TotalNumberOfFailures_++;
-      ColorScope c(COLOR_ERROR);
+      ColorScope c(ErrorColor);
       Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
             << L"  Actual value is '" << actual << L"' which is less than the limit '"
             << limit << L"'" << std::endl;
@@ -339,30 +345,30 @@ private:
     {
       try
       {
-        Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Begins..." << COLOR_RESET << std::endl;
+        Out() << InitializeShutdownColor << L"[Initialize_Test] Begins..." << COLOR_RESET << std::endl;
         Timer timer(true);
         Initialize_();
         timer.Stop();
 
-        Out() << COLOR_FG(60, 120, 240) << L"[Initialize_Test] Ends.";
-        Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+        Out() << InitializeShutdownColor << L"[Initialize_Test] Ends.";
+        Out() << InitializeShutdownTimeColor << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
       }
       catch (const Exception& e)
       {
         TotalNumberOfFailures_++;
-        ColorScope c(COLOR_ERROR);
+        ColorScope c(ErrorColor);
         Out() << L"Test::Initialize: ERROR: " << e.Message() << std::endl;
       }
       catch (const std::exception& e)
       {
         TotalNumberOfFailures_++;
-        ColorScope c(COLOR_ERROR);
+        ColorScope c(ErrorColor);
         Out() << L"Test::Initialize: std::exception: " << ToUTF16(e.what()) << std::endl;
       }
       catch (...)
       {
         TotalNumberOfFailures_++;
-        ColorScope c(COLOR_ERROR);
+        ColorScope c(ErrorColor);
         Out() << L"Test::Initialize: UNEXPECTED EXCEPTION!" << std::endl;
       }
     }
@@ -374,30 +380,30 @@ private:
     {
       try
       {
-        Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Begins..." << COLOR_RESET << std::endl;
+        Out() << InitializeShutdownColor << L"[Shutdown_Test] Begins..." << COLOR_RESET << std::endl;
         Timer timer(true);
         Shutdown_();
         timer.Stop();
 
-        Out() << COLOR_FG(60, 120, 240) << L"[Shutdown_Test] Ends.";
-        Out() << COLOR_FG(60, 200, 240) << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+        Out() << InitializeShutdownColor << L"[Shutdown_Test] Ends.";
+        Out() << InitializeShutdownTimeColor << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
       }
       catch (const Exception& e)
       {
         TotalNumberOfFailures_++;
-        ColorScope c(COLOR_ERROR);
+        ColorScope c(ErrorColor);
         Out() << L"Test::Shutdown: ERROR: " << e.Message() << std::endl;
       }
       catch (const std::exception& e)
       {
         TotalNumberOfFailures_++;
-        ColorScope c(COLOR_ERROR);
+        ColorScope c(ErrorColor);
         Out() << L"Test::Shutdown: std::exception: " << ToUTF16(e.what()) << std::endl;
       }
       catch (...)
       {
         TotalNumberOfFailures_++;
-        ColorScope c(COLOR_ERROR);
+        ColorScope c(ErrorColor);
         Out() << L"Test::Shutdown: UNEXPECTED EXCEPTION!" << std::endl;
       }
     }
@@ -407,8 +413,19 @@ private:
   {
     if (List_.Size() > 0)
     {
-      if (FindArgumentIgnoreCase(L"-DisableProgressBar") > 0)
+      if (FindArgumentIgnoreCase(L"-DisableProgressBar") > 0 || FindArgumentIgnoreCase(L"-NoProgressBar") > 0)
         TestProgressBar.Disable();
+
+      if (FindArgumentIgnoreCase(L"-DisableColorRGB24") > 0 || FindArgumentIgnoreCase(L"-NoColorRGB24") > 0)
+      {
+        // Some outputs don't support all ansi color escape codes.
+        // Override with more compatible colors.
+        ErrorColor = COLOR_RED;
+        InitializeShutdownColor = COLOR_MAGENTA;
+        InitializeShutdownTimeColor = COLOR_LBLUE;
+        TestBeginEndColor = COLOR_LBLUE;
+        TestEndTimeColor = COLOR_LCYAN;
+      }
 
       Out() << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
             << MTL::CPU::Instance().NumberOfCores() << std::endl;
@@ -420,7 +437,7 @@ private:
 
       for (U32 i = 0; i < List_.Size(); i++)
       {
-        Out() << COLOR_FG(120, 100, 255) << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << COLOR_RESET << std::endl;
+        Out() << TestBeginEndColor << L"[" << List_[i]->Name_ << L"]" << L" Begins..." << COLOR_RESET << std::endl;
 
         U64 numberOfFailuresBeforeRun = TotalNumberOfFailures_;
         try
@@ -439,7 +456,7 @@ private:
           ResetOutputStream();
 
           TotalNumberOfFailures_++;
-          ColorScope c(COLOR_ERROR);
+          ColorScope c(ErrorColor);
           Out() << L"ERROR: " << e.Message() << std::endl;
         }
         catch (const std::exception& e)
@@ -447,7 +464,7 @@ private:
           ResetOutputStream();
 
           TotalNumberOfFailures_++;
-          ColorScope c(COLOR_ERROR);
+          ColorScope c(ErrorColor);
           Out() << L"std::exception: " << ToUTF16(e.what()) << std::endl;
         }
         catch (...)
@@ -455,11 +472,11 @@ private:
           ResetOutputStream();
 
           TotalNumberOfFailures_++;
-          ColorScope c(COLOR_ERROR);
+          ColorScope c(ErrorColor);
           Out() << L"UNEXPECTED EXCEPTION!" << std::endl;
         }
 
-        Out() << COLOR_FG(120, 100, 255) << L"[" << List_[i]->Name_ << L"]";
+        Out() << TestBeginEndColor << L"[" << List_[i]->Name_ << L"]";
         if (TotalNumberOfFailures_ > numberOfFailuresBeforeRun)
         {
           Out() << COLOR_LRED << L" Ends with errors.";
@@ -468,7 +485,7 @@ private:
         {
           Out() << L" Ends.";
         }
-        Out() << COLOR_FG(180, 180, 255) << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
+        Out() << TestEndTimeColor << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
 	      << COLOR_RESET << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
@@ -590,7 +607,7 @@ int main(int argc, char* argv[])
   }
   catch(const MTL::Exception& e)
   {
-    MTL::ColorScope c(COLOR_ERROR);
+    MTL::ColorScope c(MTL::ErrorColor);
     ConsoleOut << L"MAIN() - MTL::Exception: " << e.Message() << std::endl;
 
 #if defined(WIN32) || defined(WIN64)
@@ -601,7 +618,7 @@ int main(int argc, char* argv[])
   }
   catch(const std::exception& e)
   {
-    MTL::ColorScope c(COLOR_ERROR);
+    MTL::ColorScope c(MTL::ErrorColor);
     ConsoleOut << L"MAIN() - std::exception: " << MTL::ToUTF16(e.what()) << std::endl;
 
 #if defined(WIN32) || defined(WIN64)
@@ -612,7 +629,7 @@ int main(int argc, char* argv[])
   }
   catch(...)
   {
-    MTL::ColorScope c(COLOR_ERROR);
+    MTL::ColorScope c(MTL::ErrorColor);
     ConsoleOut << L"MAIN() - UNEXPECTED EXCEPTION!" << std::endl;
 
 #if defined(WIN32) || defined(WIN64)
