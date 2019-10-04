@@ -313,6 +313,9 @@ TEST(Test_std_vector)
 
     DynamicVector<F32> v2 = stdV;
 
+    v.AddBack(stdV);
+    v2.AddBack(stdV);
+
     FOR_EACH_INDEX(v)
       MTL_EQUAL(v2[vIndex], v[vIndex]);
   }

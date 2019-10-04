@@ -236,6 +236,10 @@ public:
   {
     Insert(End(), pSrc, sourceSize);
   }
+  MTL_INLINE void AddBack(const std::vector<T>& v)
+  {
+    AddBack(v.data(), v.size());
+  }
 
   MTL_INLINE void Insert(T* pDst, const T* pSrc, SizeType sourceSize)
   {
