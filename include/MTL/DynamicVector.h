@@ -33,6 +33,7 @@
 #include <MTL/Math.h>
 #include <MTL/Stream.h>
 #include <MTL/StreamMath.h>
+#include <vector>
 
 //
 // Some user overridable macros/constants.
@@ -110,6 +111,10 @@ public:
       AllocBlock_(MTL_DEFAULT_INITIAL_ALLOCATION_BLOCK)
   {
     Assign(pSrcBegin, pSrcEnd);
+  }
+  MTL_INLINE DynamicVector(const std::vector<T>& v)
+    : DynamicVector(v.data(), v.size())
+  {
   }
 
   // Constructor that does not own the data buffer.

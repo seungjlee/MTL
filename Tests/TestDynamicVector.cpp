@@ -293,3 +293,28 @@ TEST(Test_SumOfSquaredDifferences)
   }
   Out() << std::endl;
 }
+
+TEST(Test_std_vector)
+{
+  enum
+  {
+    N = 1025,
+    kRepeats = 7777
+  };
+
+  Timer t(true);
+  Random random;
+
+  for (I32 i = 0; i < kRepeats; i++)
+  {
+    DynamicVector<F32> v = random.DynamicVector<F32>(N, -1.0, 1.0);
+
+    std::vector<F32> stdV(v.begin(), v.end());
+
+    DynamicVector<F32> v2 = stdV;
+
+    FOR_EACH_INDEX(v)
+      MTL_EQUAL(v2[vIndex], v[vIndex]);
+  }
+  Out() << std::endl;
+}
