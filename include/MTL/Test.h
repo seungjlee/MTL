@@ -49,7 +49,7 @@ public:                                                                         
   virtual void Run();                                                                              \
 };                                                                                                 \
 static Test_ ## TestName                                                                           \
- Test_ ## TestName ## _Instance_(MTL::String(TOWCHAR(#TestName)));                                 \
+ Test_ ## TestName ## _Instance_(MTL::String(TO_WCHAR(TO_STRING(TestName))));                      \
 void Test_ ## TestName::Run()
 
 #define TEST(TestName)           TEST_MACRO(TestName, true)

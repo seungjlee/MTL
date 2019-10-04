@@ -64,9 +64,10 @@ typedef std::wostream OutputStream;
   #define MTL_INLINE inline
 #endif
 
-#define TOWCHAR(x)   L ## x
-#define MTL_FILE(x)  TOWCHAR(x)
-#define MTL__FILE__  MTL_FILE(__FILE__)
+#define TO_STRING(x)  #x
+#define TO_WCHAR_(x)  L ## x
+#define TO_WCHAR(x)   TO_WCHAR_(x)
+#define MTL__FILE__   TO_WCHAR(__FILE__)
 
 // Default definitions for stream instructions.
 #if !defined(MTL_ENABLE_SSE) && !defined(MTL_ENABLE_AVX)

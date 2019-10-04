@@ -316,5 +316,4 @@ TEST(Test_std_vector)
     FOR_EACH_INDEX(v)
       MTL_EQUAL(v2[vIndex], v[vIndex]);
   }
-  Out() << std::endl;
 }
