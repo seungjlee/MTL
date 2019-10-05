@@ -138,7 +138,7 @@ private:
 #else
     String fgColor = ColorRGB::ForegroundColor(textColor);
     String bgColor = ColorRGB::BackgroundColor(barColor);
-    String endColor = ColorRGB::BackgroundColor(barColor * 0.2);
+    String endColor = ColorRGB::BackgroundColor(barColor * 0.25);
 
     std::wcout << "\r";
     for (uint16_t i = 0; i < indent; i++)
@@ -150,7 +150,7 @@ private:
     for (; i < numberOfBlocksToPrint; i++)
       std::wcout << " ";
 
-    std::wcout << COLOR_BG(0,0,0);
+    std::wcout << COLOR_BG(15,15,15);
     for (; i < barLength; i++)
       std::wcout << " ";
 
