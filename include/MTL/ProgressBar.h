@@ -150,7 +150,7 @@ private:
     for (; i < numberOfBlocksToPrint; i++)
       std::wcout << " ";
 
-    std::wcout << COLOR_BG(15,15,15);
+    std::wcout << COLOR_BG(25,25,25);
     for (; i < barLength; i++)
       std::wcout << " ";
 
