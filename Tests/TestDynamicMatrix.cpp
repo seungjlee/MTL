@@ -422,6 +422,8 @@ TEST(TestSolvers)
 
   for (I32 i = 0; i < kRepeats; i++)
   {
+    ColorScope cs(COLOR_LGREEN);
+
     A = random.DynamicMatrix<F64>(N,N, -1, 1);
     A = A.MultiplyByTranspose();
     b = random.DynamicVector<F64>(N, -1, 1);
@@ -448,7 +450,7 @@ TEST(TestSolvers)
       t_SVD.Start();
       SolveJacobiSVDTransposed(svdX, rank, conditionNumber, A, b);
       t_SVD.Stop();
-      wprintf(L"SVD Condition Number: %g\n", conditionNumber);
+      wprintf(L"  SVD Condition Number:   %g\n", conditionNumber);
     }
 
     DynamicVector<F64> eigenX;
@@ -458,7 +460,7 @@ TEST(TestSolvers)
       t_Eigen.Start();
       SolveJacobiEigen(eigenX, rank, conditionNumber, A, b);
       t_Eigen.Stop();
-      wprintf(L"Eigen Condition Number: %g\n", conditionNumber);
+      wprintf(L"  Eigen Condition Number: %g\n", conditionNumber);
     }
 
     for (I32 k = 0; k < N; k++)
@@ -467,6 +469,8 @@ TEST(TestSolvers)
       MTL_EQUAL_FLOAT(  svdX[k], qrX[k], kTol);
       MTL_EQUAL_FLOAT(eigenX[k], qrX[k], kTol);
     }
+
+    std::wcout.flush();
   }
 
   wprintf(L"  QR    solver: %9.3f msecs (%d times)\n",    t_QR.Milliseconds(), kRepeats);
