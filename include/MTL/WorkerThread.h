@@ -135,7 +135,7 @@ protected:
     MTL_THROW("Unexpected exception!");
   }
 
-private:
+protected:
   MTL::String Name_;
   MTL::Event ProcessData_;
   std::thread Thread_;

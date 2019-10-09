@@ -289,7 +289,7 @@ TEST(Test_SumOfSquaredDifferences)
     MTL_EQUAL_FLOAT(s1, s2, kTol);
 
     snprintf(buffer, sizeof(buffer), "- %.3f secs.", t.Seconds());
-    ShowProgressBar(double(i + 1) / kRepeats, buffer);
+    ShowProgressBar(double(i + 1) / kRepeats, buffer, 0);
   }
   Out() << std::endl;
 }

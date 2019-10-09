@@ -105,15 +105,17 @@ private:
     int numberOfBlocksToPrint = int(barLength * percent);
     char buf[MAX_PROGRESS_BUFFER_SIZE];
 
-#ifdef WIN32
-    // This code does not work on Ubuntu with default settings.
+    std::wcout << "\r";
+    for (uint16_t i = 0; i < indent; i++)
+      std::wcout << " ";
+
+    if (barLength > 0)
     {
+    #ifdef WIN32
+      // This code does not work on Ubuntu with default settings.
       ColorScope cs(barColor);
 
       int index = 0;
-      buf[index++] = '\r';
-      for (uint16_t i = 0; i < indent; i++)
-        buf[index++] = ' ';
       buf[index++] = '[';
 
       for (int i = 0; i < barLength; i++)
@@ -124,42 +126,38 @@ private:
           buf[index++] = ' ';
       }
       buf[index++] = ']';
+      buf[index++] = ' ';
       buf[index] = 0;
       std::wcout << buf;
+    #else
+      String bgColor = ColorRGB::BackgroundColor(barColor);
+      String endColor = ColorRGB::BackgroundColor(barColor * 0.25);
+
+      std::wcout << endColor;
+      std::wcout << " ";
+      std::wcout << bgColor;
+      int i = 0;
+      for (; i < numberOfBlocksToPrint; i++)
+        std::wcout << " ";
+
+      std::wcout << COLOR_BG(25, 25, 25);
+      for (; i < barLength; i++)
+        std::wcout << " ";
+
+      std::wcout << endColor;
+      std::wcout << " " << COLOR_RESET << " ";
+    #endif
     }
+
     {
       ColorScope cs(textColor);
 
-      int bytes = snprintf(&buf[0], sizeof(buf), " %.1f%%", float(100.0 * percent));
+      int bytes = snprintf(&buf[0], sizeof(buf), "%.1f%%", float(100.0 * percent));
+      buf[bytes++] = ' ';
       buf[bytes] = 0;
 
       std::wcout << buf;
     }
-#else
-    String fgColor = ColorRGB::ForegroundColor(textColor);
-    String bgColor = ColorRGB::BackgroundColor(barColor);
-    String endColor = ColorRGB::BackgroundColor(barColor * 0.25);
-
-    std::wcout << "\r";
-    for (uint16_t i = 0; i < indent; i++)
-      std::wcout << " ";
-    std::wcout << endColor;
-    std::wcout << " ";
-    std::wcout << bgColor;
-    int i = 0;
-    for (; i < numberOfBlocksToPrint; i++)
-      std::wcout << " ";
-
-    std::wcout << COLOR_BG(25,25,25);
-    for (; i < barLength; i++)
-      std::wcout << " ";
-
-    std::wcout << endColor;
-    std::wcout << " " << COLOR_RESET;
-    std::wcout << fgColor;
-    int bytes = snprintf(&buf[0], MAX_PROGRESS_BUFFER_SIZE, " %.1f%%", float(100.0 * percent));
-    std::wcout << buf << COLOR_RESET;
-#endif
 
     std::wcout << " " << message;
     std::wcout.flush();
