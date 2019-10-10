@@ -46,14 +46,20 @@ class WorkerThread
 {
 public:
   WorkerThread(const String& name, bool start = true)
-    : Running_(true), Name_(name), MaxWorkQueueSize_(100)
+    : Running_(true), Name_(name), MaxWorkQueueSize_(10000)
   {
     if (start)
       Start();
   }
   ~WorkerThread()
   {
-    Shutdown();
+    if (Thread_.joinable())
+    {
+      ResetOutputStream();
+      std::wcerr << COLOR_YELLOW;
+      std::wcerr << "WorkerThread::~WorkerThread: Shutdown() needs to be called before object destruction to ensure proper thread clean up.";
+      std::wcerr << COLOR_RESET << std::endl;
+    }
   }
 
   uint32_t MaxWorkQueueSize() const     { return MaxWorkQueueSize_;  }
@@ -88,8 +94,11 @@ public:
   void Shutdown()
   {
     Running_ = false;
-    ProcessData_.Signal();
-    Thread_.join();
+    if (Thread_.joinable())
+    {
+      ProcessData_.Signal();
+      Thread_.join();
+    }
   }
 
   virtual void QueueWork(const DataType& data)
@@ -156,6 +165,7 @@ protected:
         if (!Running_)
           break;
 
+        if (QueueData_.Size() > 0)
         {
           std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
           if (QueueData_.Size() > MaxWorkQueueSize_)

@@ -61,6 +61,11 @@ public:
     MaxWorkQueueSize(1);
   }
 
+  ~ProgressBarWorker()
+  {
+    Shutdown();
+  }
+
   virtual void QueueWork(const ProgressData& dataIn)
   {
     if (Enabled_)
