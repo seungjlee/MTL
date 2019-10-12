@@ -163,7 +163,6 @@ private:
       const char* percentFormat = extraPrecision ? "%.2f%%" : "%.1f%%";
 
       int bytes = snprintf(&buf[0], sizeof(buf), percentFormat, float(100.0 * percent));
-      buf[bytes++] = ' ';
       buf[bytes] = 0;
 
       std::wcout << buf;
