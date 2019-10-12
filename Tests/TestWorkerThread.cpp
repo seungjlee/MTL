@@ -58,6 +58,7 @@ public:
       {
         ColorScope cs(COLOR_RED);
         wprintf(L"%d: Invalid sequence %d, expected %d!\n", ID, val, Count);
+        MTL_VERIFY(false);
       }
 
       if (pNext)
