@@ -76,7 +76,7 @@ public:
       ProgressData data = dataIn;
       data.Percent = Limit(data.Percent, 0.0, 1.0);
 
-      const int resolution = 1000;
+      const int resolution = data.ExtraPrecision ? 10000 : 1000;
 
       if (data.Percent == 0.0 || LastIntegerPercentage_ != int(resolution * data.Percent))
       {
