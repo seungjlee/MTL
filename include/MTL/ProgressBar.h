@@ -38,13 +38,16 @@ namespace MTL
 struct ProgressData
 {
   ProgressData() {}
-  ProgressData(double percent, const String& message, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
-    : Percent(percent), Message(message), BarLength(barLength), BarColor(barColor), TextColor(textColor), Indent(indent)
+  ProgressData(double percent, const String& message, bool extraPrecision, int barLength,
+               const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
+    : Percent(percent), Message(message), ExtraPrecision(extraPrecision), BarLength(barLength),
+      BarColor(barColor), TextColor(textColor), Indent(indent)
   {
   }
 
   double Percent;
   String Message;
+  bool ExtraPrecision;
   int BarLength;
   ColorRGB BarColor;
   ColorRGB TextColor;
@@ -95,7 +98,7 @@ protected:
     if (Enabled_)
     {
       const ProgressData& d = data.Back();
-      ShowProgressBar(d.Percent, d.Message, d.BarLength, d.BarColor, d.TextColor, d.Indent);
+      ShowProgressBar(d.Percent, d.Message, d.ExtraPrecision, d.BarLength, d.BarColor, d.TextColor, d.Indent);
     }
   }
 
@@ -105,7 +108,8 @@ private:
   int LastIntegerPercentage_;
   Event Finish_;
 
-  void ShowProgressBar(double percent, const String& message, int barLength, const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
+  void ShowProgressBar(double percent, const String& message, bool extraPrecision, int barLength,
+                       const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
   {
     int numberOfBlocksToPrint = int(barLength * percent);
     char buf[MAX_PROGRESS_BUFFER_SIZE];
@@ -156,8 +160,9 @@ private:
 
     {
       ColorScope cs(textColor);
+      const char* percentFormat = extraPrecision ? "%.2f%%" : "%.1f%%";
 
-      int bytes = snprintf(&buf[0], sizeof(buf), "%.1f%%", float(100.0 * percent));
+      int bytes = snprintf(&buf[0], sizeof(buf), percentFormat, float(100.0 * percent));
       buf[bytes++] = ' ';
       buf[bytes] = 0;
 
@@ -189,10 +194,10 @@ public:
   {
   }
 
-  void Update(double percent, const String& message = L"", int barLength = 50,
+  void Update(double percent, const String& message = L"", bool extraPrecision = false, int barLength = 50,
               const ColorRGB& barColor = ColorRGB(0, 255, 0), const ColorRGB& textColor = ColorRGB(0, 255, 255), uint16_t indent = 2)
   {
-    Worker_.QueueWork(ProgressData(percent, message, barLength, barColor, textColor, indent));
+    Worker_.QueueWork(ProgressData(percent, message, extraPrecision, barLength, barColor, textColor, indent));
   }
   
   void Disable()  { Worker_.Disable(); }

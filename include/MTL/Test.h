@@ -97,17 +97,17 @@ namespace MTL
 
 static ProgressBar TestProgressBar;
 
-static void ShowProgressBar(double percent, const String& message = L"", int barLength = 50,
+static void ShowProgressBar(double percent, const String& message = L"", bool extraPrecision = false, int barLength = 50,
                             const ColorRGB& barColor = ColorRGB(0, 255, 0),
                             const ColorRGB& textColor = ColorRGB(0, 255, 255), uint16_t indent = 2)
 {
-  TestProgressBar.Update(percent, message, barLength, barColor, textColor, indent);
+  TestProgressBar.Update(percent, message, extraPrecision, barLength, barColor, textColor, indent);
 }
-static void ShowProgressBar(double percent, const std::string& message, int barLength = 50,
+static void ShowProgressBar(double percent, const std::string& message, bool extraPrecision = false, int barLength = 50,
                             const ColorRGB& barColor = ColorRGB(0, 255, 0),
                             const ColorRGB& textColor = ColorRGB(0, 255, 255), uint16_t indent = 2)
 {
-  ShowProgressBar(percent, ToUTF16(message), barLength, barColor, textColor, indent);
+  ShowProgressBar(percent, ToUTF16(message), extraPrecision, barLength, barColor, textColor, indent);
 }
 
 static const wchar_t* ErrorColor = COLOR_ERROR;
