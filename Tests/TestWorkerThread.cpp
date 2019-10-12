@@ -27,7 +27,7 @@
 
 using namespace MTL;
 
-static const int MaxCount = 1000000;
+static const int MaxCount = 100000;
 
 class TestWorker : public WorkerThread<int>
 {
@@ -70,33 +70,37 @@ public:
 
 TEST(TestWorkerPipelines)
 {
+  const int kRepeats = 5;
   int Pipelines = 4;
 
   std::vector<std::shared_ptr<TestWorker>> master(Pipelines);
   std::vector<std::shared_ptr<TestWorker>> slave1(Pipelines);
   std::vector<std::shared_ptr<TestWorker>> slave2(Pipelines);
 
-  for (int i = 0; i < Pipelines; i++)
-  {
-    slave2[i].reset(new TestWorker(2000 + i));
-    slave1[i].reset(new TestWorker(2000 + i, slave2[i].get()));
-    master[i].reset(new TestWorker(1000 + i, slave1[i].get()));
-  }
-
-  for (int k = 0; k < MaxCount; k++)
+  for (int iteration = 0; iteration < kRepeats; iteration++)
   {
     for (int i = 0; i < Pipelines; i++)
-      master[i]->QueueWork(k);
-  }
+    {
+      slave2[i].reset(new TestWorker(2000 + i));
+      slave1[i].reset(new TestWorker(2000 + i, slave2[i].get()));
+      master[i].reset(new TestWorker(1000 + i, slave1[i].get()));
+    }
 
-  for (int i = 0; i < Pipelines; i++)
-  {
-    master[i]->Shutdown();
-    slave1[i]->Shutdown();
-    slave2[i]->Shutdown();
+    for (int k = 0; k < MaxCount; k++)
+    {
+      for (int i = 0; i < Pipelines; i++)
+        master[i]->QueueWork(k);
+    }
 
-    MTL_EQUAL(master[i]->Count, MaxCount);
-    MTL_EQUAL(slave1[i]->Count, MaxCount);
-    MTL_EQUAL(slave2[i]->Count, MaxCount);
+    for (int i = 0; i < Pipelines; i++)
+    {
+      master[i]->Shutdown();
+      slave1[i]->Shutdown();
+      slave2[i]->Shutdown();
+
+      MTL_EQUAL(master[i]->Count, MaxCount);
+      MTL_EQUAL(slave1[i]->Count, MaxCount);
+      MTL_EQUAL(slave2[i]->Count, MaxCount);
+    }
   }
 }
