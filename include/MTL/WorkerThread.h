@@ -167,19 +167,21 @@ protected:
 
         if (QueueData_.Size() > 0)
         {
-          std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
-          if (QueueData_.Size() > MaxWorkQueueSize_)
           {
-            uint32_t startOffset = (uint32_t)QueueData_.Size() - MaxWorkQueueSize_;
-            ThreadWorkData_ = MTL::DynamicVector<DataType>(QueueData_.Begin() + startOffset, QueueData_.End());
+            std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
+            if (QueueData_.Size() > MaxWorkQueueSize_)
+            {
+              uint32_t startOffset = (uint32_t)QueueData_.Size() - MaxWorkQueueSize_;
+              ThreadWorkData_ = MTL::DynamicVector<DataType>(QueueData_.Begin() + startOffset, QueueData_.End());
+            }
+            else
+            {
+              ThreadWorkData_ = QueueData_;
+            }
+            QueueData_.Clear();
           }
-          else
-          {
-            ThreadWorkData_ = QueueData_;
-          }
-          QueueData_.Clear();
+          ProcessWork(ThreadWorkData_);
         }
-        ProcessWork(ThreadWorkData_);
       }
       CleanupThread();
     }
