@@ -268,7 +268,7 @@ static Matrix<N,M,T> ComputePseudoinverseJacobiSVD(const Matrix<M,N,T>& A,
 }
 
 template<class T>
-static T JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, I32 iteration, T* At, T* W, I32 M, I32 N, I32 rowSizeA)
+static T JacobiRotationsTransposed(T& c, T& s, I32 i, I32 j, T* At, T* W, I32 M, I32 rowSizeA)
 {
   const T epsilon = NumericalEpsilon<T>();
   const T epsilon2 = Square(epsilon);
@@ -397,7 +397,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
             int j = set[k].y();
             T c, s;
 
-            deltas[k] = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+            deltas[k] = JacobiRotationsTransposed(c, s, i, j, At, W, M, rowSizeA);
             if (deltas[k] > 0)
             {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -421,7 +421,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, T* Vt, I32 M, I32 N, I32 ro
         int j = set[0].y();
         T c, s;
 
-        T delta = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+        T delta = JacobiRotationsTransposed(c, s, i, j, At, W, M, rowSizeA);
         if (delta > 0)
         {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
@@ -571,7 +571,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
             int j = set[k].y();
             T c, s;
 
-            deltas[k] = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+            deltas[k] = JacobiRotationsTransposed(c, s, i, j, At, W, M, rowSizeA);
           }
         }
 
@@ -584,7 +584,7 @@ static bool JacobiSVDTransposedParallel(T* At, T* W, I32 M, I32 N, I32 rowSizeA)
       else
       {
         T c, s;
-        T delta = JacobiRotationsTransposed(c, s, set[0].x(), set[0].y(), iteration, At, W, M, N, rowSizeA);
+        T delta = JacobiRotationsTransposed(c, s, set[0].x(), set[0].y(), At, W, M, rowSizeA);
         sumOfDeltasSquared += Square(delta);
       }
     }
