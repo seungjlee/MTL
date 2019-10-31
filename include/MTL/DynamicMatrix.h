@@ -212,7 +212,7 @@ public:
   template<I32 M, I32 N>
   MTL_INLINE DynamicMatrix(const Matrix<M,N,T>& matrix, I32 byteAlignment = MTL_STREAM_BYTES)
   {
-    Resize(M, N);
+    Resize(M, N, byteAlignment);
     for (I32 row = 0; row < M; row++)
       memcpy((*this)[row], matrix[row], N*sizeof(T));
   }

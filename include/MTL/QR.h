@@ -59,7 +59,6 @@ static I32 SolveHouseholderQR(ColumnVector<M,T>& x, Matrix<M,N,T>& A,
     Swap(P[i], P[maxIndex]);
 
     I32 Mi = M - i;
-    I32 Ni = N - i;
 
     T* pV = A[i] + P[i];
     T Aii = *pV;

@@ -130,6 +130,7 @@ public:
 
   virtual void Run() = 0;
 
+#ifdef  _DEBUG
   // For tracking memory leaks with Visual Studio builds.
   static void SetAllocationBreak(long allocationNumber)
   {
@@ -137,6 +138,9 @@ public:
     _CrtSetBreakAlloc(allocationNumber);
 #endif
   }
+#else
+  static void SetAllocationBreak(long) {}
+#endif
 
   static void RunAll()
   {

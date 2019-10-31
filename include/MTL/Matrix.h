@@ -980,31 +980,19 @@ template<> MTL_INLINE SquareMatrix4x4 SquareMatrix4x4::ComputeTranspose() const
 }
 
 template <I32 N>
-#ifdef WIN32
-MTL_INLINE static SquareMatrix<N,F64> Inverse(const SquareMatrix<N,F64>& M, F64)
-#else
 inline SquareMatrix<N,F64> Inverse(const SquareMatrix<N,F64>& M, F64)
-#endif
 {
   return M.inverse();
 }
 
 template<>
-#ifdef WIN32
-MTL_INLINE static SquareMatrix1x1 Inverse(const SquareMatrix1x1& M, F64 determinant)
-#else
-inline SquareMatrix1x1 Inverse(const SquareMatrix1x1& M, F64 determinant)
-#endif
+inline SquareMatrix1x1 Inverse(const SquareMatrix1x1&, F64 determinant)
 {
   return SquareMatrix1x1(1. / determinant);
 }
 
 template<>
-#ifdef WIN32
-MTL_INLINE static SquareMatrix2x2 Inverse(const SquareMatrix2x2& M, F64 determinant)
-#else
 inline SquareMatrix2x2 Inverse(const SquareMatrix2x2& M, F64 determinant)
-#endif
 {
   F64 reciprocalDet = 1. / determinant;
   SquareMatrix2x2 inv;
@@ -1016,11 +1004,7 @@ inline SquareMatrix2x2 Inverse(const SquareMatrix2x2& M, F64 determinant)
 }
 
 template<>
-#ifdef WIN32
-MTL_INLINE static SquareMatrix3x3 Inverse(const SquareMatrix3x3& M, F64 determinant)
-#else
 inline SquareMatrix3x3 Inverse(const SquareMatrix3x3& M, F64 determinant)
-#endif
 {
   F64 reciprocalDet = 1. / determinant;
   SquareMatrix3x3 inv;
@@ -1040,20 +1024,20 @@ inline SquareMatrix3x3 Inverse(const SquareMatrix3x3& M, F64 determinant)
   return inv;
 }
 
-template<> MTL_INLINE SquareMatrix1x1 SquareMatrix1x1::Inverse() const
+template<> inline SquareMatrix1x1 SquareMatrix1x1::Inverse() const
 {
   return SquareMatrix1x1(1./Data_[0][0]);
 }
-template<> MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::Inverse() const
+template<> inline SquareMatrix2x2 SquareMatrix2x2::Inverse() const
 {
   return MTL::Inverse(*this, Determinant());
 }
-template<> MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::Inverse() const
+template<> inline SquareMatrix3x3 SquareMatrix3x3::Inverse() const
 {
   return MTL::Inverse(*this, Determinant());
 }
 
-template<> MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::operator*(const SquareMatrix3x3& B) const
+template<> inline SquareMatrix3x3 SquareMatrix3x3::operator*(const SquareMatrix3x3& B) const
 {
   SquareMatrix3x3 product;
   Array2D<3,3,F64,3>::MultiplyRowByMatrix(product[0], Data_[0], B.Data());
@@ -1063,7 +1047,7 @@ template<> MTL_INLINE SquareMatrix3x3 SquareMatrix3x3::operator*(const SquareMat
   return product;
 }
 
-template<> MTL_INLINE ColumnVector3D SquareMatrix3x3::operator*(const ColumnVector3D& B) const
+template<> inline ColumnVector3D SquareMatrix3x3::operator*(const ColumnVector3D& B) const
 {
   ColumnVector3D product;
   product[0] = Array_2D<1,F64,3>::MultiplyRowByCol(Data_[0], B.Data(), 0);
@@ -1073,7 +1057,7 @@ template<> MTL_INLINE ColumnVector3D SquareMatrix3x3::operator*(const ColumnVect
   return product;
 }
 
-template<> MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::operator*(const SquareMatrix2x2& B) const
+template<> inline SquareMatrix2x2 SquareMatrix2x2::operator*(const SquareMatrix2x2& B) const
 {
   SquareMatrix2x2 product;
   Array2D<2,2,F64,2>::MultiplyRowByMatrix(product[0], Data_[0], B.Data());
@@ -1082,7 +1066,7 @@ template<> MTL_INLINE SquareMatrix2x2 SquareMatrix2x2::operator*(const SquareMat
   return product;
 }
 
-template<> MTL_INLINE ColumnVector2D SquareMatrix2x2::operator*(const ColumnVector2D& B) const
+template<> inline ColumnVector2D SquareMatrix2x2::operator*(const ColumnVector2D& B) const
 {
   ColumnVector2D product;
   product[0] = Array_2D<1,F64,2>::MultiplyRowByCol(Data_[0], B.Data(), 0);
@@ -1091,7 +1075,7 @@ template<> MTL_INLINE ColumnVector2D SquareMatrix2x2::operator*(const ColumnVect
   return product;
 }
 
-MTL_INLINE SquareMatrix3x3 ComputeCrossProductMatrix(const ColumnVector3D& v)
+inline SquareMatrix3x3 ComputeCrossProductMatrix(const ColumnVector3D& v)
 {
   SquareMatrix3x3 m;
   m[0][0] =     0;  m[0][1] = -v[2];  m[0][2] =   v[1];
@@ -1104,7 +1088,7 @@ MTL_INLINE SquareMatrix3x3 ComputeCrossProductMatrix(const ColumnVector3D& v)
 // Solves A * x = b by computing the inverse of A. Returns true if the inverse can be computed,
 // false otherwise. The inverse is computed using the determinant of the matrix.
 template<I32 N, class T>
-MTL_INLINE static bool SolveWithInverse(ColumnVector<N,T>& x,
+inline static bool SolveWithInverse(ColumnVector<N,T>& x,
                                         const SquareMatrix<N,T> A, const ColumnVector<N,T>& b)
 {
   T determinant = A.determinant();
@@ -1116,15 +1100,15 @@ MTL_INLINE static bool SolveWithInverse(ColumnVector<N,T>& x,
   return true;
 }
 
-template<I32 N, class T> MTL_INLINE T StableDeterminant(const Matrix<N,N,T>& A,
-                                                        T tolerance = T(1)/Epsilon<T>())
+template<I32 N, class T> inline T StableDeterminant(const Matrix<N,N,T>& A,
+                                                    T tolerance = T(1)/Epsilon<T>())
 {
   const SquareMatrix<N,T>* ptr = (const SquareMatrix<N,T>*)&A;
   return ptr->StableDeterminant(tolerance);
 }
 
 // Recursive implementation of matrix determinant computation.
-template<I32 N, class T> MTL_INLINE static T DeterminantRecursive(const SquareMatrix<N,T>& A)
+template<I32 N, class T> inline T DeterminantRecursive(const SquareMatrix<N,T>& A)
 {
   T sum = T(0);
   T sign = T(1);
@@ -1144,14 +1128,14 @@ template<I32 N, class T> MTL_INLINE static T DeterminantRecursive(const SquareMa
 
   return sum;
 }
-template<class T> MTL_INLINE static T DeterminantRecursive(const SquareMatrix<1,T>& A)
+template<class T> inline T DeterminantRecursive(const SquareMatrix<1,T>& A)
 {
   return A[0][0];
 }
 
 // Recursive implementation of matrix inverse computation.
 template<I32 N, class T>
-MTL_INLINE static SquareMatrix<N,T> InverseRecursive(const SquareMatrix<N,T>& A)
+inline SquareMatrix<N,T> InverseRecursive(const SquareMatrix<N,T>& A)
 {
   SquareMatrix<N,T> inv;
   T reciprocalDet = 1. / DeterminantRecursive(A);

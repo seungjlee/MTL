@@ -63,8 +63,8 @@
 namespace MTL
 {
 
-template <class DstT, class SrcT> MTL_INLINE static void OptimizedCast_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size);
-template <class DstT, class SrcT> MTL_INLINE static void OptimizedCast(DstT* pDst, const SrcT* pSrc, SizeType size);
+template <class DstT, class SrcT> inline void OptimizedCast_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size);
+template <class DstT, class SrcT> inline void OptimizedCast(DstT* pDst, const SrcT* pSrc, SizeType size);
 
 template <class T>
 class DynamicVector
@@ -433,7 +433,7 @@ private:
 
   // User can override this to actually zero elements during initialization by defining the macro
   // MTL_DYNAMIC_VECTOR_ZERO_INIT.
-  MTL_INLINE static void FastZeroInit(T* p, SizeType size) {}
+  MTL_INLINE static void FastZeroInit(T*, SizeType /* size */) {}
 };
 
 }  // namespace MTL
@@ -445,8 +445,8 @@ namespace MTL
 {
 
 #ifdef WIN32
-template <class T> MTL_INLINE static void OptimizedCopy(T* pDst, const T* pSrc, SizeType size);
-template <class T> MTL_INLINE static void OptimizedZeros(T* p, SizeType size);
+template <class T> inline void OptimizedCopy(T* pDst, const T* pSrc, SizeType size);
+template <class T> inline void OptimizedZeros(T* p, SizeType size);
 #else
 template <class T> inline void OptimizedCopy(T* pDst, const T* pSrc, SizeType size);
 template <class T> inline void OptimizedZeros(T* p, SizeType size);
@@ -457,41 +457,41 @@ template <class T> MTL_INLINE void MTL::DynamicVector<T>::Zeros()
   OptimizedZeros(First_, Size_);
 }
 
-template <class T> MTL_INLINE static void OptimizedZeros_Sequential(T* p, SizeType size)
+template <class T> inline void OptimizedZeros_Sequential(T* p, SizeType size)
 {
   memset(p, 0, size * sizeof(T));
 }
-template <class T> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)
+template <class T> inline void OptimizedZeros(T* p, SizeType size)
 {
   Parallel_1Dst< T, OptimizedZeros_Sequential >(p, size, 0);
 }
 
 template <class T>
-MTL_INLINE static void OptimizedCopy_Sequential(T* pDst, const T* pSrc, SizeType size)
+inline void OptimizedCopy_Sequential(T* pDst, const T* pSrc, SizeType size)
 {
   memcpy(pDst, pSrc, size * sizeof(T));
 }
-template <class T> MTL_INLINE static void OptimizedCopy(T* pDst, const T* pSrc, SizeType size)
+template <class T> inline void OptimizedCopy(T* pDst, const T* pSrc, SizeType size)
 {
   Parallel_1Dst_1Src< T, T, OptimizedCopy_Sequential >(pDst, pSrc, size, 0);
 }
 
 template <class DstT, class SrcT>
-MTL_INLINE static void OptimizedCast_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size)
+inline void OptimizedCast_Sequential(DstT* pDst, const SrcT* pSrc, SizeType size)
 {
   const DstT* pDstEnd = pDst + size;
 
   for (; pDst < pDstEnd; pDst++, pSrc++)
     *pDst = DstT(*pSrc);
 }
-template <class DstT, class SrcT> MTL_INLINE static void OptimizedCast(DstT* pDst, const SrcT* pSrc, SizeType size)
+template <class DstT, class SrcT> inline void OptimizedCast(DstT* pDst, const SrcT* pSrc, SizeType size)
 {
   Parallel_1Dst_1Src<DstT, SrcT, OptimizedCast_Sequential>(pDst, pSrc, size, 0);
 }
 
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
 template <class T>
-MTL_INLINE static void AssignAll_Stream_Unaligned_Sequential(T* p, const T& val, SizeType size)
+inline void AssignAll_Stream_Unaligned_Sequential(T* p, const T& val, SizeType size)
 {
   const T* pEnd = p + size;
 
@@ -505,7 +505,7 @@ MTL_INLINE static void AssignAll_Stream_Unaligned_Sequential(T* p, const T& val,
 }
 
 template <class T>
-MTL_INLINE static void AssignAll_Stream(T* p, const T& val, SizeType size)
+inline void AssignAll_Stream(T* p, const T& val, SizeType size)
 {
   SizeType byteSize = size * sizeof(T);
 
@@ -534,7 +534,7 @@ MTL_INLINE static void AssignAll_Stream(T* p, const T& val, SizeType size)
 }
 #endif
 
-template <class T> MTL_INLINE static void OptimizedAssignAll(T* p, const T& val, SizeType size)
+template <class T> inline void OptimizedAssignAll(T* p, const T& val, SizeType size)
 {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
   int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
@@ -578,11 +578,11 @@ template <> MTL_INLINE void MTL::DynamicVector<T>::AssignAll(T* p, const T* pEnd
 #define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL(T)                                      \
 namespace MTL                                                                                     \
 {                                                                                                 \
-template <> MTL_INLINE static void OptimizedZeros_Sequential(T* p, SizeType size)                 \
+template <> inline void OptimizedZeros_Sequential(T* p, SizeType size)                            \
 {                                                                                                 \
   AssignAll_Stream<T>(p, T(0), size);                                                             \
 }                                                                                                 \
-template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)                            \
+template <> inline void OptimizedZeros(T* p, SizeType size)                                       \
 {                                                                                                 \
   Parallel_1Dst< T, OptimizedZeros_Sequential<T> >(p, size, 0);                                   \
 }                                                                                                 \
@@ -609,7 +609,7 @@ template <> inline void OptimizedZeros(T* p, SizeType size)                     
 #define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL_CAST(T)                                 \
 namespace MTL                                                                                     \
 {                                                                                                 \
-template <> MTL_INLINE static void OptimizedZeros(T* p, SizeType size)                            \
+template <> inline void OptimizedZeros(T* p, SizeType size)                                       \
 {                                                                                                 \
   Parallel_1Dst< I8, OptimizedZeros_Sequential<I8> >((I8*)p, size * sizeof(T), 0);                \
 }                                                                                                 \

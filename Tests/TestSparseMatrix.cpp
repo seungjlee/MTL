@@ -36,15 +36,15 @@ public:
   SparseOptimizer()  {}
 
 protected:
-  virtual void CostFunction(DynamicVector<F64>& residuals, const Parameters& parameters)
+  virtual void CostFunction(DynamicVector<F64>& /* residuals */, const Parameters& /* parameters */)
   {
   }
 
-  virtual void ComputeJacobian(CompressedSparseMatrix<F64>& J, const Parameters& parameters)
+  virtual void ComputeJacobian(CompressedSparseMatrix<F64>& /* J */, const Parameters& /* parameters */)
   {
   }
 
-  virtual void ComputeSparsityMatrix(I32 numberOfParams)
+  virtual void ComputeSparsityMatrix(I32 /* numberOfParams */)
   {
   }
 };
@@ -146,8 +146,8 @@ TEST(TestMultiplicationWithZeroColumns)
 
     MTL_EQUAL(D.Size(), C.Size());
 
-    for (U32 i = 0; i < C.Size(); i++)
-      MTL_EQUAL_FLOAT(D[i], C[i], kTol);
+    for (U32 k = 0; k < C.Size(); k++)
+      MTL_EQUAL_FLOAT(D[k], C[k], kTol);
 
     DynamicMatrix<F64> M2;
     A.MultiplyTransposeByThis(M2);
@@ -250,8 +250,8 @@ TEST(TestLargeMultiplication)
 
     MTL_EQUAL(D.Size(), C.Size());
 
-    for (U32 i = 0; i < C.Size(); i++)
-      MTL_EQUAL_FLOAT(D[i], C[i], kTol);
+    for (U32 k = 0; k < C.Size(); k++)
+      MTL_EQUAL_FLOAT(D[k], C[k], kTol);
 
     DynamicMatrix<F64> M2;
     A.MultiplyTransposeByThis(M2);

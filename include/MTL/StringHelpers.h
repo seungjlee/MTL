@@ -40,19 +40,27 @@ static MTL_INLINE void ResetOutputStream()
 {
 #ifdef WIN32
   FILE* f;
-  errno_t n = freopen_s(&f, nullptr, "w", stdout);
+  freopen_s(&f, nullptr, "w", stdout);
 #else
   FILE* f = freopen(nullptr, "w", stdout);
 #endif
 }
 
+static MTL_INLINE char ToLower(char input)
+{
+  return (char)tolower(input);
+}
+static MTL_INLINE char ToUpper(char input)
+{
+  return (char)toupper(input);
+}
 static MTL_INLINE void SetToLowerCase(std::wstring& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), towlower);
 }
 static MTL_INLINE void SetToLowerCase(std::string& str)
 {
-  std::transform(str.begin(), str.end(), str.begin(), tolower);
+  std::transform(str.begin(), str.end(), str.begin(), ToLower);
 }
 static MTL_INLINE void SetToUpperCase(std::wstring& str)
 {
@@ -60,7 +68,7 @@ static MTL_INLINE void SetToUpperCase(std::wstring& str)
 }
 static MTL_INLINE void SetToUpperCase(std::string& str)
 {
-  std::transform(str.begin(), str.end(), str.begin(), toupper);
+  std::transform(str.begin(), str.end(), str.begin(), ToUpper);
 }
 
 static MTL_INLINE std::wstring ToLowerCase(const std::wstring& input)
