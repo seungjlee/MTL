@@ -489,7 +489,7 @@ static bool JacobiSVDTransposed(T* At, T* W, T* Vt, I32 M, I32 N, I32 rowSizeA, 
       for (I32 j = i+1; j < N; j++)
       {
         T c, s;
-        T delta = JacobiRotationsTransposed(c, s, i, j, iteration, At, W, M, N, rowSizeA);
+        T delta = JacobiRotationsTransposed(c, s, i, j, At, W, M, rowSizeA);
         if (delta > 0)
         {
 #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
