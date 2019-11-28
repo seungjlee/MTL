@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee, https://github.com/seungjlee/MTL
+// Copyright (c) 2016: Seung Jae Lee, https://github.com/seungjlee/MTL
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -22,53 +22,30 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <MTL/Test.h>
+#include <MTL/Base64.h>
 
-#ifndef MTL_VECTOR_2D_H
-#define MTL_VECTOR_2D_H
+using namespace MTL;
 
-#include "Matrix.h"
-#include "DynamicVectorOperators.h"
-
-namespace MTL
+TEST(Test_Encode_Decode)
 {
+  // From Wikipedia example.
+  const char* testString = "any carnal pleasure.";
+  Out() << ToUTF16(Base64::Encode(testString, 16)) << std::endl;
+  Out() << ToUTF16(Base64::Encode(testString, 17)) << std::endl;
+  Out() << ToUTF16(Base64::Encode(testString, 18)) << std::endl;
+  Out() << ToUTF16(Base64::Encode(testString, 19)) << std::endl;
+  Out() << ToUTF16(Base64::Encode(testString, 20)) << std::endl;
 
-template<class T>
-class Vector2D : public ColumnVector<2,T>
-{
-public:
-  typedef ColumnVector<2,T> BaseClass;
-  MTL_COLUMN_VECTOR_COMMON_DEFINITIONS(Vector2D, BaseClass, 2, T);
+  MTL_VERIFY(Base64::Encode(testString, 16) == "YW55IGNhcm5hbCBwbGVhcw==");
+  MTL_VERIFY(Base64::Encode(testString, 17) == "YW55IGNhcm5hbCBwbGVhc3U=");
+  MTL_VERIFY(Base64::Encode(testString, 18) == "YW55IGNhcm5hbCBwbGVhc3Vy");
+  MTL_VERIFY(Base64::Encode(testString, 19) == "YW55IGNhcm5hbCBwbGVhc3VyZQ==");
+  MTL_VERIFY(Base64::Encode(testString, 20) == "YW55IGNhcm5hbCBwbGVhc3VyZS4=");
 
-  MTL_INLINE Vector2D() : ColumnVector<2,T>() {}
-  MTL_INLINE Vector2D(T xx, T yy)
+  for (int length = 11; length < 21; length++)
   {
-    x(xx);
-    y(yy);
+    Out() << ToUTF16(ToString(Base64::Decode(Base64::Encode(testString, length)))) << std::endl;
+    MTL_VERIFY(ToString(Base64::Decode(Base64::Encode(testString, length))) == std::string(testString, length));
   }
-
-  T Length() const  { return this->FrobeniusNorm(); }
-
-  // Returns unit vector.
-  Vector2D unit() const  { return *this / Length(); }
-
-  const T& x() const   { return (*this)[0]; }
-  const T& y() const   { return (*this)[1]; }
-
-  void x(const T& xx)  { (*this)[0] = xx;   }
-  void y(const T& yy)  { (*this)[1] = yy;   }
-};
-
-template<class T>
-MTL_INLINE static Vector2D<T> Mean(const DynamicVector<Vector2D<T>>& v)
-{
-  return Sum(v) / T(v.Size());
 }
-
-}  // namespace MTL
-
-MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(Vector2D<F32>);
-MTL_DYNAMIC_VECTOR_ALL_OPTIMIZATIONS_CAST(Vector2D<F64>);
-MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector2D<F32>,F32);
-MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(Vector2D<F64>,F64);
-
-#endif // MTL_VECTOR_2D_H
