@@ -99,9 +99,9 @@ public:
     std::FILE* f = fopen(fileName.c_str(), "rb");
 #endif
     uint64_t size;
-    fread(&size, sizeof(size), 1, f);
+    size_t count = fread(&size, sizeof(size), 1, f);
     Data_.resize(size);
-    fread(Data_.data(), 1, Data_.size(), f);
+    count = fread(Data_.data(), 1, Data_.size(), f);
     ReadPosition_ = 0;
     fclose(f);
   }
