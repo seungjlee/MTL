@@ -118,4 +118,11 @@ TEST(Test_DynamicVector)
 
   for (uint32_t i = 0; i < u.Size(); i++)
     MTL_EQUAL(u[i], v[i]);
+
+  stream.ReadPosition(0);
+  std::vector<int> vv;
+  stream >> vv;
+
+  for (uint32_t i = 0; i < u.Size(); i++)
+    MTL_EQUAL(u[i], vv[i]);
 }
