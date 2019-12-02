@@ -100,8 +100,14 @@ public:
 #endif
     uint64_t size;
     size_t count = fread(&size, sizeof(size), 1, f);
+    if (count != 1)
+      MTL_THROW("Invalid binary file!");
+
     Data_.resize(size);
     count = fread(Data_.data(), 1, Data_.size(), f);
+    if (count != Data_.size())
+      MTL_THROW("Invalid binary file!");
+
     ReadPosition_ = 0;
     fclose(f);
   }
