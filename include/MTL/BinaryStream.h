@@ -26,6 +26,7 @@
 #ifndef MTL_BINARY_STREAM_H
 #define MTL_BINARY_STREAM_H
 
+#include <MTL/DynamicVector.h>
 #include <MTL/StringHelpers.h>
 #include <vector>
 #include <cstdint>
@@ -52,16 +53,51 @@ public:
     Data_.insert(Data_.end(), p, p + size);
   }
 
-  template <class T>
-  BinaryStream& operator<<(T val)
+  template <class T> BinaryStream& operator<<(T val)
   {
     Write((uint8_t*)&val, sizeof(T));
     return *this;
   }
-  template <class T>
-  const BinaryStream& operator>>(T& val) const 
+  template <class T> const BinaryStream& operator>>(T& val) const 
   {
     Read((uint8_t*)&val, sizeof(T));
+    return *this;
+  }
+
+  template <class T> BinaryStream& operator<<(const std::vector<T>& v)
+  {
+    *this << uint64_t(v.size());
+    for (const auto& x : v)
+      *this << x;
+
+    return *this;
+  }
+  template <class T> const BinaryStream& operator>>(std::vector<T>& v) const
+  {
+    uint64_t size;
+    *this >> size;
+    v.resize(size);
+    for (const auto& x : v)
+      *this >> x;
+
+    return *this;
+  }
+  template <class T> BinaryStream& operator<<(const DynamicVector<T>& v)
+  {
+    *this << uint64_t(v.Size());
+    for (const auto& x : v)
+      *this << x;
+
+    return *this;
+  }
+  template <class T> const BinaryStream& operator>>(DynamicVector<T>& v) const
+  {
+    uint64_t size;
+    *this >> size;
+    v.Resize(size);
+    for (const auto& x : v)
+      *this >> x;
+
     return *this;
   }
 

@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2016: Seung Jae Lee, https://github.com/seungjlee/MTL
+// Copyright (c) 2019: Seung Jae Lee, https://github.com/seungjlee/MTL
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -92,4 +92,30 @@ TEST(Test_Binary_Stream)
   MTL_EQUAL(a7, c7);
   MTL_EQUAL(a8, c8);
   MTL_EQUAL(a9, c9);
+}
+
+TEST(Test_vector)
+{
+  std::vector<int> u(7, 1234);
+  BinaryStream stream;
+  stream << u;
+
+  std::vector<int> v;
+  stream >> v;
+
+  for (uint32_t i = 0; i < u.size(); i++)
+    MTL_EQUAL(u[i], v[i]);
+}
+
+TEST(Test_DynamicVector)
+{
+  DynamicVector<int> u(7, 1234);
+  BinaryStream stream;
+  stream << u;
+
+  DynamicVector<int> v;
+  stream >> v;
+
+  for (uint32_t i = 0; i < u.Size(); i++)
+    MTL_EQUAL(u[i], v[i]);
 }
