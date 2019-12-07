@@ -64,6 +64,22 @@ public:
     return *this;
   }
 
+  template <class T> BinaryStream& operator<<(const std::basic_string<T>& str)
+  {
+    *this << uint64_t(str.size());
+    Write((uint8_t*)str.data(), str.size() * sizeof(str[0]));
+
+    return *this;
+  }
+  template <class T> const BinaryStream& operator>>(std::basic_string<T>& str) const
+  {
+    uint64_t size;
+    *this >> size;
+    str.resize(size);
+    Read((uint8_t*)str.data(), str.size() * sizeof(str[0]));
+
+    return *this;
+  }
   template <class T> BinaryStream& operator<<(const std::vector<T>& v)
   {
     *this << uint64_t(v.size());
@@ -77,7 +93,7 @@ public:
     uint64_t size;
     *this >> size;
     v.resize(size);
-    for (const auto& x : v)
+    for (auto& x : v)
       *this >> x;
 
     return *this;
@@ -95,7 +111,7 @@ public:
     uint64_t size;
     *this >> size;
     v.Resize(size);
-    for (const auto& x : v)
+    for (auto& x : v)
       *this >> x;
 
     return *this;

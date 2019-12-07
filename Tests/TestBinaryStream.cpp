@@ -126,3 +126,29 @@ TEST(Test_DynamicVector)
   for (uint32_t i = 0; i < u.Size(); i++)
     MTL_EQUAL(u[i], vv[i]);
 }
+
+TEST(Test_Strings)
+{
+  std::vector<std::string> strings8;
+  std::vector<std::wstring> strings16;
+  strings16.push_back(L"Boggis");
+  strings16.push_back(L"Bunce");
+  strings16.push_back(L"Bean");
+  strings16.push_back(L"!@#$%^&*()_-+=");
+
+  for (const auto& s : strings16)
+    strings8.push_back(ToUTF8(s));
+
+  BinaryStream stream;
+  stream << strings8 << strings16;
+
+  std::vector<std::string> strings_8;
+  std::vector<std::wstring> strings_16;
+  stream >> strings_8 >> strings_16;
+
+  for (uint32_t i = 0; i < strings16.size(); i++)
+  {
+    MTL_VERIFY(strings_8[i] == strings8[i]);
+    MTL_VERIFY(strings_16[i] == strings16[i]);
+  }
+}
