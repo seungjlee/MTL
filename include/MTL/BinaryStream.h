@@ -53,7 +53,7 @@ public:
     Data_.insert(Data_.end(), p, p + size);
   }
 
-  template <class T> BinaryStream& operator<<(T val)
+  template <class T> BinaryStream& operator<<(const T& val)
   {
     Write((uint8_t*)&val, sizeof(T));
     return *this;
