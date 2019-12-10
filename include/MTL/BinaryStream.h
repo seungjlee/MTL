@@ -53,70 +53,6 @@ public:
     Data_.insert(Data_.end(), p, p + size);
   }
 
-  template <class T> BinaryStream& operator<<(const T& val)
-  {
-    Write((uint8_t*)&val, sizeof(T));
-    return *this;
-  }
-  template <class T> const BinaryStream& operator>>(T& val) const 
-  {
-    Read((uint8_t*)&val, sizeof(T));
-    return *this;
-  }
-
-  template <class T> BinaryStream& operator<<(const std::basic_string<T>& str)
-  {
-    *this << uint64_t(str.size());
-    Write((uint8_t*)str.data(), str.size() * sizeof(str[0]));
-
-    return *this;
-  }
-  template <class T> const BinaryStream& operator>>(std::basic_string<T>& str) const
-  {
-    uint64_t size;
-    *this >> size;
-    str.resize(size);
-    Read((uint8_t*)str.data(), str.size() * sizeof(str[0]));
-
-    return *this;
-  }
-  template <class T> BinaryStream& operator<<(const std::vector<T>& v)
-  {
-    *this << uint64_t(v.size());
-    for (const auto& x : v)
-      *this << x;
-
-    return *this;
-  }
-  template <class T> const BinaryStream& operator>>(std::vector<T>& v) const
-  {
-    uint64_t size;
-    *this >> size;
-    v.resize(size);
-    for (auto& x : v)
-      *this >> x;
-
-    return *this;
-  }
-  template <class T> BinaryStream& operator<<(const DynamicVector<T>& v)
-  {
-    *this << uint64_t(v.Size());
-    for (const auto& x : v)
-      *this << x;
-
-    return *this;
-  }
-  template <class T> const BinaryStream& operator>>(DynamicVector<T>& v) const
-  {
-    uint64_t size;
-    *this >> size;
-    v.Resize(size);
-    for (auto& x : v)
-      *this >> x;
-
-    return *this;
-  }
-
   const std::vector<uint8_t>& Data() const  { return Data_; }
   size_t ReadPosition() const         { return ReadPosition_;     }
   void ReadPosition(size_t position)  { ReadPosition_ = position; }
@@ -168,6 +104,71 @@ private:
   std::vector<uint8_t> Data_;
   size_t ReadPosition_;
 };
+
+template <class T>
+static BinaryStream& operator<<(BinaryStream& stream, const T& val)
+{
+  stream.Write((uint8_t*)&val, sizeof(T));
+  return stream;
+}
+template <class T> const BinaryStream& operator>>(const BinaryStream& stream, T& val) 
+{
+  stream.Read((uint8_t*)&val, sizeof(T));
+  return stream;
+}
+
+template <class T> BinaryStream& operator<<(BinaryStream& stream, const std::basic_string<T>& str)
+{
+  stream << uint64_t(str.size());
+  stream.Write((uint8_t*)str.data(), str.size() * sizeof(str[0]));
+
+  return stream;
+}
+template <class T> const BinaryStream& operator>>(const BinaryStream& stream, std::basic_string<T>& str)
+{
+  uint64_t size;
+  stream >> size;
+  str.resize(size);
+  stream.Read((uint8_t*)str.data(), str.size() * sizeof(str[0]));
+
+  return stream;
+}
+template <class T> BinaryStream& operator<<(BinaryStream& stream, const std::vector<T>& v)
+{
+  stream << uint64_t(v.size());
+  for (const auto& x : v)
+    stream << x;
+
+  return stream;
+}
+template <class T> const BinaryStream& operator>>(const BinaryStream& stream, std::vector<T>& v)
+{
+  uint64_t size;
+  stream >> size;
+  v.resize(size);
+  for (auto& x : v)
+    stream >> x;
+
+  return stream;
+}
+template <class T> BinaryStream& operator<<(BinaryStream& stream, const DynamicVector<T>& v)
+{
+  stream << uint64_t(v.Size());
+  for (const auto& x : v)
+    stream << x;
+
+  return stream;
+}
+template <class T> const BinaryStream& operator>>(const BinaryStream& stream, DynamicVector<T>& v)
+{
+  uint64_t size;
+  stream >> size;
+  v.Resize(size);
+  for (auto& x : v)
+    stream >> x;
+
+  return stream;
+}
 
 }  // namespace MTL
 
