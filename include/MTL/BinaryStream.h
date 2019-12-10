@@ -111,20 +111,23 @@ static BinaryStream& operator<<(BinaryStream& stream, const T& val)
   stream.Write((uint8_t*)&val, sizeof(T));
   return stream;
 }
-template <class T> const BinaryStream& operator>>(const BinaryStream& stream, T& val) 
+template <class T>
+static const BinaryStream& operator>>(const BinaryStream& stream, T& val) 
 {
   stream.Read((uint8_t*)&val, sizeof(T));
   return stream;
 }
 
-template <class T> BinaryStream& operator<<(BinaryStream& stream, const std::basic_string<T>& str)
+template <class T>
+static BinaryStream& operator<<(BinaryStream& stream, const std::basic_string<T>& str)
 {
   stream << uint64_t(str.size());
   stream.Write((uint8_t*)str.data(), str.size() * sizeof(str[0]));
 
   return stream;
 }
-template <class T> const BinaryStream& operator>>(const BinaryStream& stream, std::basic_string<T>& str)
+template <class T>
+static const BinaryStream& operator>>(const BinaryStream& stream, std::basic_string<T>& str)
 {
   uint64_t size;
   stream >> size;
@@ -133,7 +136,8 @@ template <class T> const BinaryStream& operator>>(const BinaryStream& stream, st
 
   return stream;
 }
-template <class T> BinaryStream& operator<<(BinaryStream& stream, const std::vector<T>& v)
+template <class T>
+static BinaryStream& operator<<(BinaryStream& stream, const std::vector<T>& v)
 {
   stream << uint64_t(v.size());
   for (const auto& x : v)
@@ -141,7 +145,8 @@ template <class T> BinaryStream& operator<<(BinaryStream& stream, const std::vec
 
   return stream;
 }
-template <class T> const BinaryStream& operator>>(const BinaryStream& stream, std::vector<T>& v)
+template <class T>
+static const BinaryStream& operator>>(const BinaryStream& stream, std::vector<T>& v)
 {
   uint64_t size;
   stream >> size;
@@ -151,7 +156,8 @@ template <class T> const BinaryStream& operator>>(const BinaryStream& stream, st
 
   return stream;
 }
-template <class T> BinaryStream& operator<<(BinaryStream& stream, const DynamicVector<T>& v)
+template <class T>
+static BinaryStream& operator<<(BinaryStream& stream, const DynamicVector<T>& v)
 {
   stream << uint64_t(v.Size());
   for (const auto& x : v)
@@ -159,7 +165,8 @@ template <class T> BinaryStream& operator<<(BinaryStream& stream, const DynamicV
 
   return stream;
 }
-template <class T> const BinaryStream& operator>>(const BinaryStream& stream, DynamicVector<T>& v)
+template <class T>
+static const BinaryStream& operator>>(const BinaryStream& stream, DynamicVector<T>& v)
 {
   uint64_t size;
   stream >> size;
