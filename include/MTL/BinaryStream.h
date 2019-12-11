@@ -28,9 +28,10 @@
 
 #include <MTL/DynamicVector.h>
 #include <MTL/StringHelpers.h>
-#include <vector>
-#include <cstdint>
 #include <assert.h>
+#include <cstdint>
+#include <memory>
+#include <vector>
 
 namespace MTL
 {
@@ -174,6 +175,28 @@ static const BinaryStream& operator>>(const BinaryStream& stream, DynamicVector<
   for (auto& x : v)
     stream >> x;
 
+  return stream;
+}
+template <class T>
+static BinaryStream& operator<<(BinaryStream& stream, const std::shared_ptr<T>& p)
+{
+  if (p == nullptr)
+    stream << uint8_t(0);
+  else
+    stream << uint8_t(1) << *p;
+
+  return stream;
+}
+template <class T>
+static const BinaryStream& operator>>(const BinaryStream& stream, std::shared_ptr<T>& p)
+{
+  uint8_t byte;
+  stream >> byte;
+  if (byte != 0)
+  {
+    p.reset(new T());
+    stream >> *p;
+  }
   return stream;
 }
 

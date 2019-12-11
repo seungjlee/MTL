@@ -97,31 +97,45 @@ TEST(Test_Binary_Stream)
 TEST(Test_vector)
 {
   std::vector<int> u(7, 1234);
+  std::shared_ptr<std::vector<float>> nullPtr;
+  std::shared_ptr<std::vector<int>> uu(new std::vector<int>(u));
+
   BinaryStream stream;
-  stream << u;
+  stream << u << nullPtr << uu;
 
   std::vector<int> v;
-  stream >> v;
+  std::shared_ptr<std::vector<float>> empty;
+  std::shared_ptr<std::vector<int>> vv;
+  stream >> v >> empty >> vv;
+
+  MTL_VERIFY(empty.get() == nullptr);
 
   for (uint32_t i = 0; i < u.size(); i++)
+  {
     MTL_EQUAL(u[i], v[i]);
+    MTL_EQUAL(u[i], (*vv)[i]);
+  }
 }
 
 TEST(Test_DynamicVector)
 {
+  DynamicVector<double> empty;
   DynamicVector<int> u(7, 1234);
   BinaryStream stream;
-  stream << u;
+  stream << empty << u;
 
+  DynamicVector<double> bogus;
   DynamicVector<int> v;
-  stream >> v;
+  stream >> bogus >> v;
+
+  MTL_EQUAL(bogus.Size(), 0ULL);
 
   for (uint32_t i = 0; i < u.Size(); i++)
     MTL_EQUAL(u[i], v[i]);
 
   stream.ReadPosition(0);
   std::vector<int> vv;
-  stream >> vv;
+  stream >> bogus >> vv;
 
   for (uint32_t i = 0; i < u.Size(); i++)
     MTL_EQUAL(u[i], vv[i]);
@@ -134,6 +148,7 @@ TEST(Test_Strings)
   strings16.push_back(L"Boggis");
   strings16.push_back(L"Bunce");
   strings16.push_back(L"Bean");
+  strings16.push_back(L"");
   strings16.push_back(L"!@#$%^&*()_-+=");
 
   for (const auto& s : strings16)
