@@ -44,8 +44,8 @@ public:
 
   void Read(uint8_t* p, size_t size) const
   {
-    assert(Data_.begin() + size <= Data_.end());
-    memcpy(p, &Data_[ReadPosition_], size);
+    assert(ReadPosition_ + size <= Data_.size());
+    memcpy(p, Data_.data() + ReadPosition_, size);
     const_cast<BinaryStream*>(this)->ReadPosition_ += size;
   }
   void Write(const uint8_t* p, size_t size)
