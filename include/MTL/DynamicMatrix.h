@@ -179,6 +179,10 @@ MTL_INLINE static void SwapRows(T* a, I32 row1, I32 row2, I32 dataSize, I32 rowS
     Swap(a[row1 * rowSize + i], a[row2 * rowSize + i]);
 }
 
+template<class T> class DynamicMatrix;
+template<class T> MTL_INLINE void ComputeTranspose(DynamicMatrix<T>& dst, const DynamicMatrix<T>& src);
+template<class T> MTL_INLINE void ComputeTransposeParallel(DynamicMatrix<T>& dst, const DynamicMatrix<T>& src);
+
 template<class T>
 class DynamicMatrix
 {
@@ -212,7 +216,7 @@ public:
   template<I32 M, I32 N>
   MTL_INLINE DynamicMatrix(const Matrix<M,N,T>& matrix, I32 byteAlignment = MTL_STREAM_BYTES)
   {
-    Resize(M, N);
+    Resize(M, N, byteAlignment);
     for (I32 row = 0; row < M; row++)
       memcpy((*this)[row], matrix[row], N*sizeof(T));
   }
@@ -590,22 +594,18 @@ public:
     return Sqrt(SumOfSquares());
   }
 
-  MTL_INLINE DynamicMatrix ComputeTranspose() const
+  MTL_INLINE DynamicMatrix ComputeTranspose(I32 byteAlignment = MTL_STREAM_BYTES) const
   {
     DynamicMatrix t;
-    ComputeTranspose(t);
+    ComputeTranspose(t, byteAlignment);
 
     return t;
   }
 
-  MTL_INLINE void ComputeTranspose(DynamicMatrix& t) const
+  MTL_INLINE void ComputeTranspose(DynamicMatrix& t, I32 byteAlignment = MTL_STREAM_BYTES) const
   {
-    t.Resize(Cols(), Rows());
-
-    MTL_PARALLEL_FOR_BLOCKS(Rows())
-    for (I32 i = 0; i < Rows(); i++)
-      for (I32 j = 0; j < Cols(); j++)
-        t[j][i] = (*this)[i][j];
+    t.Resize(Cols(), Rows(), byteAlignment);
+    MTL::ComputeTranspose(t, *this);
   }
 
   void SetRow(I32 row, const DynamicVector<T>& v)
@@ -646,6 +646,20 @@ private:
     return 256 * (Square(1024)/Square(Rows()) + 1);
   }
 };
+
+template<class T> MTL_INLINE void ComputeTranspose(DynamicMatrix<T>& dst, const DynamicMatrix<T>& src)
+{
+  for (I32 i = 0; i < src.Rows(); i++)
+    for (I32 j = 0; j < src.Cols(); j++)
+      dst[j][i] = src[i][j];
+}
+template<class T> MTL_INLINE void ComputeTransposeParallel(DynamicMatrix<T>& dst, const DynamicMatrix<T>& src)
+{
+  MTL_PARALLEL_FOR_BLOCKS(src.Rows())
+  for (I32 i = 0; i < src.Rows(); i++)
+    for (I32 j = 0; j < src.Cols(); j++)
+      dst[j][i] = src[i][j];
+}
 
 }  // namespace MTL
 
