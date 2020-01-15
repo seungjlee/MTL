@@ -60,8 +60,6 @@ TEST(TestMemoryBandwitdh)
   {
     DynamicVector<double> testV1(kVectorSize, 11);
     DynamicVector<double> testV2(kVectorSize, 22);
-    double* p1 = testV1.Begin();
-    double* p2 = testV2.Begin();
 
     wprintf(L"Number of Threads: %ld\n", numberOfThreads);
     CPU::Instance().NumberOfThreads(numberOfThreads);
@@ -210,8 +208,6 @@ TEST(TestStreamPerformance)
   {
     DynamicVector<double> testV1(kVectorSize, -1);
     DynamicVector<double> testV2(kVectorSize, -2);
-    double* p1 = testV1.Begin();
-    double* p2 = testV2.Begin();
 
     wprintf(L"Number of Threads: %ld\n", numberOfThreads);
     CPU::Instance().NumberOfThreads(numberOfThreads);

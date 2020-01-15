@@ -37,7 +37,10 @@
 #ifdef WIN32
 #include <intrin.h>
 #else
+namespace MTL  // To avoid some compilation issues.
+{
 #include <cpuid.h>
+}
 #include <string.h>
 #endif
 

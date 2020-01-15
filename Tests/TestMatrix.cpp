@@ -32,10 +32,10 @@
 
 using namespace MTL;
 
-static const double kTol = 1e-12;
-
 TEST(TestMatrix)
 {
+  static const double kTol = 1e-12;
+
   double a[][3] = {{ 4, -3,  2},
                    { 2,  4, -5},
                    {-2,  1,  6}};
@@ -58,15 +58,17 @@ TEST(TestMatrix)
 
 TEST(TestMatrixConcatenation)
 {
+  static const double kTol = 1e-12;
+
   double a[][2] = {{ 1, 2 },
                    { 4, 5 }};
 
-  double col[] = { 3, 6 };
-  double row[] = { 7, 8, 9 };
+  double colv[] = { 3, 6 };
+  double rowv[] = { 7, 8, 9 };
 
   SquareMatrix2x2 A(a);
-  ColumnVector2D C(col);
-  RowVector3D R(row);
+  ColumnVector2D C(colv);
+  RowVector3D R(rowv);
 
   SquareMatrix3x3 M = (A || C) && R;
 
@@ -77,6 +79,8 @@ TEST(TestMatrixConcatenation)
 
 TEST(TestNullSpace)
 {
+  static const double kTol = 1e-12;
+
   double v[] = { 0, 0, 1, 1 };
 
   RowVector4D V(v);
@@ -93,6 +97,8 @@ TEST(TestNullSpace)
 
 TEST(TestTranspose)
 {
+  static const double kTol = 1e-12;
+
   double a[][3] = {{ 4, -3,  2},
                    { 2,  4, -5},
                    {-2,  1,  6}};
@@ -123,6 +129,8 @@ TEST(TestTranspose)
 
 TEST(TestInverseAndDeterminant)
 {
+  static const double kTol = 1e-12;
+
   double a[][3] = {{ 4, -3,  2},
                    { 2,  4, -5},
                    {-2,  1,  6}};

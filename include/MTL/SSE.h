@@ -424,7 +424,9 @@ public:
   MTL_INLINE X128 operator==(const X128& y) const  { return _mm_cmpeq_ps(Data_, y.Data_);       }
   MTL_INLINE X128 operator<(const X128& y)  const  { return _mm_cmplt_ps(Data_, y.Data_);       }
   MTL_INLINE X128 operator>(const X128& y)  const  { return _mm_cmpgt_ps(Data_, y.Data_);       }
-  MTL_INLINE X128 operator-() const                { return _mm_xor_ps(Data_, kX128_SignF32);   }
+  MTL_INLINE X128 operator<=(const X128& y) const  { return _mm_cmple_ps(Data_, y.Data_);       }
+  MTL_INLINE X128 operator>=(const X128& y) const  { return _mm_cmpge_ps(Data_, y.Data_);       }
+  MTL_INLINE X128 operator-()               const  { return _mm_xor_ps(Data_, kX128_SignF32);   }
   MTL_INLINE X128 operator+(const X128& y)  const  { return _mm_add_ps(Data_, y.Data_);         }
   MTL_INLINE X128 operator-(const X128& y)  const  { return _mm_sub_ps(Data_, y.Data_);         }
   MTL_INLINE X128 operator*(const X128& y)  const  { return _mm_mul_ps(Data_, y.Data_);         }

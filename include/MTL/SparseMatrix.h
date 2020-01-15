@@ -887,7 +887,6 @@ private:
 
       for (I32 j = 0; j < i; j++)
       {
-        I32 count = 0;
         I32 q = ap[j];
         const I32 qEnd = ap[j+1];
         const I32 qRows = qEnd - q;
@@ -930,7 +929,7 @@ private:
                 if (ai[q] > pLastNonZeroRow)
                   break;
 
-                U32 pp = pNonZeroMap[ai[q] - pFirstNonZeroRow];
+                I32 pp = pNonZeroMap[ai[q] - pFirstNonZeroRow];
                 if (pp)
                 {
                   rowIndexPairs.PushBack(Point2D<I32>(pp-1,q));
