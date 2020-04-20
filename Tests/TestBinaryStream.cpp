@@ -128,7 +128,7 @@ TEST(Test_DynamicVector)
   DynamicVector<int> v;
   stream >> bogus >> v;
 
-  MTL_EQUAL(bogus.Size(), 0ULL);
+  MTL_EQUAL((int)bogus.Size(), 0);
 
   for (uint32_t i = 0; i < u.Size(); i++)
     MTL_EQUAL(u[i], v[i]);
