@@ -26,6 +26,10 @@
 #ifndef MTL_DYNAMIC_MATRIX_H
 #define MTL_DYNAMIC_MATRIX_H
 
+#ifndef MTL_DYNAMIC_MATRIX_DEFAULT_BYTE_ALIGNMENT
+#define MTL_DYNAMIC_MATRIX_DEFAULT_BYTE_ALIGNMENT MTL_STREAM_BYTES
+#endif
+
 #include "DynamicVector.h"
 #include "StreamArray.h"
 
@@ -196,12 +200,12 @@ public:
     eZeros
   };
 
-  MTL_INLINE DynamicMatrix(I32 rows, I32 cols, I32 byteAlignment = MTL_STREAM_BYTES)
+  MTL_INLINE DynamicMatrix(I32 rows, I32 cols, I32 byteAlignment = MTL_DYNAMIC_MATRIX_DEFAULT_BYTE_ALIGNMENT)
   {
     Resize(rows, cols, byteAlignment);
   }
 
-  MTL_INLINE DynamicMatrix(I32 rows, I32 cols, Initialize i, I32 byteAlignment = MTL_STREAM_BYTES)
+  MTL_INLINE DynamicMatrix(I32 rows, I32 cols, Initialize i, I32 byteAlignment = MTL_DYNAMIC_MATRIX_DEFAULT_BYTE_ALIGNMENT)
   {
     Resize(rows, cols, byteAlignment);
 
@@ -214,7 +218,7 @@ public:
   }
 
   template<I32 M, I32 N>
-  MTL_INLINE DynamicMatrix(const Matrix<M,N,T>& matrix, I32 byteAlignment = MTL_STREAM_BYTES)
+  MTL_INLINE DynamicMatrix(const Matrix<M,N,T>& matrix, I32 byteAlignment = MTL_DYNAMIC_MATRIX_DEFAULT_BYTE_ALIGNMENT)
   {
     Resize(M, N, byteAlignment);
     for (I32 row = 0; row < M; row++)
@@ -256,7 +260,7 @@ public:
   }
 
 
-  MTL_INLINE void Resize(I32 rows, I32 cols, I32 byteAlignment = MTL_STREAM_BYTES)
+  MTL_INLINE void Resize(I32 rows, I32 cols, I32 byteAlignment = MTL_DYNAMIC_MATRIX_DEFAULT_BYTE_ALIGNMENT)
   {
     Rows_ = rows;
     Cols_ = cols;
@@ -594,7 +598,7 @@ public:
     return Sqrt(SumOfSquares());
   }
 
-  MTL_INLINE DynamicMatrix ComputeTranspose(I32 byteAlignment = MTL_STREAM_BYTES) const
+  MTL_INLINE DynamicMatrix ComputeTranspose(I32 byteAlignment = MTL_DYNAMIC_MATRIX_DEFAULT_BYTE_ALIGNMENT) const
   {
     DynamicMatrix t;
     ComputeTranspose(t, byteAlignment);
@@ -602,7 +606,7 @@ public:
     return t;
   }
 
-  MTL_INLINE void ComputeTranspose(DynamicMatrix& t, I32 byteAlignment = MTL_STREAM_BYTES) const
+  MTL_INLINE void ComputeTranspose(DynamicMatrix& t, I32 byteAlignment = MTL_DYNAMIC_MATRIX_DEFAULT_BYTE_ALIGNMENT) const
   {
     t.Resize(Cols(), Rows(), byteAlignment);
     MTL::ComputeTranspose(t, *this);
