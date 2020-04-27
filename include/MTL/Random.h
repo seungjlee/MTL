@@ -110,14 +110,14 @@ public:
   }
   MTL_INLINE MTL::DynamicVector<I32> DynamicVectorI32(SizeType size)
   {
-    MTL::DynamicVector<T> v(size);
+    MTL::DynamicVector<I32> v(size);
     ArrayI32(&v[0], size);
 
     return v;
   }
   MTL_INLINE void ArrayI32(I32* pDst, SizeType size)
   {
-    Array(pDst, pDst + size, start, end);
+    ArrayI32(pDst, pDst + size);
   }
   MTL_INLINE void ArrayI32(I32* pDst, const I32* pDstEnd)
   {
