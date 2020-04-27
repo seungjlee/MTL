@@ -341,7 +341,9 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+#endif
 
     if (RowIndexPairs_.Size() > 0)
     {
@@ -473,7 +475,9 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
+  #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+  #endif
 
     if (RowIndexPairs_.Size() > 0)
     {
@@ -596,7 +600,9 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
+  #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+  #endif
 
     if (RowIndexPairs_.Size() > 0)
     {

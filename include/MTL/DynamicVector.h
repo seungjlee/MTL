@@ -399,8 +399,8 @@ private:
     SizeType address = reinterpret_cast<SizeType>(*pBuffer);
     SizeType offset = address & (MTL_STREAM_BYTES-1);
 
-	T* pFirst = *pBuffer;
-	if (offset != 0)
+    T* pFirst = *pBuffer;
+    if (offset != 0)
     {
       SizeType complement = MTL_STREAM_BYTES - offset;
       pFirst = reinterpret_cast<T*>(address + complement);

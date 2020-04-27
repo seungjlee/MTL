@@ -148,7 +148,9 @@ static I32 SolveHouseholderQRTransposed(T* x, T* At, I32 M, I32 N, I32 rowSize,
 {
   assert(M >= N);  // Not supporting or testing M < N cases.
 
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
   I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
+#endif
 
   for (I32 i = 0; i < N; i++)
     P[i] = i;

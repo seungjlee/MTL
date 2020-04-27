@@ -100,6 +100,31 @@ public:
       *pDst = GetNextInRange(start, range);
   }
 
+  MTL_INLINE MTL::DynamicMatrix<I32> DynamicMatrixI32(I32 M, I32 N)
+  {
+    MTL::DynamicMatrix<I32> m(M, N);
+    for (I32 i = 0; i < m.Rows(); i++)
+      ArrayI32(m[i], N);
+
+    return m;
+  }
+  MTL_INLINE MTL::DynamicVector<I32> DynamicVectorI32(SizeType size)
+  {
+    MTL::DynamicVector<T> v(size);
+    ArrayI32(&v[0], size);
+
+    return v;
+  }
+  MTL_INLINE void ArrayI32(I32* pDst, SizeType size)
+  {
+    Array(pDst, pDst + size, start, end);
+  }
+  MTL_INLINE void ArrayI32(I32* pDst, const I32* pDstEnd)
+  {
+    for (; pDst < pDstEnd; pDst++)
+      *pDst = GetNext();
+  }
+
 private:
   U64 x_;
 };
