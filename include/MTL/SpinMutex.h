@@ -32,29 +32,47 @@
 namespace MTL
 {
 
-class SpinMutex
+class SpinMutexBase
 {
 public:
-  SpinMutex() : Locked(false)
-  {
-  }
+  SpinMutexBase() : Locked(false) {}
+  virtual void lock() = 0;
+  virtual void unlock() = 0;
+
+protected:
+  std::atomic<bool> Locked;
+};
+template <uint64_t NANO_SECONDS>
+class SpinMutex : public SpinMutexBase
+{
+public:
+  SpinMutex() {}
+
   void lock()
   {
     while (Locked.exchange(true))
-      std::this_thread::yield();
+    {
+      if (NANO_SECONDS == 0)
+      {
+        std::this_thread::yield();
+      }
+      else
+      {
+        // Note that the minimum sleep time will depend on std implementation.
+        std::this_thread::sleep_for(std::chrono::nanoseconds(NANO_SECONDS));;
+      }
+    }
   }
   void unlock()
   {
     Locked.store(false);
   }
-
-private:
-  std::atomic<bool> Locked;
 };
+
 class SpinLock
 {
 public:
-  SpinLock(SpinMutex& m)
+  SpinLock(SpinMutexBase& m)
     : Mutex(m)
   {
     Mutex.lock();
@@ -65,7 +83,7 @@ public:
   }
 
 private:
-  SpinMutex& Mutex;
+  SpinMutexBase& Mutex;
 };
 
 }  // namespace MTL

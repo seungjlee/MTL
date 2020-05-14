@@ -29,6 +29,6 @@ using namespace MTL;
 
 TEST(Test_SpinMutex)
 {
-  SpinMutex mutex;
+  SpinMutex<0> mutex;
   SpinLock lock(mutex);
 }
