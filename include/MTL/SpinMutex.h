@@ -32,21 +32,13 @@
 namespace MTL
 {
 
-class SpinMutexBase
-{
-public:
-  SpinMutexBase() : Locked(false) {}
-  virtual void lock() = 0;
-  virtual void unlock() = 0;
-
-protected:
-  std::atomic<bool> Locked;
-};
 template <uint64_t NANO_SECONDS>
-class SpinMutex : public SpinMutexBase
+class SpinMutex
 {
 public:
-  SpinMutex() {}
+  SpinMutex() : Locked(false)
+  {
+  }
 
   void lock()
   {
@@ -67,12 +59,16 @@ public:
   {
     Locked.store(false);
   }
+
+private:
+  std::atomic<bool> Locked;
 };
 
+template <uint64_t NANO_SECONDS>
 class SpinLock
 {
 public:
-  SpinLock(SpinMutexBase& m)
+  SpinLock(SpinMutex<NANO_SECONDS>& m)
     : Mutex(m)
   {
     Mutex.lock();
@@ -83,7 +79,7 @@ public:
   }
 
 private:
-  SpinMutexBase& Mutex;
+  SpinMutex<NANO_SECONDS>& Mutex;
 };
 
 }  // namespace MTL

@@ -30,5 +30,5 @@ using namespace MTL;
 TEST(Test_SpinMutex)
 {
   SpinMutex<0> mutex;
-  SpinLock lock(mutex);
+  SpinLock<0> lock(mutex);
 }
