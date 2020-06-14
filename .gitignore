@@ -1,5 +1,9 @@
 *.*~
 *.bak
+
 /.idea
+/.vscode
+
 /cmake-build-debug
+/build
 /Build
