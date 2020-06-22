@@ -236,6 +236,19 @@ public:
             << expected << L"' is expected!'" << std::endl;
     }
   }
+  
+  template <>
+  static void Equal(const std::string& actual, const std::string& expected, const String& file, U64 line)
+  {
+    if (actual != expected)
+    {
+      TotalNumberOfFailures_++;
+      ColorScope c(ErrorColor);
+      Out() << L"[File '" << file << L"' - line " << line << L"]" << std::endl
+            << L"  Actual value is '" << MTL::ToUTF16(actual) << L"' but '"
+            << MTL::ToUTF16(expected) << L"' is expected!'" << std::endl;
+    }
+  }
 
   static void EqualFloat(double actual, double expected, double tolerance, const String& file,
                          U64 line)
