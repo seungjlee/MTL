@@ -236,8 +236,7 @@ public:
             << expected << L"' is expected!'" << std::endl;
     }
   }
-  
-  template <>
+
   static void Equal(const std::string& actual, const std::string& expected, const String& file, U64 line)
   {
     if (actual != expected)
