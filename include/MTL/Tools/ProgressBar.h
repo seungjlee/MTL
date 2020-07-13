@@ -26,7 +26,7 @@
 #ifndef MTL_UTILITIES_H
 #define MTL_UTILITIES_H
 
-#include <MTL/WorkerThread.h>
+#include <MTL/Tools/WorkerThread.h>
 
 #ifndef MAX_PROGRESS_BUFFER_SIZE
 #define MAX_PROGRESS_BUFFER_SIZE 512

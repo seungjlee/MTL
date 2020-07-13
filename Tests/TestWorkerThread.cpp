@@ -22,8 +22,8 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <MTL/Test.h>
-#include <MTL/WorkerThread.h>
+#include <MTL/Tools/Test.h>
+#include <MTL/Tools/WorkerThread.h>
 
 using namespace MTL;
 

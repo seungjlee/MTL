@@ -29,7 +29,7 @@
 #include <MTL/Exception.h>
 #include <MTL/Colors.h>
 #include <MTL/DynamicVector.h>
-#include <MTL/Event.h>
+#include <MTL/Tools/Event.h>
 #include <mutex>
 #include <string>
 #include <thread>

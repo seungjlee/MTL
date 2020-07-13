@@ -36,16 +36,16 @@
 namespace MTL
 {
 // Set all values in the XMM register with the same single input value.
-MTL_INLINE static __m256  X256_SetPacked(F32 val)    { return _mm256_set1_ps(val);                 }
-MTL_INLINE static __m256d X256_SetPacked(F64 val)    { return _mm256_set1_pd(val);                 }
-MTL_INLINE static __m256i X256_SetPacked(I8  val)    { return _mm256_set1_epi8(val);               }
-MTL_INLINE static __m256i X256_SetPacked(I16 val)    { return _mm256_set1_epi16(val);              }
-MTL_INLINE static __m256i X256_SetPacked(I32 val)    { return _mm256_set1_epi32(val);              }
-MTL_INLINE static __m256i X256_SetPacked(U8  val)    { return _mm256_set1_epi8(val);               }
-MTL_INLINE static __m256i X256_SetPacked(U16 val)    { return _mm256_set1_epi16(val);              }
-MTL_INLINE static __m256i X256_SetPacked(U32 val)    { return _mm256_set1_epi32(val);              }
-MTL_INLINE static __m256i X256_SetPacked(I64 val)    { return (__m256i&)X256_SetPacked((F64&)val); }
-MTL_INLINE static __m256i X256_SetPacked(U64 val)    { return (__m256i&)X256_SetPacked((F64&)val); }
+MTL_INLINE static __m256  X256_SetPacked(F32 val)    { return _mm256_set1_ps(val);     }
+MTL_INLINE static __m256d X256_SetPacked(F64 val)    { return _mm256_set1_pd(val);     }
+MTL_INLINE static __m256i X256_SetPacked(I8  val)    { return _mm256_set1_epi8(val);   }
+MTL_INLINE static __m256i X256_SetPacked(I16 val)    { return _mm256_set1_epi16(val);  }
+MTL_INLINE static __m256i X256_SetPacked(I32 val)    { return _mm256_set1_epi32(val);  }
+MTL_INLINE static __m256i X256_SetPacked(U8  val)    { return _mm256_set1_epi8(val);   }
+MTL_INLINE static __m256i X256_SetPacked(U16 val)    { return _mm256_set1_epi16(val);  }
+MTL_INLINE static __m256i X256_SetPacked(U32 val)    { return _mm256_set1_epi32(val);  }
+MTL_INLINE static __m256i X256_SetPacked(I64 val)    { return _mm256_set1_epi64x(val); }
+MTL_INLINE static __m256i X256_SetPacked(U64 val)    { return _mm256_set1_epi64x(val); }
 
 // Common constants.
 static const __m256  kX256_OnesF32       = X256_SetPacked(1.0f);

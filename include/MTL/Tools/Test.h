@@ -31,7 +31,7 @@
 #include <MTL/DynamicVector.h>
 #include <MTL/Exception.h>
 #include <MTL/Timer.h>
-#include <MTL/ProgressBar.h>
+#include <MTL/Tools/ProgressBar.h>
 
 //
 // Macros.
