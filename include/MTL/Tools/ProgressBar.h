@@ -93,11 +93,11 @@ public:
   void Enable()   { Enabled_ = true;  }
 
 protected:
-  virtual void ProcessWork(const MTL::DynamicVector<ProgressData>& data)
+  virtual void ProcessWork(const std::vector<ProgressData>& data)
   {
     if (Enabled_)
     {
-      const ProgressData& d = data.Back();
+      const ProgressData& d = data.back();
       ShowProgressBar(d.Percent, d.Message, d.ExtraPrecision, d.BarLength, d.BarColor, d.TextColor, d.Indent);
     }
   }

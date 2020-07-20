@@ -28,11 +28,11 @@
 
 #include <MTL/Exception.h>
 #include <MTL/Colors.h>
-#include <MTL/DynamicVector.h>
 #include <MTL/Tools/Event.h>
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
 
 #ifdef WIN32
 static bool SetThreadName(unsigned long dwThreadID, char* threadName);
@@ -104,7 +104,7 @@ public:
   virtual void QueueWork(const DataType& data)
   {
     std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
-    QueueData_.PushBack(data);
+    QueueData_.push_back(data);
     ProcessData_.Signal();
   }
 
@@ -118,7 +118,7 @@ protected:
   virtual void InitializeThread() {}
   virtual void CleanupThread() {}
 
-  virtual void ProcessWork(const MTL::DynamicVector<DataType>& data) = 0;
+  virtual void ProcessWork(const std::vector<DataType>& data) = 0;
 
   virtual void HandleException(const MTL::Exception& ex, const MTL::String& functionName)
   {
@@ -150,8 +150,8 @@ protected:
   std::thread Thread_;
   bool Running_;
   std::recursive_mutex QueueMutex_;
-  MTL::DynamicVector<DataType> QueueData_;
-  MTL::DynamicVector<DataType> ThreadWorkData_;
+  std::vector<DataType> QueueData_;
+  std::vector<DataType> ThreadWorkData_;
   uint32_t MaxWorkQueueSize_;
 
   void ProcessThread()
@@ -165,20 +165,20 @@ protected:
         if (!Running_)
           break;
 
-        if (QueueData_.Size() > 0)
+        if (QueueData_.size() > 0)
         {
           {
             std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
-            if (QueueData_.Size() > MaxWorkQueueSize_)
+            if (QueueData_.size() > MaxWorkQueueSize_)
             {
-              uint32_t startOffset = (uint32_t)QueueData_.Size() - MaxWorkQueueSize_;
-              ThreadWorkData_ = MTL::DynamicVector<DataType>(QueueData_.Begin() + startOffset, QueueData_.End());
+              uint32_t startOffset = (uint32_t)QueueData_.size() - MaxWorkQueueSize_;
+              ThreadWorkData_ = std::vector<DataType>(QueueData_.begin() + startOffset, QueueData_.end());
             }
             else
             {
               ThreadWorkData_ = QueueData_;
             }
-            QueueData_.Clear();
+            QueueData_.clear();
           }
           ProcessWork(ThreadWorkData_);
         }

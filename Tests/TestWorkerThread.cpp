@@ -22,8 +22,8 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <MTL/Tools/Test.h>
 #include <MTL/Tools/WorkerThread.h>
+#include <MTL/Tools/Test.h>
 
 using namespace MTL;
 
@@ -47,10 +47,10 @@ public:
   {
     std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
     ProcessWork(QueueData_);
-    QueueData_.Clear();
+    QueueData_.clear();
   }
 
-  virtual void ProcessWork(const MTL::DynamicVector<int>& data)
+  virtual void ProcessWork(const std::vector<int>& data)
   {
     for (int val : data)
     {
