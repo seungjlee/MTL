@@ -23,12 +23,12 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Tools/Test.h>
-#include <MTL/LinearAlgebra.h>
-#include <MTL/LDLt.h>
-#include <MTL/QR.h>
-#include <MTL/SVD.h>
-#include <MTL/Random.h>
-#include <MTL/ProjectionToImageTransform.h>
+#include <MTL/Math/LinearAlgebra.h>
+#include <MTL/Math/LDLt.h>
+#include <MTL/Math/QR.h>
+#include <MTL/Math/SVD.h>
+#include <MTL/Math/Random.h>
+#include <MTL/Math/ProjectionToImageTransform.h>
 
 using namespace MTL;
 

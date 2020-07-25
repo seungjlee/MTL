@@ -23,9 +23,9 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Tools/Test.h>
-#include <MTL/AxisAngle.h>
-#include <MTL/RotationTranslation3D.h>
-#include <MTL/ProjectionToImageTransform.h>
+#include <MTL/Math/AxisAngle.h>
+#include <MTL/Math/RotationTranslation3D.h>
+#include <MTL/Math/ProjectionToImageTransform.h>
 
 using namespace MTL;
 

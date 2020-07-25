@@ -28,7 +28,7 @@
 
 #include <MTL/CPU.h>
 #include <MTL/Colors.h>
-#include <MTL/DynamicVector.h>
+#include <MTL/Math/DynamicVector.h>
 #include <MTL/Exception.h>
 #include <MTL/Timer.h>
 #include <MTL/Tools/ProgressBar.h>

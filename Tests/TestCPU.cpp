@@ -24,7 +24,7 @@
 
 #include <MTL/Tools/Test.h>
 #include <MTL/CPU.h>
-#include <MTL/DynamicVectorOperators.h>
+#include <MTL/Math/DynamicVectorOperators.h>
 
 using namespace MTL;
 

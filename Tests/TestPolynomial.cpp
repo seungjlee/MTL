@@ -23,8 +23,8 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Tools/Test.h>
-#include <MTL/OptimizerLevenbergMarquardt.h>
-#include <MTL/Polynomial.h>
+#include <MTL/Math/OptimizerLevenbergMarquardt.h>
+#include <MTL/Math/Polynomial.h>
 
 using namespace MTL;
 

@@ -23,7 +23,7 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <limits.h>
-#include <MTL/Math.h>
+#include <MTL/Math/Math.h>
 
 using MTL::I32;
 using MTL::Min;

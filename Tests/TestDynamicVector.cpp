@@ -23,8 +23,8 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Tools/Test.h>
-#include <MTL/DynamicVectorOperators.h>
-#include <MTL/Random.h>
+#include <MTL/Math/DynamicVectorOperators.h>
+#include <MTL/Math/Random.h>
 
 using namespace MTL;
 

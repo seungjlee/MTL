@@ -23,7 +23,7 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Tools/Test.h>
-#include <MTL/Point2D.h>
+#include <MTL/Math/Point2D.h>
 
 using namespace MTL;
 

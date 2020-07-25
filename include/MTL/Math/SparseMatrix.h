@@ -26,9 +26,9 @@
 #ifndef MTL_SPARSE_MATRIX_H
 #define MTL_SPARSE_MATRIX_H
 
-#include <MTL/DynamicMatrix.h>
-#include <MTL/Point2D.h>
-#include <MTL/sparse.h>
+#include <MTL/Math/DynamicMatrix.h>
+#include <MTL/Math/Point2D.h>
+#include <MTL/Math/sparse.h>
 
 namespace MTL
 {

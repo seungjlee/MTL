@@ -26,8 +26,8 @@
 #define MTL_OPENMP_H
 
 #include <MTL/CPU.h>
-#include <MTL/SSE.h>
-#include <MTL/AVX.h>
+#include <MTL/Math/SSE.h>
+#include <MTL/Math/AVX.h>
 #include <assert.h>
 
 //

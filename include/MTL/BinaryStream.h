@@ -26,7 +26,6 @@
 #ifndef MTL_BINARY_STREAM_H
 #define MTL_BINARY_STREAM_H
 
-#include <MTL/DynamicVector.h>
 #include <MTL/StringHelpers.h>
 #include <assert.h>
 #include <cstdint>
@@ -152,26 +151,6 @@ static const BinaryStream& operator>>(const BinaryStream& stream, std::vector<T>
   uint64_t size;
   stream >> size;
   v.resize(size);
-  for (auto& x : v)
-    stream >> x;
-
-  return stream;
-}
-template <class T>
-static BinaryStream& operator<<(BinaryStream& stream, const DynamicVector<T>& v)
-{
-  stream << uint64_t(v.Size());
-  for (const auto& x : v)
-    stream << x;
-
-  return stream;
-}
-template <class T>
-static const BinaryStream& operator>>(const BinaryStream& stream, DynamicVector<T>& v)
-{
-  uint64_t size;
-  stream >> size;
-  v.Resize(size);
   for (auto& x : v)
     stream >> x;
 

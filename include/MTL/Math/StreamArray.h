@@ -25,9 +25,9 @@
 #ifndef MTL_STREAM_ARRAY_H
 #define MTL_STREAM_ARRAY_H
 
-#include <MTL/SSE.h>
-#include <MTL/AVX.h>
-#include <MTL/Array.h>
+#include <MTL/Math/SSE.h>
+#include <MTL/Math/AVX.h>
+#include <MTL/Math/Array.h>
 #include <MTL/OpenMP.h>
 
 namespace MTL

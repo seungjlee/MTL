@@ -29,10 +29,10 @@
 #include <assert.h>
 #include <omp.h>
 #include <MTL/OpenMP.h>
-#include <MTL/Matrix.h>
-#include <MTL/Math.h>
-#include <MTL/Stream.h>
-#include <MTL/StreamMath.h>
+#include <MTL/Math/Matrix.h>
+#include <MTL/Math/Math.h>
+#include <MTL/Math/Stream.h>
+#include <MTL/Math/StreamMath.h>
 #include <vector>
 
 //
@@ -439,7 +439,7 @@ private:
 }  // namespace MTL
 
 #include <MTL/OpenMP.h>
-#include <MTL/StreamArray.h>
+#include <MTL/Math/StreamArray.h>
 
 namespace MTL
 {

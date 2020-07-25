@@ -28,8 +28,8 @@
 
 #include <cstring>
 #include <assert.h>
-#include <MTL/Array.h>
-#include <MTL/StreamMath.h>
+#include <MTL/Math/Array.h>
+#include <MTL/Math/StreamMath.h>
 
 namespace MTL
 {

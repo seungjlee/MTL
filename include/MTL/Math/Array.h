@@ -25,7 +25,7 @@
 #ifndef MTL_ARRAY_H
 #define MTL_ARRAY_H
 
-#include <MTL/Math.h>
+#include <MTL/Math/Math.h>
 
 namespace MTL
 {

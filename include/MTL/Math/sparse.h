@@ -26,7 +26,7 @@
 #ifndef MTL_SPARSE_H
 #define MTL_SPARSE_H
 
-#include <MTL/Davis_LDL_COLAMD.h>
+#include <MTL/Math/Davis_LDL_COLAMD.h>
 
 namespace MTL
 {

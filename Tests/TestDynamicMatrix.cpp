@@ -23,11 +23,11 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Tools/Test.h>
-#include <MTL/Random.h>
-#include <MTL/OptimizerLevenbergMarquardt.h>
-#include <MTL/QR.h>
-#include <MTL/SVD.h>
-#include <MTL/LDLt.h>
+#include <MTL/Math/Random.h>
+#include <MTL/Math/OptimizerLevenbergMarquardt.h>
+#include <MTL/Math/QR.h>
+#include <MTL/Math/SVD.h>
+#include <MTL/Math/LDLt.h>
 
 using namespace MTL;
 
