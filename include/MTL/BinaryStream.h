@@ -26,6 +26,7 @@
 #ifndef MTL_BINARY_STREAM_H
 #define MTL_BINARY_STREAM_H
 
+#include <MTL/Exception.h>
 #include <MTL/StringHelpers.h>
 #include <assert.h>
 #include <cstdint>

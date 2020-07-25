@@ -28,6 +28,7 @@
 
 #include <assert.h>
 #include <omp.h>
+#include <MTL/BinaryStream.h>
 #include <MTL/OpenMP.h>
 #include <MTL/Math/Matrix.h>
 #include <MTL/Math/Math.h>
@@ -435,6 +436,27 @@ private:
   // MTL_DYNAMIC_VECTOR_ZERO_INIT.
   MTL_INLINE static void FastZeroInit(T*, SizeType /* size */) {}
 };
+
+template <class T>
+static BinaryStream& operator<<(BinaryStream& stream, const DynamicVector<T>& v)
+{
+  stream << uint64_t(v.Size());
+  for (const auto& x : v)
+    stream << x;
+
+  return stream;
+}
+template <class T>
+static const BinaryStream& operator>>(const BinaryStream& stream, DynamicVector<T>& v)
+{
+  uint64_t size;
+  stream >> size;
+  v.Resize(size);
+  for (auto& x : v)
+    stream >> x;
+
+  return stream;
+}
 
 }  // namespace MTL
 
