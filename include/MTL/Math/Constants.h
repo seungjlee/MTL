@@ -25,7 +25,7 @@
 #ifndef MTL_CONSTANTS_H
 #define MTL_CONSTANTS_H
 
-#include "Definitions.h"
+#include <MTL/Definitions.h>
 
 namespace MTL
 {
