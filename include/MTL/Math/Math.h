@@ -158,7 +158,7 @@ template <class T> MTL_INLINE bool IsFinite(const T& a)
 template <class T>
 MTL_INLINE static T MultiplyAndAdd(const T& a, const T& b, const T& c)
 {
-  return a * b + c;
+  return std::fma(a, b, c);
 }
 
 }  // namespace MTL
