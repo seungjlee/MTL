@@ -158,16 +158,6 @@ template <class T> MTL_INLINE bool IsFinite(const T& a)
 template <class T>
 MTL_INLINE T MultiplyAndAdd(const T& a, const T& b, const T& c)
 {
-  return a * b + c;
-}
-template <>
-MTL_INLINE float MultiplyAndAdd(const float& a, const float& b, const float& c)
-{
-  return std::fma(a, b, c);
-}
-template <>
-MTL_INLINE double MultiplyAndAdd(const double& a, const double& b, const double& c)
-{
   return std::fma(a, b, c);
 }
 

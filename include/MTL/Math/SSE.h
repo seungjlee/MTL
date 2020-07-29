@@ -556,6 +556,17 @@ MTL_INLINE X128<F32> Abs(const X128<F32>& a)
   return a & kX128_NoSignF32;
 }
 
+template <> MTL_INLINE
+X128<F64> MultiplyAndAdd(const X128<F64>& a, const X128<F64>& b, const X128<F64>& c)
+{
+  return a * b + c;
+}
+template <> MTL_INLINE
+X128<F32> MultiplyAndAdd(const X128<F32>& a, const X128<F32>& b, const X128<F32>& c)
+{
+  return a * b + c;
+}
+
 // Conditional equivalent to "condition ? a : b" in C/C++.
 MTL_INLINE X128<I8> Conditional(const X128<I8>& condition, const X128<I8>& a, const X128<I8>& b)
 {
