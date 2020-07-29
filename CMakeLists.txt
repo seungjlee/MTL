@@ -26,8 +26,9 @@ PROJECT(MTL)
 
 cmake_minimum_required(VERSION 3.0)
 
-option (MTL_ENABLE_SSE "Enables SSE instructions." ON)
-option (MTL_ENABLE_AVX "Enables AVX and FMA instructions." OFF)
+option (MTL_ENABLE_SSE   "Enables SSE instructions."          ON)
+option (MTL_ENABLE_AVX   "Enables AVX and FMA instructions." OFF)
+option (MTL_USE_FAST_FMA "Use faster version of std::fma()."  ON)
 
 message(STATUS "")
 
@@ -78,6 +79,10 @@ if(MTL_ENABLE_AVX)
 else(MTL_ENABLE_AVX)
   ADD_DEFINITIONS(-DMTL_ENABLE_AVX=0)
 endif(MTL_ENABLE_AVX)
+
+if(MTL_USE_FAST_FMA)
+  ADD_DEFINITIONS(-DFP_FAST_FMA -DFP_FAST_FMAF -DFP_FAST_FMAL)
+endif(MTL_USE_FAST_FMA)
 
 message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 message(STATUS "CMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG}")
