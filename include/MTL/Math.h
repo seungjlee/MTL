@@ -25,7 +25,7 @@
 #ifndef MTL_MATH_H
 #define MTL_MATH_H
 
-#include <MTL/Math/Constants.h>
+#include <MTL/Constants.h>
 #include <float.h>
 #include <cmath>
 

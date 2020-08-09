@@ -25,7 +25,7 @@
 #ifndef MTL_STREAM_ARRAY_H
 #define MTL_STREAM_ARRAY_H
 
-#include <MTL/Math/Array.h>
+#include <MTL/Array.h>
 #include <MTL/Stream/SSE.h>
 #include <MTL/Stream/AVX.h>
 #include <MTL/OpenMP.h>

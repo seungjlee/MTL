@@ -30,8 +30,8 @@
 #include <omp.h>
 #include <MTL/BinaryStream.h>
 #include <MTL/OpenMP.h>
+#include <MTL/Math.h>
 #include <MTL/Math/Matrix.h>
-#include <MTL/Math/Math.h>
 #include <MTL/Stream/Stream.h>
 #include <MTL/Stream/StreamMath.h>
 #include <vector>

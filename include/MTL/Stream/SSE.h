@@ -26,8 +26,8 @@
 #ifndef MTL_SSE_H
 #define MTL_SSE_H
 
-#include "Math.h"
-#include "Stream.h"
+#include <MTL/Math.h>
+#include <MTL/Stream/Stream.h>
 
 #if MTL_ENABLE_SSE
 

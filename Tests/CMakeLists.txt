@@ -26,15 +26,17 @@ PROJECT(TestMTL)
 
 FILE(GLOB headers ../include/MTL/*.h)
 FILE(GLOB math_headers ../include/MTL/Math/*.h)
+FILE(GLOB stream_headers ../include/MTL/Stream/*.h)
 FILE(GLOB tools_headers ../include/MTL/Tools/*.h)
 FILE(GLOB ALL_TESTS "Test*.cpp")
 
 SOURCE_GROUP(MTL FILES ${headers})
 SOURCE_GROUP(MTL\\Math FILES ${math_headers})
+SOURCE_GROUP(MTL\\Stream FILES ${stream_headers})
 SOURCE_GROUP(MTL\\Tools FILES ${tools_headers})
 
 FOREACH(t ${ALL_TESTS})
   STRING(REPLACE ".cpp" "" TestNameWithPath ${t})
   STRING(REGEX MATCH "([0-9_a-zA-Z]+)$" TestName ${TestNameWithPath})
-  ADD_EXECUTABLE( ${TestName} ${t} ${headers} ${math_headers} ${tools_headers})
+  ADD_EXECUTABLE( ${TestName} ${t} ${headers} ${math_headers} ${stream_headers} ${tools_headers})
 ENDFOREACH(t ${ALL_TESTS})

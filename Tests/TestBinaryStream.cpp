@@ -24,7 +24,7 @@
 
 #include <MTL/Tools/Test.h>
 #include <MTL/BinaryStream.h>
-#include <MTL/Math/Math.h>
+#include <MTL/Math.h>
 
 using namespace MTL;
 
