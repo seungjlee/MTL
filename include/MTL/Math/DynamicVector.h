@@ -32,8 +32,8 @@
 #include <MTL/OpenMP.h>
 #include <MTL/Math/Matrix.h>
 #include <MTL/Math/Math.h>
-#include <MTL/Math/Stream.h>
-#include <MTL/Math/StreamMath.h>
+#include <MTL/Stream/Stream.h>
+#include <MTL/Stream/StreamMath.h>
 #include <vector>
 
 //
@@ -461,7 +461,7 @@ static const BinaryStream& operator>>(const BinaryStream& stream, DynamicVector<
 }  // namespace MTL
 
 #include <MTL/OpenMP.h>
-#include <MTL/Math/StreamArray.h>
+#include <MTL/Stream/StreamArray.h>
 
 namespace MTL
 {

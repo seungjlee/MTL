@@ -30,8 +30,8 @@
 #define MTL_DYNAMIC_MATRIX_DEFAULT_BYTE_ALIGNMENT MTL_STREAM_BYTES
 #endif
 
-#include "DynamicVector.h"
-#include "StreamArray.h"
+#include <MTL/Math/DynamicVector.h>
+#include <MTL/Stream/StreamArray.h>
 
 namespace MTL
 {
