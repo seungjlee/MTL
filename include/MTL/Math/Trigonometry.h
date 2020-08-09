@@ -26,7 +26,7 @@
 #ifndef MTL_TRIGONOMETRY_H
 #define MTL_TRIGONOMETRY_H
 
-#include "Math.h"
+#include <MTL/Math.h>
 #include <cmath>
 
 namespace MTL
