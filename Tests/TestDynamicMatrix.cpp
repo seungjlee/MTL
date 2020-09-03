@@ -341,6 +341,7 @@ TEST(TestSolversIdentityMatrix)
   DynamicVector<F64> b;
   A.Identity();
 
+  Timer progressTimer(true);
   Timer t_SVD;
   Timer t_LDLt;
   Timer t_QR;
@@ -390,7 +391,7 @@ TEST(TestSolversIdentityMatrix)
       MTL_EQUAL_FLOAT(eigenX[k], b[k], kTol);
     }
 
-    ShowProgressBar(double(i + 1) / kRepeats);
+    ShowProgressBar(double(i + 1) / kRepeats, StringPrintf("- %.3f secs.", progressTimer.Seconds()));
   }
   Out() << std::endl;
 

@@ -197,8 +197,7 @@ TEST(TestHouseholderQR_Speed)
       MTL_EQUAL_FLOAT(v1[vIndex], Abs(v[vIndex]), kTol);
     }
 
-    snprintf(buffer, sizeof(buffer), "- %.3f secs.", t.Seconds());
-    ShowProgressBar(double(i + 1) / kRepeats, buffer);
+    ShowProgressBar(double(i + 1) / kRepeats, StringPrintf("- %.3f secs.", t.Seconds()));
   }
   Out() << std::endl;
 }
