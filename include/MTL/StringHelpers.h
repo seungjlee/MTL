@@ -28,9 +28,10 @@
 
 #include <MTL/Definitions.h>
 #include <algorithm>
-#include <wctype.h>
 #include <codecvt>
+#include <cstring>
 #include <locale>
+#include <wctype.h>
 
 namespace MTL
 {
@@ -119,15 +120,16 @@ static std::string StringPrintf(const char* format, Args ... args)
   if (formatLength == 0)
     return "";
 
-  std::vector<char> buffer(2 * formatLength + 256);
-  int bytes = snprintf(buffer.data(), buffer.size(), format, args ...);
+  std::string buffer;  // Use it as container.
+  buffer.resize(2 * formatLength + 256);
+  int bytes = snprintf(&buffer[0], buffer.size(), format, args ...);
   if (bytes >= buffer.size())
   {
     buffer.resize(bytes + 1);
-    snprintf(buffer.data(), buffer.size(), format, args ...);
+    snprintf(&buffer[0], buffer.size(), format, args ...);
   }
 
-  return buffer.data();
+  return buffer.data();  // Make it resize properly.
 }
 template <class ... Args>
 static std::wstring StringPrintf(const wchar_t* format, Args ... args)
