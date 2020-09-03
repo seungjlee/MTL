@@ -55,7 +55,6 @@ TEST(TestMatrixMultiplication)
   DynamicMatrix<F64> Q1 = A1 .MultiplyByTranspose();
 }
 
-#if 1
 TEST(TestHouseholderQR)
 {
   static const double kHouseholderTol = 1e-12;
@@ -329,7 +328,6 @@ TEST(TestMultiplyByTranspose)
     }
   }
 }
-#endif
 
 TEST(TestSolversIdentityMatrix)
 {

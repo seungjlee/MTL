@@ -111,6 +111,31 @@ static MTL_INLINE std::wstring ToUTF16(const std::string& str)
   return converter.from_bytes(str);
 }
 
+template <class ... Args>
+static std::string StringPrintf(const char* format, Args ... args)
+{
+  size_t formatLength = strlen(format);
+
+  if (formatLength == 0)
+    return "";
+
+  std::vector<char> buffer(2 * formatLength + 256);
+  int bytes = snprintf(buffer.data(), buffer.size(), format, args ...);
+  if (bytes >= buffer.size())
+  {
+    buffer.resize(bytes + 1);
+    snprintf(buffer.data(), buffer.size(), format, args ...);
+  }
+
+  return buffer.data();
+}
+template <class ... Args>
+static std::wstring StringPrintf(const wchar_t* format, Args ... args)
+{
+  std::string formatUTF8 = ToUTF8(format);
+  return ToUTF16(StringPrintf(formatUTF8.c_str(), args ...));
+}
+
 }  // namespace MTL
 
 
