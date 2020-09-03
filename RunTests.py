@@ -25,8 +25,8 @@ parser.add_argument("-ConsoleOut", action='store_true', help='Full output to con
 parser.add_argument("-NoColorRGB24", action='store_true', help='Disable 24-bit RGB colors on test output.')
 args = parser.parse_args()
 
-Pattern  = args.Pattern;
-BuildDir = args.BuildDir;
+Pattern  = args.Pattern
+BuildDir = args.BuildDir
 
 SkipTestList = []
 
@@ -36,7 +36,7 @@ if args.NoColorRGB24:
 
 TestSeparatorString = '{:-<100}'.format('')
 TestSeparator = TestSeparatorString.encode() + b'\n'
-CurrentDir = os.getcwd();
+CurrentDir = os.getcwd()
 
 if platform.system() == 'Linux':
   TestDir = BuildDir + '/Tests/'
@@ -100,13 +100,13 @@ if errorCount > 0:
 else:
   print('\nAll tests passed. Total time: ', end='')
 
-totalSeconds = totalEndTime - totalStartTime;
+totalSeconds = totalEndTime - totalStartTime
 
 if totalSeconds < 60:
   print('%.3f secs.' % totalSeconds)
 else:
-  totalMinutes = math.floor(totalSeconds / 60);
-  seconds = totalSeconds - totalMinutes * 60;
+  totalMinutes = math.floor(totalSeconds / 60)
+  seconds = totalSeconds - totalMinutes * 60
   print('%.0f mins.' % totalMinutes, end='')
 
   if seconds > 0:
