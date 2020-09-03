@@ -121,8 +121,11 @@ static std::string StringPrintf(const char* format, Args ... args)
     return "";
 
   std::string buffer;  // Use it as container.
-  buffer.resize(2 * formatLength + 256);
+
+  const std::size_t N = sizeof...(Args);  // Number of arguments.
+  buffer.resize(formatLength + N * 16 + 16);
   int bytes = snprintf(&buffer[0], buffer.size(), format, args ...);
+
   if (bytes >= buffer.size())
   {
     buffer.resize(bytes + 1);
