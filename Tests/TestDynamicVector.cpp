@@ -178,7 +178,6 @@ TEST(TestHouseholderQR_Speed)
   };
 
   Timer t(true);
-  char buffer[16];
   Random random;
 
   for (I32 i = 0; i < kRepeats; i++)
