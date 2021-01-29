@@ -1,7 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2020: Seung Jae Lee, https://github.com/seungjlee/MTL
+// Copyright (c) 2021: Seung Jae Lee, https://github.com/seungjlee/MTL
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -22,52 +22,40 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef MTL_FILE_H
+#define MTL_FILE_H
 
-#ifndef MTL_SPIN_MUTEX_H
-#define MTL_SPIN_MUTEX_H
-
-#include <atomic>
-#include <thread>
+#ifdef WIN32
+#include <filesystem>
+#else
+#include <experimental/filesystem>
+#endif
 
 namespace MTL
 {
 
-template <uint64_t NANO_SECONDS, bool YIELD = true>
-class SpinMutex
+namespace FS = std::experimental::filesystem::v1;
+
+struct File
 {
-public:
-  SpinMutex() : Locked(false)
+  template <class StringType>
+  static bool Exists(const StringType& path)
   {
+    return FS::exists(FS::path(path));
   }
-
-  void lock()
+  template <class StringType>
+  static void Remove(const StringType& path)
   {
-    while (Locked.exchange(true))
-    {
-      if (YIELD)
-      {
-        if (NANO_SECONDS == 0)
-        {
-          std::this_thread::yield();
-        }
-        else
-        {
-          // Note that the minimum sleep time will depend on std implementation
-          // and OS.
-          std::this_thread::sleep_for(std::chrono::nanoseconds(NANO_SECONDS));;
-        }
-      }
-    }
+    FS::remove(FS::path(path));
   }
-  void unlock()
+  template <class StringType>
+  static void RemoveIfExists(const StringType& path)
   {
-    Locked.store(false);
+    if (Exists(path))
+      Remove(path);
   }
-
-private:
-  std::atomic<bool> Locked;
 };
 
 }  // namespace MTL
 
-#endif  // MTL_SPIN_MUTEX_H
+#endif  // MTL_FILE_H

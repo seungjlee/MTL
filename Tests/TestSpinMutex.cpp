@@ -27,8 +27,64 @@
 
 using namespace MTL;
 
+static const int Work = 5;
+static const int MAX_THREADS = 256;
+static int NumberOfThreads = 8;
+static int NumberOfIterations = 50000;
+static int64_t Counter = 0;
+static std::array<double, MAX_THREADS> LockTimes;
+
+template <class MutexClass>
+static void ThreadProcess(uint32_t ID, MutexClass* mutex) {
+  Timer timer(false);
+  for (int i = 0; i < NumberOfIterations; i++) {
+    timer.Start();
+    std::lock_guard<MutexClass> lock(*mutex);
+    timer.Stop();
+
+    // Do some work.
+    for (int w = 0; w < Work; w++)
+      std::this_thread::yield();
+
+    Counter++;
+  }
+
+  LockTimes[ID] = timer.Seconds();
+}
+
+template <class MutexClass>
+static void TestMutex(const std::string& mutexName, int iterations)
+{
+  std::vector<std::thread> threads(NumberOfThreads);
+
+  MutexClass mutex;
+  Counter = 0;
+
+  for (uint32_t tid = 0; tid < threads.size(); tid++)
+    threads[tid] = std::thread(ThreadProcess<MutexClass>, tid, &mutex);
+
+  for (auto& t : threads)
+    t.join();
+
+  double sum = 0;
+  for (uint32_t t = 0; t < threads.size(); t++)
+    sum += LockTimes[t];
+
+  int64_t totalCount = threads.size() * NumberOfIterations;
+  printf("  [%-16s] -- Average lock latency: %6.2f usecs.\n", mutexName.c_str(), 1e6 * sum / totalCount);
+
+  MTL_EQUAL(Counter, totalCount);
+}
+
+#define TEST_MUTEX(Iterations, MutexClass) \
+  TestMutex<MutexClass>(#MutexClass, Iterations);
+
 TEST(Test_SpinMutex)
 {
-  SpinMutex<0> mutex;
-  SpinLock<0> lock(mutex);
+  using SpinMutexNoYield = SpinMutex<0,false>;
+  TEST_MUTEX(NumberOfIterations, std::mutex);
+  TEST_MUTEX(NumberOfIterations, SpinMutex<0>);
+  TEST_MUTEX(NumberOfIterations, SpinMutexNoYield);
+  TEST_MUTEX(NumberOfIterations, SpinMutex<1>);
+  TEST_MUTEX(NumberOfIterations, SpinMutex<10000>);
 }

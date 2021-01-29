@@ -24,12 +24,15 @@
 
 #include <MTL/Tools/Test.h>
 #include <MTL/BinaryStream.h>
+#include <MTL/File.h>
 #include <MTL/Math.h>
 
 using namespace MTL;
 
 TEST(Test_Binary_Stream)
 {
+  const std::string tempFile = "_Temp_BinaryStream.bin";
+
   int8_t   a0 = -7;
   int16_t  a1 = -333;
   int32_t  a2 = -77777;
@@ -67,7 +70,7 @@ TEST(Test_Binary_Stream)
   MTL_EQUAL(a8, b8);
   MTL_EQUAL(a9, b9);
 
-  stream.Save("_Temp_BinaryStream.bin");
+  stream.Save(tempFile);
   int8_t   c0;
   int16_t  c1;
   int32_t  c2;
@@ -79,7 +82,7 @@ TEST(Test_Binary_Stream)
   float    c8;
   double   c9;
   BinaryStream stream2;
-  stream2.Load("_Temp_BinaryStream.bin");
+  stream2.Load(tempFile);
   stream2 >> c0 >> c1 >> c2 >> c3 >> c4 >> c5 >> c6 >> c7 >> c8 >> c9;
 
   MTL_EQUAL(a0, c0);
@@ -92,6 +95,8 @@ TEST(Test_Binary_Stream)
   MTL_EQUAL(a7, c7);
   MTL_EQUAL(a8, c8);
   MTL_EQUAL(a9, c9);
+
+  File::RemoveIfExists(tempFile);
 }
 
 TEST(Test_vector)

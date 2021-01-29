@@ -38,7 +38,8 @@ class Pool
 {
  public:
   Pool() : StackTop_(-1) {}
-  ~Pool() {
+  ~Pool()
+  {
     assert(StackTop_ == (int64_t)Elements_.size() - 1);
     for (auto ptr : Elements_)
       delete ptr;
@@ -79,7 +80,6 @@ class Pool
   std::vector<T*> Elements_;
   int64_t StackTop_;
 };
-
 
 }  // namespace MTL
 

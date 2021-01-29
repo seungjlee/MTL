@@ -30,8 +30,8 @@
 #include <assert.h>
 #include <cstdint>
 #include <cstring>
+#include <fstream>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -70,16 +70,11 @@ public:
   }
   void Save(const std::string& fileName) const
   {
-#ifdef WIN32
-    std::FILE* f;
-    fopen_s(&f, fileName.c_str(), "wb");
-#else
-    std::FILE* f = fopen(fileName.c_str(), "wb");
-#endif
+    std::ofstream fileStream(fileName.c_str(),
+                             std::ofstream::trunc | std::ofstream::binary);
     uint64_t size = Data_.size();
-    fwrite(&size, sizeof(size), 1, f);
-    fwrite(Data_.data(), 1, Data_.size(), f);
-    fclose(f);
+    fileStream.write((char*)&size, sizeof(size));
+    fileStream.write((char*)Data_.data(), Data_.size());
   }
   void Load(const std::string& fileName)
   {
@@ -111,14 +106,12 @@ private:
 template <class T>
 static BinaryStream& operator<<(BinaryStream& stream, const T& val)
 {
-  static_assert(std::is_trivial<T>::value && std::is_standard_layout<T>::value, "Unspecialized type must be POD.");
   stream.Write((uint8_t*)&val, sizeof(T));
   return stream;
 }
 template <class T>
 static const BinaryStream& operator>>(const BinaryStream& stream, T& val) 
 {
-  static_assert(std::is_trivial<T>::value && std::is_standard_layout<T>::value, "Unspecialized type must be POD.");
   stream.Read((uint8_t*)&val, sizeof(T));
   return stream;
 }
@@ -162,29 +155,6 @@ static const BinaryStream& operator>>(const BinaryStream& stream, std::vector<T>
   return stream;
 }
 template <class T>
-static BinaryStream& operator<<(BinaryStream& stream, const std::set<T>& s)
-{
-  stream << uint64_t(s.size());
-  for (const auto& x : s)
-    stream << x;
-
-  return stream;
-}
-template <class T>
-static const BinaryStream& operator>>(const BinaryStream& stream, std::set<T>& s)
-{
-  uint64_t size;
-  stream >> size;
-  for (int i = 0; i < size; i++)
-  {
-    T x;
-    stream >> x;
-    s.insert(x);
-  }
-
-  return stream;
-}
-template <class T>
 static BinaryStream& operator<<(BinaryStream& stream, const std::shared_ptr<T>& p)
 {
   if (p == nullptr)
@@ -204,6 +174,11 @@ static const BinaryStream& operator>>(const BinaryStream& stream, std::shared_pt
     p.reset(new T());
     stream >> *p;
   }
+  else
+  {
+    p.reset();
+  }
+  
   return stream;
 }
 
