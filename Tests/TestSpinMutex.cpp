@@ -27,10 +27,10 @@
 
 using namespace MTL;
 
-static const int Work = 5;
+static const int Work = 4;
 static const int MAX_THREADS = 256;
-static int NumberOfThreads = 8;
-static int NumberOfIterations = 50000;
+static int NumberOfThreads = 6;
+static int NumberOfIterations = 40000;
 static int64_t Counter = 0;
 static std::array<double, MAX_THREADS> LockTimes;
 
@@ -70,7 +70,7 @@ static void TestMutex(const std::string& mutexName, int iterations)
   for (uint32_t t = 0; t < threads.size(); t++)
     sum += LockTimes[t];
 
-  int64_t totalCount = threads.size() * NumberOfIterations;
+  int64_t totalCount = threads.size() * iterations;
   printf("  [%-16s] -- Average lock latency: %6.2f usecs.\n", mutexName.c_str(), 1e6 * sum / totalCount);
 
   MTL_EQUAL(Counter, totalCount);
