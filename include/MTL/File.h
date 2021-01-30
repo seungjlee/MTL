@@ -34,25 +34,25 @@
 namespace MTL
 {
 
-namespace FS = std::experimental::filesystem::v1;
-
-struct File
+namespace File
 {
+  using namespace std::experimental::filesystem::v1;
+
   template <class StringType>
-  static bool Exists(const StringType& path)
+  static bool Exists(const StringType& filePath)
   {
-    return FS::exists(FS::path(path));
+    return exists(path(filePath));
   }
   template <class StringType>
-  static void Remove(const StringType& path)
+  static void Remove(const StringType& filePath)
   {
-    FS::remove(FS::path(path));
+    remove(path(filePath));
   }
   template <class StringType>
-  static void RemoveIfExists(const StringType& path)
+  static void RemoveIfExists(const StringType& filePath)
   {
-    if (Exists(path))
-      Remove(path);
+    if (Exists(filePath))
+      Remove(filePath);
   }
 };
 
