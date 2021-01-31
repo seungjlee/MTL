@@ -30,6 +30,7 @@
 #include <MTL/Colors.h>
 #include <MTL/Math/DynamicVector.h>
 #include <MTL/Exception.h>
+#include <MTL/TimeHelpers.h>
 #include <MTL/Timer.h>
 #include <MTL/Tools/ProgressBar.h>
 
@@ -369,7 +370,8 @@ private:
         timer.Stop();
 
         Out() << InitializeShutdownColor << L"[Initialize_Test] Ends.";
-        Out() << InitializeShutdownTimeColor << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+        Out() << InitializeShutdownTimeColor << L"  Time: " << GetTime(timer.Seconds()) << L"."
+              << COLOR_RESET << std::endl << std::endl;
       }
       catch (const Exception& e)
       {
@@ -404,7 +406,8 @@ private:
         timer.Stop();
 
         Out() << InitializeShutdownColor << L"[Shutdown_Test] Ends.";
-        Out() << InitializeShutdownTimeColor << L"  Time: " << timer.Seconds() << L" seconds." << COLOR_RESET << std::endl << std::endl;
+        Out() << InitializeShutdownTimeColor << L"  Time: " << GetTime(timer.Seconds()) << L"."
+              << COLOR_RESET << std::endl << std::endl;
       }
       catch (const Exception& e)
       {
@@ -444,8 +447,10 @@ private:
         TestBeginEndColor = COLOR_LBLUE;
         TestEndTimeColor = COLOR_LCYAN;
       }
-
-      Out() << COLOR_LCYAN << std::endl << L"Number Of Actual Cores: "
+      
+      Out() << std::endl;
+      Out() << COLOR_CYAN << "~ " << GetCurrentDateTime() << " ~" << COLOR_RESET << std::endl;
+      Out() << COLOR_LCYAN << L"Number Of Actual Cores: "
             << MTL::CPU::Instance().NumberOfCores() << std::endl;
       Out() << L"Initial Number Of OpenMP Threads: "
             << MTL::CPU::Instance().NumberOfThreads() << COLOR_RESET << std::endl;
@@ -503,7 +508,7 @@ private:
         {
           Out() << L" Ends.";
         }
-        Out() << TestEndTimeColor << L"  Time: " << float(List_[i]->TimeElapsed_) << L" seconds."
+        Out() << TestEndTimeColor << L"  Time: " << GetTime(List_[i]->TimeElapsed_) << L"."
 	      << COLOR_RESET << std::endl << std::endl;
 
         TotalTimeElapsed_ += List_[i]->TimeElapsed_;
@@ -518,7 +523,8 @@ private:
         Out() << COLOR_LRED;
 
       Out() << L"Total number of errors: " << TotalNumberOfFailures() << COLOR_RESET << std::endl;
-      Out() << COLOR_LCYAN << L"Total time: " << TotalTimeElapsed_ << L" seconds." << COLOR_RESET << std::endl;
+      Out() << COLOR_LCYAN << L"Total time: " << GetTime(TotalTimeElapsed_) << L". " << COLOR_RESET << std::endl;
+      Out() << COLOR_CYAN << "~ " << GetCurrentDateTime() << " ~" << COLOR_RESET << std::endl;
     }
     if (App_)
     {

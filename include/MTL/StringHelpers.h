@@ -37,7 +37,7 @@ namespace MTL
 {
 
 // Call this to switch between std::cout (printf) and std::wcout (wprintf).
-static MTL_INLINE void ResetOutputStream()
+inline void ResetOutputStream()
 {
 #ifdef WIN32
   FILE* f;
@@ -47,62 +47,62 @@ static MTL_INLINE void ResetOutputStream()
 #endif
 }
 
-static MTL_INLINE char ToLower(char input)
+inline char ToLower(char input)
 {
   return (char)tolower(input);
 }
-static MTL_INLINE char ToUpper(char input)
+inline char ToUpper(char input)
 {
   return (char)toupper(input);
 }
-static MTL_INLINE void SetToLowerCase(std::wstring& str)
+inline void SetToLowerCase(std::wstring& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), towlower);
 }
-static MTL_INLINE void SetToLowerCase(std::string& str)
+inline void SetToLowerCase(std::string& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), ToLower);
 }
-static MTL_INLINE void SetToUpperCase(std::wstring& str)
+inline void SetToUpperCase(std::wstring& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), towupper);
 }
-static MTL_INLINE void SetToUpperCase(std::string& str)
+inline void SetToUpperCase(std::string& str)
 {
   std::transform(str.begin(), str.end(), str.begin(), ToUpper);
 }
 
-static MTL_INLINE std::wstring ToLowerCase(const std::wstring& input)
+inline std::wstring ToLowerCase(const std::wstring& input)
 {
   std::wstring output = input;
   SetToLowerCase(output);
   return output;
 }
-static MTL_INLINE std::string ToLowerCase(const std::string& input)
+inline std::string ToLowerCase(const std::string& input)
 {
   std::string output = input;
   SetToLowerCase(output);
   return output;
 }
-static MTL_INLINE std::wstring ToUpperCase(const std::wstring& input)
+inline std::wstring ToUpperCase(const std::wstring& input)
 {
   std::wstring output = input;
   SetToUpperCase(output);
   return output;
 }
-static MTL_INLINE std::string ToUpperCase(const std::string& input)
+inline std::string ToUpperCase(const std::string& input)
 {
   std::string output = input;
   SetToUpperCase(output);
   return output;
 }
 
-static MTL_INLINE std::string ToUTF8(const std::wstring& str)
+inline std::string ToUTF8(const std::wstring& str)
 {
   std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
   return converter.to_bytes(str);
 }
-static MTL_INLINE std::wstring ToUTF16(const std::string& str)
+inline std::wstring ToUTF16(const std::string& str)
 {
 #ifdef WIN32
   std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
@@ -110,6 +110,18 @@ static MTL_INLINE std::wstring ToUTF16(const std::string& str)
   std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 #endif
   return converter.from_bytes(str);
+}
+
+template <class CharType>
+inline std::basic_string<CharType> ToString(const char* ptr);
+template <>
+inline std::basic_string<char> ToString(const char* ptr)
+{
+  return std::basic_string<char>(ptr);
+}
+inline std::basic_string<wchar_t> ToString(const char* ptr)
+{
+  return ToUTF16(ToString<char>(ptr));
 }
 
 template <class ... Args>
@@ -135,10 +147,15 @@ static std::string StringPrintf(const char* format, Args ... args)
   return buffer.data();  // Make it resize properly.
 }
 template <class ... Args>
-static std::wstring StringPrintf(const wchar_t* format, Args ... args)
+inline std::wstring StringPrintf(const wchar_t* format, Args ... args)
 {
-  std::string formatUTF8 = ToUTF8(format);
-  return ToUTF16(StringPrintf(formatUTF8.c_str(), args ...));
+  return ToUTF16(StringPrintf(ToUTF8(format).c_str(), args ...));
+}
+
+template <class CharType, class ... Args>
+inline std::basic_string<CharType> StringPrint(const CharType* format, Args ... args)
+{
+  return StringPrintf(format, args ...);
 }
 
 }  // namespace MTL
