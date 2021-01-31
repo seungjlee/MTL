@@ -43,7 +43,7 @@ static MTL_INLINE void ResetOutputStream()
   FILE* f;
   freopen_s(&f, nullptr, "w", stdout);
 #else
-  FILE* f = freopen(nullptr, "w", stdout);
+  freopen(nullptr, "w", stdout);
 #endif
 }
 
@@ -124,7 +124,7 @@ static std::string StringPrintf(const char* format, Args ... args)
 
   const std::size_t N = sizeof...(Args);  // Number of arguments.
   buffer.resize(formatLength + N * 16 + 16);
-  int bytes = snprintf(&buffer[0], buffer.size(), format, args ...);
+  uint64_t bytes = snprintf(&buffer[0], buffer.size(), format, args ...);
 
   if (bytes >= buffer.size())
   {

@@ -68,7 +68,7 @@ else(MSVC)
   message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
   message(STATUS "")
 
-  SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11")
+  SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11 -Wno-unused-result")
 
 endif(MSVC)
 
