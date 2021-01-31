@@ -92,10 +92,11 @@ inline std::basic_string<CharT> CurrentDateTime()
 #ifdef WIN32
   tm tbuffer;
   localtime_s(&tbuffer, &currentTime);
-  stream << std::put_time(&tbuffer, DateTimeFormat<CharT>()) << "." << msecs.count();
+  stream << std::put_time(&tbuffer, DateTimeFormat<CharT>());
 #else
-  stream << std::put_time(localtime(&currentTime), DateTimeFormat<CharT>()) << "." << msecs.count();
+  stream << std::put_time(localtime(&currentTime), DateTimeFormat<CharT>());
 #endif
+  stream << StringPrintf(".%03lld", msecs.count()).c_str();
 
   return stream.str();
 }
