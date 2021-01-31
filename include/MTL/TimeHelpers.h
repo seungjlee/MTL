@@ -64,14 +64,18 @@ inline std::string GetTimeUTF8(double seconds)
   return GetTimeString<char>(seconds);
 }
 
+#ifndef MTL_DATE_TIME_FORMAT
+#define MTL_DATE_TIME_FORMAT "%F %T"
+#endif
+
 template<class CharT> inline const CharT* DateTimeFormat();
 template<> inline const wchar_t* DateTimeFormat()
 {
-  return L"%F %T";
+  return TO_WCHAR(MTL_DATE_TIME_FORMAT);
 }
 template<> inline const char* DateTimeFormat()
 {
-  return "%F %T";
+  return MTL_DATE_TIME_FORMAT;
 }
 
 template<class CharT>
@@ -84,14 +88,14 @@ inline std::basic_string<CharT> CurrentDateTime()
     std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
 
   time_t currentTime = std::chrono::system_clock::to_time_t(now);
-  tm tbuffer;
-#ifdef WIN32
-  localtime_s(&tbuffer, &currentTime);
-#else
-  localtime_s(&currentTime, &tbuffer);
-#endif
 
+#ifdef WIN32
+  tm tbuffer;
+  localtime_s(&tbuffer, &currentTime);
   stream << std::put_time(&tbuffer, DateTimeFormat<CharT>()) << "." << msecs.count();
+#else
+  stream << std::put_time(localtime(&currentTime), DateTimeFormat<CharT>()) << "." << msecs.count();
+#endif
 
   return stream.str();
 }

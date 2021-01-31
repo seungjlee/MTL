@@ -524,7 +524,7 @@ private:
 
       Out() << L"Total number of errors: " << TotalNumberOfFailures() << COLOR_RESET << std::endl;
       Out() << COLOR_LCYAN << L"Total time: " << GetTime(TotalTimeElapsed_) << L". " << COLOR_RESET << std::endl;
-      Out() << COLOR_CYAN << "~ " << GetCurrentDateTime() << " ~" << COLOR_RESET << std::endl;
+      Out() << COLOR_CYAN << "~ " << GetCurrentDateTime() << " ~" << COLOR_RESET << std::endl << std::endl;
     }
     if (App_)
     {
