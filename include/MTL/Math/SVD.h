@@ -820,7 +820,7 @@ MTL_INLINE static bool SolveJacobiSVDTransposed(DynamicVector<T>& x, I32& rank,
                                                 const DynamicVector<T>& b,
                                                 const T& tolerance = T(-1.0))
 {
-  assert(At.Cols() == b.Size());
+  assert(At.Cols() == (I32)b.Size());
 
   DynamicMatrix<T> Ut = At;
   DynamicMatrix<T> Vt;
@@ -839,8 +839,8 @@ MTL_INLINE static bool SolveJacobiEigen(DynamicVector<T>& x, I32& rank,
                                         const T& tolerance = T(-1.0))
 {
   // A should be symmetric. For now, it will work even for non-symmetric matrices since calls SVD.
-  assert(A.Cols() == A.Rows());
-  assert(A.Cols() == b.Size());
+  assert(A.Cols() == (I32)A.Rows());
+  assert(A.Cols() == (I32)b.Size());
 
   DynamicMatrix<T> U = A;
   DynamicVector<T> D;

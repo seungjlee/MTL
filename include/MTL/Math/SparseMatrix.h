@@ -299,7 +299,7 @@ public:
   // x = At * b where At is the transpose of this matrix.
   void MultiplyTransposed(DynamicVector<T>& x, const DynamicVector<T>& b) const
   {
-    assert(SparseMatrix<T>::Rows_ == b.Size());
+    assert(SparseMatrix<T>::Rows_ == (I32)b.Size());
 
     const I32 N = SparseMatrix<T>::Cols_;
 
