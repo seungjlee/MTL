@@ -38,7 +38,7 @@ public:
 
   TestWorker(int id, TestWorker* next = nullptr)
     : WorkerThread<int>(L"TestWorker" + std::to_wstring(id)),
-      ID(id), Count(0), pNext(next)
+      Count(0), ID(id), pNext(next)
   {
     MaxWorkQueueSize(MaxCount);
   }

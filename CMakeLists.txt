@@ -68,7 +68,10 @@ else(MSVC)
   message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
   message(STATUS "")
 
-  SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11 -Wno-unused-result")
+  SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++11 -Wall")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-char-subscripts")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-strict-aliasing")
 
 endif(MSVC)
 

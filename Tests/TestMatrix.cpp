@@ -146,9 +146,11 @@ TEST(TestInverseAndDeterminant)
   MTL_EQUAL_FLOAT(A.Determinant(), DeterminantRecursive(A), kTol);
   MTL_EQUAL_FLOAT(A.Determinant(), A.StableDeterminant(), kTol);
 
+  double zeros[3] = { 0, 0, 0 };
+
   I32 rank;
   F64 conditionNumber;
-  ColumnVector3D xSVD;
+  ColumnVector3D xSVD(zeros);
   SquareMatrix3x3 temp(A);
   SolveJacobiSVD<3>(temp, xSVD, rank, conditionNumber);
   wprintf(L"SVD Condition number of A = %.15f\n", conditionNumber);

@@ -58,8 +58,8 @@ class ProgressBarWorker : public WorkerThread<ProgressData>
 {
 public:
   ProgressBarWorker(bool finalUpdateIsSynchronous = true)
-    : WorkerThread<ProgressData>(L"ProgressBarWorker"), LastIntegerPercentage_(0),
-      FinalUpdateIsSynchronous_(finalUpdateIsSynchronous), Enabled_(true)
+    : WorkerThread<ProgressData>(L"ProgressBarWorker"), Enabled_(true),
+      FinalUpdateIsSynchronous_(finalUpdateIsSynchronous), LastIntegerPercentage_(0)
   {
     MaxWorkQueueSize(1);
   }

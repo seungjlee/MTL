@@ -79,7 +79,7 @@ public:
 
     const uint8_t* pSrcEnd = pSrc + size;
     char* pDst = &base64[0];
-    for (int i = 0; i < size64; i += 4, pSrc += 3)
+    for (uint32_t i = 0; i < size64; i += 4, pSrc += 3)
     {
       srcBuffer = 0;
       pSrcBuffer[0] = pSrc[0];
@@ -158,7 +158,7 @@ public:
     decoded.resize(decodeSize);
     uint8_t* pDst = decoded.data();
 
-    int i = 0;
+    uint32_t i = 0;
     for (; i < size - 4; i += 4, pDst += 3)
     {
       pSrcBuffer[0] = InverseBase64[pSrc[i + 0]];

@@ -98,13 +98,13 @@ namespace MTL
 
 static ProgressBar TestProgressBar;
 
-static void ShowProgressBar(double percent, const String& message = L"", bool extraPrecision = false, int barLength = 50,
+inline void ShowProgressBar(double percent, const String& message = L"", bool extraPrecision = false, int barLength = 50,
                             const ColorRGB& barColor = ColorRGB(0, 255, 0),
                             const ColorRGB& textColor = ColorRGB(0, 255, 255), uint16_t indent = 2)
 {
   TestProgressBar.Update(percent, message, extraPrecision, barLength, barColor, textColor, indent);
 }
-static void ShowProgressBar(double percent, const std::string& message, bool extraPrecision = false, int barLength = 50,
+inline void ShowProgressBar(double percent, const std::string& message, bool extraPrecision = false, int barLength = 50,
                             const ColorRGB& barColor = ColorRGB(0, 255, 0),
                             const ColorRGB& textColor = ColorRGB(0, 255, 255), uint16_t indent = 2)
 {
@@ -121,7 +121,7 @@ class Test
 {
 public:
   Test(const String& name, bool enabled)
-    : Name_(name), TimeElapsed_(0)
+    : TimeElapsed_(0), Name_(name)
   {
     if (enabled)
       List_.PushBack(this);
@@ -341,7 +341,6 @@ public:
 
 protected:
   double TimeElapsed_;  // In seconds.
-
   static String FilePath_;
 
 private:

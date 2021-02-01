@@ -604,7 +604,7 @@ static Int symamd                       /* return TRUE if OK, FALSE otherwise */
     {
       stats [COLAMD_STATUS] = COLAMD_ERROR_nnz_negative ;
       stats [COLAMD_INFO1] = nnz ;
-      0;
+      return 0;
     }
 
     if (p [0] != 0)

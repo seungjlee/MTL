@@ -43,7 +43,10 @@ inline void ResetOutputStream()
   FILE* f;
   freopen_s(&f, nullptr, "w", stdout);
 #else
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-result"
   freopen(nullptr, "w", stdout);
+  #pragma GCC diagnostic pop
 #endif
 }
 

@@ -117,7 +117,7 @@ struct ColorRGB
   uint8_t G;
   uint8_t B;
 };
-static ColorRGB operator*(double scale, const ColorRGB& color)
+inline ColorRGB operator*(double scale, const ColorRGB& color)
 {
   return color * scale;
 }

@@ -196,14 +196,14 @@ private:
       }
 
       // load bitset with flags for function 0x80000001
-      if (nExIds_ >= 0x80000001)
+      if (nExIds_ >= (int)0x80000001)
       {
         f_81_ECX_ = extdata_[1][2];
         f_81_EDX_ = extdata_[1][3];
       }
 
       // Interpret CPU brand string if reported
-      if (nExIds_ >= 0x80000004)
+      if (nExIds_ >= (int)0x80000004)
       {
         memcpy(brand, extdata_[2].data(), sizeof(cpui));
         memcpy(brand + 16, extdata_[3].data(), sizeof(cpui));
@@ -212,7 +212,7 @@ private:
       }
 
       // Check for multithreading feature like Hyperthreading.
-      int info1[4];
+      int info1[4] = {0};
 #ifdef WIN32
       __cpuid(info1, 1);
 #else
@@ -220,7 +220,7 @@ private:
                   (unsigned int*)&info1[2], (unsigned int*)&info1[3]);
 #endif
       extdata_.push_back(cpui);
-      multithreading_ = (info1[3]& (1 << 28)) || false;
+      multithreading_ = (info1[3] & (1 << 28)) || false;
 #endif
     };
 

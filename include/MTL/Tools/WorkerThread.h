@@ -145,10 +145,10 @@ protected:
   }
 
 protected:
+  bool Running_;
   MTL::String Name_;
   MTL::Event ProcessData_;
   std::thread Thread_;
-  bool Running_;
   std::recursive_mutex QueueMutex_;
   std::vector<DataType> QueueData_;
   std::vector<DataType> ThreadWorkData_;

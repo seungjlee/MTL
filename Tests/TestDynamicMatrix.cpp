@@ -52,7 +52,11 @@ TEST(TestMatrixMultiplication)
       MTL_EQUAL_FLOAT(P1[row][col], P0[row][col], kTol);
 
   Matrix<3,3> Q0 = M1.MultiplyByTranspose();
-  DynamicMatrix<F64> Q1 = A1 .MultiplyByTranspose();
+  DynamicMatrix<F64> Q1 = A1.MultiplyByTranspose();
+
+  for (I32 row = 0; row < Q1.Rows(); row++)
+    for (I32 col = 0; col < Q1.Cols(); col++)
+      MTL_EQUAL_FLOAT(Q1[row][col], Q0[row][col], kTol);
 }
 
 TEST(TestHouseholderQR)

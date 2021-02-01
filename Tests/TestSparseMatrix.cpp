@@ -24,7 +24,7 @@
 
 #include <MTL/Tools/Test.h>
 #include <MTL/Math/Random.h>
-#include <MTL/Math/OptimizerLevenbergMarquardt.h>
+#include <MTL/Math/SparseOptimizerLevenbergMarquardt.h>
 
 using namespace MTL;
 
@@ -52,6 +52,19 @@ protected:
 TEST(TestSparseOptimizer)
 {
   SparseOptimizer optimizer;
+}
+
+TEST(TestLDLt)
+{
+  F64 a[4][4] = {{ 1, 5, 0, 0 },
+                 { 2, 6, 0, 0 },
+                 { 3, 0, 7, 0 },
+                 { 4, 0, 8, 9 }};
+
+  DynamicMatrix<F64> fullA = Matrix<4,4,F64>(a);
+  CompressedSparseMatrix<F64> A(fullA);
+
+  SymbolicLDLt<F64> symbolic(A);
 }
 
 TEST(TestMultiplication)
