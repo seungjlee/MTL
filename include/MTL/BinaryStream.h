@@ -32,6 +32,7 @@
 #include <cstring>
 #include <fstream>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -106,12 +107,14 @@ private:
 template <class T>
 static BinaryStream& operator<<(BinaryStream& stream, const T& val)
 {
+  static_assert(std::is_trivial<T>::value && std::is_standard_layout<T>::value, "Unspecialized type must be POD.");
   stream.Write((uint8_t*)&val, sizeof(T));
   return stream;
 }
 template <class T>
 static const BinaryStream& operator>>(const BinaryStream& stream, T& val) 
 {
+  static_assert(std::is_trivial<T>::value && std::is_standard_layout<T>::value, "Unspecialized type must be POD.");
   stream.Read((uint8_t*)&val, sizeof(T));
   return stream;
 }
@@ -151,6 +154,29 @@ static const BinaryStream& operator>>(const BinaryStream& stream, std::vector<T>
   v.resize(size);
   for (auto& x : v)
     stream >> x;
+
+  return stream;
+}
+template <class T>
+static BinaryStream& operator<<(BinaryStream& stream, const std::set<T>& s)
+{
+  stream << uint64_t(s.size());
+  for (const auto& x : s)
+    stream << x;
+
+  return stream;
+}
+template <class T>
+static const BinaryStream& operator>>(const BinaryStream& stream, std::set<T>& s)
+{
+  uint64_t size;
+  stream >> size;
+  for (int i = 0; i < size; i++)
+  {
+    T x;
+    stream >> x;
+    s.insert(x);
+  }
 
   return stream;
 }
