@@ -21,6 +21,7 @@ parser.add_argument('-p', dest='Pattern', metavar='<pattern>', default='*', type
 parser.add_argument('-b', dest='BuildDir', metavar='<build path>',
                     default='Build', type=str,
                     help="Specifies the build directory where the tests are. Default path: 'Build'.")
+parser.add_argument('-Debug', action='store_true', help='Use Debug directory instead of Release directory. (Only on Windows.)')
 parser.add_argument("-ConsoleOut", action='store_true', help='Full output to console after summary.')
 parser.add_argument("-NoColorRGB24", action='store_true', help='Disable 24-bit RGB colors on test output.')
 args = parser.parse_args()
@@ -41,7 +42,10 @@ CurrentDir = os.getcwd()
 if platform.system() == 'Linux':
   TestDir = BuildDir + '/Tests/'
 else:
-  TestDir = BuildDir + '/Tests/Release/'
+  if args.Debug:
+    TestDir = BuildDir + '/Tests/Debug/'
+  else:
+    TestDir = BuildDir + '/Tests/Release/'
 
 LogFile = BuildDir + '/TestLog_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
 print('\033[96m\nLog File:\033[0m ' + LogFile)
