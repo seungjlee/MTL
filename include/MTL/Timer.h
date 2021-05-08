@@ -28,21 +28,7 @@
 
 #include "Definitions.h"
 
-#if defined(WIN32) || defined(WIN64)
-#define WINDOWS_LEAN_AND_MEAN 1
-#include <windows.h>
-
-static double InitClockFactorToMilliseconds()
-{
-  LARGE_INTEGER frequency;
-  QueryPerformanceFrequency(&frequency);
-  return 1000. / frequency.QuadPart;
-}
-
-static const double kClockFactorToMilliseconds = InitClockFactorToMilliseconds();
-#else
 #include <chrono>
-#endif
 
 namespace MTL
 {
@@ -103,17 +89,11 @@ private:
 
   double getCurrentTimeInMilliseconds() const
   {
-#if defined(WIN32) || defined(WIN64)
-    LARGE_INTEGER count;
-    QueryPerformanceCounter(&count);
-    return double(count.QuadPart) * kClockFactorToMilliseconds;
-#else
     std::chrono::time_point<std::chrono::high_resolution_clock> now =
       std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<I64,std::ratio<1,1000000000>> t = now.time_since_epoch();
     return double(t.count()) * 1e-6;
-#endif
   }
 
   double getElapsedTimeInMilliseconds() const

@@ -34,7 +34,7 @@
 #include <thread>
 #include <vector>
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(MTL_NO_THREAD_NAME)
 static bool SetThreadName(unsigned long dwThreadID, char* threadName);
 #endif
 
@@ -70,7 +70,7 @@ public:
     Running_ = true;
     Thread_ = std::thread(&WorkerThread::ProcessThread, this);
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(MTL_NO_THREAD_NAME)
     std::string name = ToUTF8(Name_);
     SetThreadName(GetThreadId(Thread_.native_handle()), &name[0]);
 #endif
@@ -202,7 +202,7 @@ protected:
 
 }  // namespace MTL
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(MTL_NO_THREAD_NAME)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
