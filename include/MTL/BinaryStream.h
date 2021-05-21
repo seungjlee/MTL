@@ -57,6 +57,7 @@ public:
     Data_.insert(Data_.end(), p, p + size);
   }
 
+  void Clear() { Data_.clear(); ReadPosition(0); }
   const std::vector<uint8_t>& Data() const  { return Data_; }
   size_t ReadPosition() const         { return ReadPosition_;     }
   void ReadPosition(size_t position)  { ReadPosition_ = position; }
