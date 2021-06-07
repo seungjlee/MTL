@@ -323,7 +323,7 @@ public:
     }
   }
   template <class T>
-  static void GreterThanOrEqualTo(const T& actual, const T& limit, const String& file, U64 line)
+  static void GreaterThanOrEqualTo(const T& actual, const T& limit, const String& file, U64 line)
   {
     if (actual < limit)
     {
