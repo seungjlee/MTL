@@ -109,6 +109,42 @@ inline std::string GetCurrentDateTimeUTF8()
   return CurrentDateTime<char>();
 }
 
+inline std::string TimeElapsedString(int64_t seconds)
+{
+  #define ADD_TIME_STRING(T, ENDING)   \
+  {                                    \
+    str += std::to_string(T##s) + " "; \
+    str += T##s == 1 ? #T : #T "s";    \
+    str += ENDING;                     \
+  }
+
+  std::string str;
+  int64_t minutes = seconds / 60;
+  seconds %= 60;
+  if (minutes > 0)
+  {
+    int64_t hours = minutes / 60;
+    minutes %= 60;
+
+    if (hours > 0)
+    {
+      int64_t days = hours / 24;
+      hours %= 24;
+      if (days > 0)
+      {
+        ADD_TIME_STRING(day, ", ");
+      }
+
+      ADD_TIME_STRING(hour, ", ");
+    }
+
+    ADD_TIME_STRING(minute, ", ");
+  }
+
+  ADD_TIME_STRING(second, "");
+  return str;
+}
+
 }  // namespace MTL
 
 
