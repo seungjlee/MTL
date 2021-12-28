@@ -45,11 +45,15 @@ template<class DataType>
 class WorkerThread
 {
 public:
-  WorkerThread(const String& name, bool start = true)
+  WorkerThread(const std::wstring& name, bool start = true)
     : Running_(true), Name_(name), MaxWorkQueueSize_(10000)
   {
     if (start)
       Start();
+  }
+  WorkerThread(const std::string& name, bool start = true)
+    : WorkerThread(ToUTF16(name), start)
+  {
   }
   ~WorkerThread()
   {
