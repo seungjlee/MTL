@@ -95,6 +95,10 @@ TEST(TestWorkerPipelines)
 
     for (int i = 0; i < Pipelines; i++)
     {
+      master[i]->ClearQueue();
+      slave1[i]->ClearQueue();
+      slave2[i]->ClearQueue();
+
       master[i]->Shutdown();
       slave1[i]->Shutdown();
       slave2[i]->Shutdown();

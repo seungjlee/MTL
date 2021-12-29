@@ -92,7 +92,7 @@ public:
   void ClearQueue()
   {
     std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
-    QueueData_.Clear();
+    QueueData_.clear();
   }
 
   void Shutdown()
