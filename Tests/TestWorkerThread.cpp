@@ -95,10 +95,6 @@ TEST(TestWorkerPipelines)
 
     for (int i = 0; i < Pipelines; i++)
     {
-      master[i]->ClearQueue();
-      slave1[i]->ClearQueue();
-      slave2[i]->ClearQueue();
-
       master[i]->Shutdown();
       slave1[i]->Shutdown();
       slave2[i]->Shutdown();
@@ -106,6 +102,11 @@ TEST(TestWorkerPipelines)
       MTL_EQUAL(master[i]->Count, MaxCount);
       MTL_EQUAL(slave1[i]->Count, MaxCount);
       MTL_EQUAL(slave2[i]->Count, MaxCount);
+
+      // Just making sure ClearQueue() gets instantiated.
+      master[i]->ClearQueue();
+      slave1[i]->ClearQueue();
+      slave2[i]->ClearQueue();
     }
   }
 }
