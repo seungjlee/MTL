@@ -123,7 +123,7 @@ protected:
   virtual void CleanupThread() {}
 
   // Executes before waiting for work.
-  virtual void PreWait() {}
+  virtual void ProcessBeforeWait() {}
 
   virtual void ProcessWork(const VectorClass& data) = 0;
 
@@ -168,7 +168,7 @@ protected:
       InitializeThread();
       while (true)
       {
-        PreWait();
+        ProcessBeforeWait();
         ProcessData_.Wait();
         if (!Running_)
           break;
