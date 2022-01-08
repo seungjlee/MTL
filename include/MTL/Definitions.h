@@ -46,18 +46,9 @@ typedef double F64;
 
 typedef size_t SizeType;
 
-#ifndef MTL_UTF16
-#define MTL_UTF16 1
-#endif
-
-#if MTL_UTF16
 #define ConsoleOut std::wcout
-typedef std::wstring  String;
-typedef std::wostream OutputStream;
-#else
-#error Coming soon!
-#endif
-
+using String = std::wstring;
+using OutputStream = std::wostream;
 }  // namespace MTL
 
 #ifndef MTL_INLINE

@@ -41,7 +41,7 @@ static bool SetThreadName(unsigned long dwThreadID, char* threadName);
 namespace MTL
 {
 
-template<class DataType>
+template<class DataType, class VectorClass = std::vector<DataType>>
 class WorkerThread
 {
 public:
@@ -122,7 +122,10 @@ protected:
   virtual void InitializeThread() {}
   virtual void CleanupThread() {}
 
-  virtual void ProcessWork(const std::vector<DataType>& data) = 0;
+  // Executes before waiting for work.
+  virtual void PreWait() {}
+
+  virtual void ProcessWork(const VectorClass& data) = 0;
 
   virtual void HandleException(const MTL::Exception& ex, const MTL::String& functionName)
   {
@@ -154,8 +157,8 @@ protected:
   MTL::Event ProcessData_;
   std::thread Thread_;
   std::recursive_mutex QueueMutex_;
-  std::vector<DataType> QueueData_;
-  std::vector<DataType> ThreadWorkData_;
+  VectorClass QueueData_;
+  VectorClass ThreadWorkData_;
   uint32_t MaxWorkQueueSize_;
 
   void ProcessThread()
@@ -165,6 +168,7 @@ protected:
       InitializeThread();
       while (true)
       {
+        PreWait();
         ProcessData_.Wait();
         if (!Running_)
           break;

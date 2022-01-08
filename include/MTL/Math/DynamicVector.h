@@ -323,11 +323,6 @@ public:
   MTL_INLINE T* End()                { return First_ + Size_;        }
   MTL_INLINE const T* End() const    { return First_ + Size_;        }
 
-  MTL_INLINE T* begin()              { return First_;                }
-  MTL_INLINE const T* begin() const  { return First_;                }
-  MTL_INLINE T* end()                { return First_ + Size_;        }
-  MTL_INLINE const T* end() const    { return First_ + Size_;        }
-
   // Note that Clear() does not free resources. Call Release() if you really want to free up
   // resources.
   MTL_INLINE void Clear()  { Size_ = 0; }
@@ -351,6 +346,14 @@ public:
   {
     Assign(pSrcBegin, pSrcEnd - pSrcBegin);
   }
+
+  MTL_INLINE T* begin() { return Begin(); }
+  MTL_INLINE const T* begin() const { return Begin(); }
+  MTL_INLINE T* end() { return End(); }
+  MTL_INLINE const T* end() const { return End(); }
+  MTL_INLINE void push_back(const T& e) { PushBack(e); }
+  MTL_INLINE void clear() { Clear(); }
+  MTL_INLINE SizeType size() const { return Size(); }
 
 protected:
   MTL_INLINE static void OptimizedCopy(T* pDst, const T* pSrc, SizeType size)

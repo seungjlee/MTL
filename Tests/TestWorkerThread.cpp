@@ -22,6 +22,7 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <MTL/Math/DynamicVector.h>
 #include <MTL/Tools/WorkerThread.h>
 #include <MTL/Tools/Test.h>
 
@@ -29,7 +30,8 @@ using namespace MTL;
 
 static const int MaxCount = 100000;
 
-class TestWorker : public WorkerThread<int>
+template <class DataType, class VectorClass = std::vector<DataType>>
+class TestWorker : public WorkerThread<DataType, VectorClass>
 {
 public:
   int Count;
@@ -37,7 +39,7 @@ public:
   TestWorker* pNext;
 
   TestWorker(int id, TestWorker* next = nullptr)
-    : WorkerThread<int>("TestWorker" + std::to_string(id)),
+    : WorkerThread<DataType, VectorClass>("TestWorker" + std::to_string(id)),
       Count(0), ID(id), pNext(next)
   {
     MaxWorkQueueSize(MaxCount);
@@ -50,7 +52,7 @@ public:
     QueueData_.clear();
   }
 
-  virtual void ProcessWork(const std::vector<int>& data)
+  virtual void ProcessWork(const VectorClass& data)
   {
     for (int val : data)
     {
@@ -69,22 +71,23 @@ public:
   }
 };
 
-TEST(TestWorkerPipelines)
+template <class WorkerClass>
+static void TestWorkerPipelines()
 {
   const int kRepeats = 5;
   int Pipelines = 4;
 
-  std::vector<std::shared_ptr<TestWorker>> master(Pipelines);
-  std::vector<std::shared_ptr<TestWorker>> slave1(Pipelines);
-  std::vector<std::shared_ptr<TestWorker>> slave2(Pipelines);
+  std::vector<std::shared_ptr<WorkerClass>> master(Pipelines);
+  std::vector<std::shared_ptr<WorkerClass>> slave1(Pipelines);
+  std::vector<std::shared_ptr<WorkerClass>> slave2(Pipelines);
 
   for (int iteration = 0; iteration < kRepeats; iteration++)
   {
     for (int i = 0; i < Pipelines; i++)
     {
-      slave2[i].reset(new TestWorker(2000 + i));
-      slave1[i].reset(new TestWorker(2000 + i, slave2[i].get()));
-      master[i].reset(new TestWorker(1000 + i, slave1[i].get()));
+      slave2[i].reset(new WorkerClass(2000 + i));
+      slave1[i].reset(new WorkerClass(2000 + i, slave2[i].get()));
+      master[i].reset(new WorkerClass(1000 + i, slave1[i].get()));
     }
 
     for (int k = 0; k < MaxCount; k++)
@@ -109,4 +112,14 @@ TEST(TestWorkerPipelines)
       slave2[i]->ClearQueue();
     }
   }
+
+}
+
+TEST(TestWorkerPipelines_MTL)
+{
+  TestWorkerPipelines<TestWorker<int, MTL::DynamicVector<int>>>();
+}
+TEST(TestWorkerPipelines_std)
+{
+  TestWorkerPipelines<TestWorker<int, std::vector<int>>>();
 }
