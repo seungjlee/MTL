@@ -42,14 +42,14 @@ public:
     : WorkerThread<DataType, VectorClass>("TestWorker" + std::to_string(id)),
       Count(0), ID(id), pNext(next)
   {
-    MaxWorkQueueSize(MaxCount);
+    this->MaxWorkQueueSize(MaxCount);
   }
 
   virtual void CleanupThread()
   {
-    std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
-    ProcessWork(QueueData_);
-    QueueData_.clear();
+    std::lock_guard<std::recursive_mutex> lock(this->QueueMutex_);
+    ProcessWork(this->QueueData_);
+    this->QueueData_.clear();
   }
 
   virtual void ProcessWork(const VectorClass& data)
