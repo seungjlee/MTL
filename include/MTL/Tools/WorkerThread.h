@@ -45,14 +45,12 @@ template<class DataType, class VectorClass = std::vector<DataType>>
 class WorkerThread
 {
 public:
-  WorkerThread(const std::wstring& name, bool start = true)
+  WorkerThread(const std::wstring& name)
     : Running_(true), Name_(name), MaxWorkQueueSize_(10000)
   {
-    if (start)
-      Start();
   }
-  WorkerThread(const std::string& name, bool start = true)
-    : WorkerThread(ToUTF16(name), start)
+  WorkerThread(const std::string& name)
+    : WorkerThread(ToUTF16(name))
   {
   }
   ~WorkerThread()

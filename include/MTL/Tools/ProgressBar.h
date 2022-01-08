@@ -62,6 +62,7 @@ public:
       FinalUpdateIsSynchronous_(finalUpdateIsSynchronous), LastIntegerPercentage_(0)
   {
     MaxWorkQueueSize(1);
+    Start();
   }
 
   ~ProgressBarWorker()
