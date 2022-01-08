@@ -43,6 +43,7 @@ public:
       Count(0), ID(id), pNext(next)
   {
     this->MaxWorkQueueSize(MaxCount);
+    this->Start();
   }
 
   virtual void CleanupThread()
