@@ -27,6 +27,40 @@
 
 using namespace MTL;
 
+static const int kInitialID = 7;
+static const int kThreads = 32;
+static const int kWork = 50000;
+
+static std::array<MTL::Event, kThreads> events;
+
+static int Count = 0;
+
+static void ProcessWork(int ID, int nextID)
+{
+  for (int i = 0; i < kWork; i++)
+  {
+    events[ID].Wait();
+    Count++;
+    events[nextID].Signal();
+  }
+}
+
+TEST(TestEvents)
+{
+  std::vector<std::thread> threads;
+
+  for (int i = 0; i < kThreads; i++)
+    threads.emplace_back(std::thread(ProcessWork, i, (i + 1) % kThreads));
+
+  events[kInitialID].Signal();
+
+  for (std::thread& t : threads)
+    if (t.joinable())
+      t.join();
+
+  MTL_EQUAL(Count, kThreads * kWork);
+}
+
 TEST(TestEventWaitMilliseconds)
 {
   Event event;
