@@ -88,7 +88,7 @@ public:
 
   enum
   {
-    Increment = sizeof(Type) / sizeof(T)
+    Increment = sizeof(DataType) / sizeof(T)
   };
 
   MTL_INLINE static SizeType StreamSize(SizeType size)  { return size & ~(Increment-1); }

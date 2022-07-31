@@ -70,6 +70,11 @@ else(MSVC)
   message(STATUS "")
 
   SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++17 -Wall")
+
+  if (MTL_ENABLE_AVX)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -mfma")
+  endif(MTL_ENABLE_AVX)
+
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-char-subscripts")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-strict-aliasing")
