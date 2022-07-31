@@ -30,6 +30,12 @@ using namespace MTL;
 
 static const double kTol = 1e-13;
 
+#ifdef _DEBUG
+constexpr int MAX_TEST_THREADS = 2;
+#else
+constexpr int MAX_TEST_THREADS = 8;
+#endif
+
 #define CHECK_FEATURE(FEATURE) \
   wprintf(L"  %-8hs %hs\n", #FEATURE, CPU::Instance().FEATURE()  ? "Yes" : "No");
 
@@ -50,7 +56,7 @@ TEST(TestMemoryBandwitdh)
   Timer t;
   double bestTime;
 
-  int maxNumberOfThreads = Min(8, (int)CPU::Instance().NumberOfThreads());
+  int maxNumberOfThreads = Min(MAX_TEST_THREADS, (int)CPU::Instance().NumberOfThreads());
 
   // Used for overwriting the cache since we are trying to just test memory bandwidth.
   DynamicVector<double> tempV(kVectorSize);
@@ -202,7 +208,7 @@ TEST(TestStreamPerformance)
   Timer t;
   double bestTime;
 
-  int maxNumberOfThreads = Min(8, (int)CPU::Instance().NumberOfThreads());
+  int maxNumberOfThreads = Min(MAX_TEST_THREADS, (int)CPU::Instance().NumberOfThreads());
 
   for (int numberOfThreads = 1; numberOfThreads <= maxNumberOfThreads; numberOfThreads++)
   {
