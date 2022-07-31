@@ -218,8 +218,13 @@ TEST(TestHouseholderQR_Speed)
   enum
   {
     M = 256*1024,
+#ifdef _DEBUG
+    N = 5,
+    kRepeats = 3
+#else
     N = 10,
     kRepeats = 10
+#endif
   };
 
   DynamicMatrix<F64> At;
@@ -277,8 +282,13 @@ TEST(TestMultiplyByTranspose)
 {
   enum
   {
+#ifdef _DEBUG
+    M = 311,
+    N = 11111
+#else
     M = 639,
     N = 32003
+#endif
   };
 
   Timer t;
@@ -337,8 +347,13 @@ TEST(TestSolversIdentityMatrix)
 {
   enum
   {
+#ifdef _DEBUG
+    N = 333,
+    kRepeats = 5
+#else
     N = 711,
     kRepeats = 10
+#endif
   };
 
   DynamicMatrix<F64> A(N,N);
@@ -409,7 +424,11 @@ TEST(TestSolvers)
 {
   enum
   {
+#ifdef _DEBUG 
+    N = 235,
+#else
     N = 639,
+#endif
     kRepeats = 3
   };
 

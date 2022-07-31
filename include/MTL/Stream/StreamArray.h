@@ -1260,7 +1260,7 @@ ScalarDivision_StreamUnaligned_Parallel(T* pDst, const T& scalar, SizeType size,
 template <class T> MTL_INLINE T
 Sum_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Sum_StreamAligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1270,7 +1270,7 @@ Sum_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 template <class T> MTL_INLINE T
 Sum_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Sum_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1281,7 +1281,7 @@ Sum_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 template <class T> MTL_INLINE T
 SumOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamAligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1291,7 +1291,7 @@ SumOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThr
 template <class T> MTL_INLINE T
 SumOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, SumOfAbsolutes_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1302,7 +1302,7 @@ SumOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfT
 template <class T> MTL_INLINE T
 SumOfSquares_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, SumOfSquares_StreamAligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1312,7 +1312,7 @@ SumOfSquares_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThrea
 template <class T> MTL_INLINE T
 SumOfSquares_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, SumOfSquares_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1324,7 +1324,7 @@ template <class T> MTL_INLINE T
 SumOfSquaredDifferences_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size,
                                                int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_2Src<T, T, SumOfSquaredDifferences_StreamAligned_Sequential<T> >
     (subResults, subResultsSize, p1, p2, size, numberOfThreads);
@@ -1335,7 +1335,7 @@ template <class T> MTL_INLINE T
 SumOfSquaredDifferences_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeType size,
                                                  int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_2Src<T, T, SumOfSquaredDifferences_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p1, p2, size, numberOfThreads);
@@ -1346,7 +1346,7 @@ SumOfSquaredDifferences_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeT
 template <class T> MTL_INLINE T
 Min_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Min_StreamAligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1356,7 +1356,7 @@ Min_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 template <class T> MTL_INLINE T
 Min_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Min_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1367,7 +1367,7 @@ Min_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 template <class T> MTL_INLINE T
 Max_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Max_StreamAligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1377,7 +1377,7 @@ Max_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 template <class T> MTL_INLINE T
 Max_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, Max_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1388,7 +1388,7 @@ Max_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 template <class T> MTL_INLINE T
 MinOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamAligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1398,7 +1398,7 @@ MinOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThr
 template <class T> MTL_INLINE T
 MinOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, MinOfAbsolutes_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1409,7 +1409,7 @@ MinOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfT
 template <class T> MTL_INLINE T
 MaxOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
     ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamAligned_Sequential<T> >
       (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1419,7 +1419,7 @@ MaxOfAbsolutes_StreamAligned_Parallel(const T* p, SizeType size, int numberOfThr
 template <class T> MTL_INLINE T
 MaxOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_1Src<T, T, MaxOfAbsolutes_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p, size, numberOfThreads);
@@ -1430,7 +1430,7 @@ MaxOfAbsolutes_StreamUnaligned_Parallel(const T* p, SizeType size, int numberOfT
 template <class T> MTL_INLINE T
 DotProduct_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_2Src<T, T, DotProduct_StreamAligned_Sequential<T> >
     (subResults, subResultsSize, p1, p2, size, numberOfThreads);
@@ -1440,7 +1440,7 @@ DotProduct_StreamAligned_Parallel(const T* p1, const T* p2, SizeType size, int n
 template <class T> MTL_INLINE T
 DotProduct_StreamUnaligned_Parallel(const T* p1, const T* p2, SizeType size, int numberOfThreads)
 {
-  T subResults[MTL_MAX_THREADS];
+  alignas(MTL_STREAM_BYTES) T subResults[MTL_MAX_THREADS];
   SizeType subResultsSize;
   ParallelReduction_2Src<T, T, DotProduct_StreamUnaligned_Sequential<T> >
     (subResults, subResultsSize, p1, p2, size, numberOfThreads);
