@@ -30,11 +30,7 @@ using namespace MTL;
 
 static const double kTol = 1e-13;
 
-#ifdef _DEBUG
-constexpr int MAX_TEST_THREADS = 2;
-#else
-constexpr int MAX_TEST_THREADS = 8;
-#endif
+constexpr int MAX_TEST_THREADS = VALUE_DEBUG_RELEASE(2, 8);
 
 #define CHECK_FEATURE(FEATURE) \
   wprintf(L"  %-8hs %hs\n", #FEATURE, CPU::Instance().FEATURE()  ? "Yes" : "No");

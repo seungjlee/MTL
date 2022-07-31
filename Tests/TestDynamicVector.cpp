@@ -174,7 +174,7 @@ TEST(TestHouseholderQR_Speed)
   enum
   {
     N = 128*1024,
-    kRepeats = 100
+    kRepeats = VALUE_DEBUG_RELEASE(7, 100)
   };
 
   Timer t(true);
@@ -205,7 +205,7 @@ TEST(TestCastConstructor)
 {
   enum
   {
-    N = 64*1024*1024
+    N = 64 * 1024 * 1024
   };
 
   Timer t;
@@ -219,8 +219,10 @@ TEST(TestCastConstructor)
   t.Stop();
   wprintf(L"  Conversion time: %.3f msecs.\n", t.Milliseconds());
 
-  for (I32 i = 0; i < N; i++)
-    MTL_EQUAL_FLOAT(vI32[i], vF64[i], NumericalEpsilon<F64>());
+  DynamicVector<F64> deltas = vF64 - DynamicVector<F64>(vI32);
+  double rms = RMS(deltas);
+  wprintf(L"  Error RMS: %g\n", rms);
+  MTL_LESS_THAN(rms, NumericalEpsilon<F64>());
 }
 
 TEST(Test_AddBack_Insert)
@@ -269,7 +271,7 @@ TEST(Test_SumOfSquaredDifferences)
   enum
   {
     N = 128*1024,
-    kRepeats = 777
+    kRepeats = VALUE_DEBUG_RELEASE(71, 777)
   };
 
   Timer t(true);
@@ -297,7 +299,7 @@ TEST(Test_std_vector)
   enum
   {
     N = 1025,
-    kRepeats = 7777
+    kRepeats = VALUE_DEBUG_RELEASE(999, 7777)
   };
 
   Timer t(true);
@@ -316,5 +318,7 @@ TEST(Test_std_vector)
 
     FOR_EACH_INDEX(v)
       MTL_EQUAL(v2[vIndex], v[vIndex]);
+
+    ShowProgressBar(double(i + 1) / kRepeats, StringPrintf("- %.3f secs.", t.Seconds()));
   }
 }

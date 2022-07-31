@@ -28,6 +28,7 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include <MTL/Macros.h>
 
 namespace MTL
 {
@@ -55,9 +56,6 @@ using OutputStream = std::wostream;
   #define MTL_INLINE inline
 #endif
 
-#define TO_STRING(x)  #x
-#define TO_WCHAR_(x)  L ## x
-#define TO_WCHAR(x)   TO_WCHAR_(x)
 #define MTL__FILE__   TO_WCHAR(__FILE__)
 
 // Default definitions for stream instructions.
