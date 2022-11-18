@@ -2,6 +2,7 @@
 
 import datetime
 import distro
+import fnmatch
 import glob
 import math
 import os
