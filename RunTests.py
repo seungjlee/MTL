@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import datetime
-import fnmatch
+import distro
 import glob
 import math
 import os
@@ -39,6 +39,7 @@ TestSeparatorString = '{:-<100}'.format('')
 TestSeparator = TestSeparatorString.encode() + b'\n'
 CurrentDir = os.getcwd()
 
+print('\033[96m\nOS:\033[0m ' + distro.name(pretty=True))
 if platform.system() == 'Linux':
   TestDir = BuildDir + '/Tests/'
 else:
@@ -48,7 +49,7 @@ else:
     TestDir = BuildDir + '/Tests/Release/'
 
 LogFile = BuildDir + '/TestLog_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
-print('\033[96m\nLog File:\033[0m ' + LogFile)
+print('\033[96mLog File:\033[0m ' + LogFile)
 
 file = open(LogFile, 'w')
 
