@@ -1,17 +1,26 @@
 #!/usr/bin/python3
+#region pylint disables
+# pylint: disable=bad-indentation
+# pylint: disable=invalid-name
+# pylint: disable=missing-module-docstring
+# pylint: disable=consider-using-f-string
+# pylint: disable=consider-using-enumerate
+# pylint: disable=line-too-long
+#endregion
 
+import argparse
 import datetime
-import distro
 import fnmatch
 import glob
+import io
 import math
 import os
+import platform
 import subprocess
 import sys
 import time
-import argparse
-import platform
-import io
+
+import distro
 
 totalStartTime = time.time()
 
@@ -52,7 +61,7 @@ else:
 LogFile = BuildDir + '/TestLog_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
 print('\033[96mLog File:\033[0m ' + LogFile)
 
-file = open(LogFile, 'w')
+file = open(LogFile, 'w', encoding="utf-8")
 
 os.chdir(TestDir)
 print(os.getcwd())
@@ -82,7 +91,7 @@ for test in TestList:
     testResult = '\033[92mOK \033[0m'
 
     startTime = time.time()
-    processResult = subprocess.run(['./' + test] + TestArguments, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    processResult = subprocess.run(['./' + test] + TestArguments, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, check=False)
     endTime = time.time()
 
     Output.write(TestSeparator.decode('utf-8'))
