@@ -9,6 +9,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  OMP_WAIT_POLICY: PASSIVE
 
 jobs:
   build:
@@ -26,7 +27,7 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/Build --config ${{env.BUILD_TYPE}}
 
-    - name: Test
+    - name: Run Tests
       working-directory: ${{github.workspace}}
-      run: python RunTests.py
+      run: python RunTests.py -ConsoleOut 
 
