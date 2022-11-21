@@ -277,8 +277,8 @@ TEST(TestMultiplyByTranspose)
 {
   enum
   {
-    M = VALUE_DEBUG_RELEASE(311, 639),
-    N = VALUE_DEBUG_RELEASE(11111, 32003)
+    M = VALUE_DEBUG_RELEASE(211, 439),
+    N = VALUE_DEBUG_RELEASE(11111, 22003)
   };
 
   Timer t;
@@ -409,7 +409,7 @@ TEST(TestSolvers)
 {
   enum
   {
-    N = VALUE_DEBUG_RELEASE(235, 639),
+    N = VALUE_DEBUG_RELEASE(175, 439),
     kRepeats = 3
   };
 

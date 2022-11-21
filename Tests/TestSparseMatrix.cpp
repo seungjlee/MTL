@@ -221,8 +221,8 @@ TEST(TestLargeMultiplication)
   enum
   {
     kRepeats = 10,
-    kRows = 20000,
-    kCols = 200
+    kRows = 15000,
+    kCols = 150
   };
 
   Timer timeSparseMtxV;
