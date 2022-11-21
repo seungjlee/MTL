@@ -70,11 +70,12 @@ public:
   void NumberOfThreads(U64 n)  { NumberOfThreads_ = n;    }
   U64 NumberOfCores() const    { return NumberOfCores_;   }
 
-  bool SSE()  const  { return CPU_Rep_.f_1_EDX_[25] || false; }
-  bool SSE2() const  { return CPU_Rep_.f_1_EDX_[26] || false; }
-  bool AVX()  const  { return CPU_Rep_.f_1_ECX_[28] || false; }
-  bool AVX2() const  { return CPU_Rep_.f_7_EBX_[5]  || false; }
-  bool FMA()  const  { return CPU_Rep_.f_1_ECX_[12] || false; }
+  bool SSE()  const  { return CPU_Rep_.f_1_EDX_[25] != 0; }
+  bool SSE2() const  { return CPU_Rep_.f_1_EDX_[26] != 0; }
+  bool AVX()  const  { return CPU_Rep_.f_1_ECX_[28] != 0; }
+  bool AVX2() const  { return CPU_Rep_.f_7_EBX_[ 5] != 0; }
+  bool FMA()  const  { return CPU_Rep_.f_1_ECX_[12] != 0; }
+  bool AVX512F()     { return CPU_Rep_.f_7_EBX_[16] != 0; }
 
   bool IsIntel() const         { return CPU_Rep_.isIntel_;        }
 
