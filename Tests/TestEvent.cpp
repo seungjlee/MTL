@@ -47,10 +47,11 @@ static void ProcessWork(int ID, int nextID)
 
 TEST(TestEvents)
 {
+  const int numberOfThreads = Min(kThreads, int(8 * CPU::Instance().NumberOfCores()));
   std::vector<std::thread> threads;
 
-  for (int i = 0; i < kThreads; i++)
-    threads.emplace_back(std::thread(ProcessWork, i, (i + 1) % kThreads));
+  for (int i = 0; i < numberOfThreads; i++)
+    threads.emplace_back(std::thread(ProcessWork, i, (i + 1) % numberOfThreads));
 
   events[kInitialID].Signal();
 
@@ -58,7 +59,7 @@ TEST(TestEvents)
     if (t.joinable())
       t.join();
 
-  MTL_EQUAL(Count, kThreads * kWork);
+  MTL_EQUAL(Count, numberOfThreads * kWork);
 }
 
 TEST(TestEventWaitMilliseconds)
