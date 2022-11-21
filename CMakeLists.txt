@@ -75,12 +75,11 @@ else(MSVC)
 
   SET(CMAKE_CXX_FLAGS "-fopenmp -std=c++17 -Wall")
 
-  if (MTL_ENABLE_AVX)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -mavx2 -mfma")
-  endif(MTL_ENABLE_AVX)
   if (MTL_ENABLE_AVX512)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -mavx2 -mavx512f -mfma")
-  endif(MTL_ENABLE_AVX512)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -mavx2 -mavx512dq -mavx512f -mfma")
+  elseif (MTL_ENABLE_AVX)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -mavx2 -mfma")
+  endif()
 
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-char-subscripts")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
