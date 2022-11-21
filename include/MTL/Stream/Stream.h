@@ -28,7 +28,9 @@
 
 #include <MTL/Definitions.h>
 
-#if MTL_ENABLE_AVX
+#if MTL_ENABLE_AVX512
+  #define MTL_STREAM_BITS 512
+#elif MTL_ENABLE_AVX
   #define MTL_STREAM_BITS 256
 #elif MTL_ENABLE_SSE
   #define MTL_STREAM_BITS 128

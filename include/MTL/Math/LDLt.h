@@ -153,7 +153,7 @@ static void SolveLDLt(T* x, T* L, const T* D, I32 N, I32 rowSize)
   }
 
   // Compute Inv(D) * x.
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
   Division_StreamAligned_Sequential(x, D, N);
 #else
   Division_Sequential(x, D, N);

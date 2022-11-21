@@ -44,7 +44,7 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
   MTL_PARALLEL_FOR_BLOCKS(rows)
   for (I32 i = 0; i < rows; i++)
   {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
     P[i*rowSizeP + i] = SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
 #else
     P[i*rowSizeP + i] = SumOfSquares_Sequential(M + i*rowSizeM, cols);
@@ -52,7 +52,7 @@ MTL_INLINE static void MultiplyByTranspose(T* P, const T* M, I32 rows, I32 cols,
 
     for (I32 j = i + 1; j < rows; j++)
     {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       P[i*rowSizeP + j] = DotProduct_StreamAligned_Sequential(M + i*rowSizeM,
                                                               M + j*rowSizeM, cols);
 #else
@@ -71,7 +71,7 @@ MTL_INLINE static void AddMultiplyByTranspose(T* P, const T* M, I32 rows, I32 co
   MTL_PARALLEL_FOR_BLOCKS(rows)
   for (I32 i = 0; i < rows; i++)
   {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
     P[i*rowSizeP + i] += SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
 #else
     P[i*rowSizeP + i] += SumOfSquares_Sequential(M + i*rowSizeM, M + i*rowSizeM + cols);
@@ -79,7 +79,7 @@ MTL_INLINE static void AddMultiplyByTranspose(T* P, const T* M, I32 rows, I32 co
 
     for (I32 j = i + 1; j < rows; j++)
     {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       P[i*rowSizeP + j] += DotProduct_StreamAligned_Sequential(M + i*rowSizeM,
                                                                M + j*rowSizeM, cols);
 #else
@@ -105,7 +105,7 @@ MTL_INLINE static void MultiplyByTranspose_LowerMatrix(T* P, const T* M, I32 row
     {
       if (i == j)
       {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
         P[i*rowSizeP + j] = SumOfSquares_StreamAligned_Sequential(M + i*rowSizeM, cols);
 #else
         P[i*rowSizeP + j] = SumOfSquares_Sequential(M + i*rowSizeM, cols);
@@ -113,7 +113,7 @@ MTL_INLINE static void MultiplyByTranspose_LowerMatrix(T* P, const T* M, I32 row
       }
       else
       {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
         P[j*rowSizeP + i] = DotProduct_StreamAligned_Sequential(M + i*rowSizeM, M + j*rowSizeM, cols);
 #else
         P[j*rowSizeP + i] = DotProduct_Sequential(M + i*rowSizeM, M + j*rowSizeM, cols);
@@ -149,7 +149,7 @@ MTL_INLINE static void MultiplyTransposed(T* P, const T* A, const T* Bt,
   {
     for (I32 col = 0; col < cols; col++)
     {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       P[row*rowSizeP + col] = DotProduct_StreamAligned_Sequential(A + row*rowSizeA, Bt + col*rowSizeBt, N);
 #else
       P[row*rowSizeP + col] = DotProduct_Sequential(A + row*rowSizeA, Bt + col*rowSizeBt, N);
@@ -167,7 +167,7 @@ MTL_INLINE static void AddMultiplyTransposed(T* P, const T* A, const T* Bt,
   {
     for (I32 col = 0; col < cols; col++)
     {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       P[row*rowSizeP + col] += DotProduct_StreamAligned_Sequential(A + row*rowSizeA, Bt + col*rowSizeBt, N);
 #else
       P[row*rowSizeP + col] += DotProduct_Sequential(A + row*rowSizeA, Bt + col*rowSizeBt, N);
@@ -319,7 +319,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       result[i] = DotProduct_StreamAligned_Sequential((*this)[i], v.Begin(), Cols());
 #else
       result[i] = DotProduct_Sequential((*this)[i], v.Begin(), Cols());
@@ -395,7 +395,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       Addition_StreamAligned_Sequential((*this)[i], B[i], Cols());
 #else
       Addition_Sequential((*this)[i], B[i], Cols());
@@ -420,7 +420,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       Subtraction_StreamAligned_Sequential((*this)[i], B[i], Cols());
 #else
       Subtraction_Sequential((*this)[i], B[i], Cols());
@@ -444,7 +444,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < A.Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       UnaryMinus_StreamAligned_Sequential(A[i], A.Cols());
 #else
       UnaryMinus_Sequential(A[i], A.Cols());
@@ -459,7 +459,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       ScalarAddition_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
     ScalarAddition_Sequential(A[i], scalar, A.Cols());
@@ -480,7 +480,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       ScalarSubtraction_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
       ScalarSubtraction_Sequential(A[i], scalar, A.Cols());
@@ -501,7 +501,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       ScalarMultiplication_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
       ScalarMultiplication_Sequential(A[i], scalar, A.Cols());
@@ -522,7 +522,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       ScalarDivision_StreamAligned_Sequential(A[i], scalar, A.Cols());
 #else
       ScalarDivision_Sequential(A[i], scalar, A.Cols());
@@ -545,7 +545,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       sum += Sum_StreamAligned_Sequential((*this)[i], Cols());
 #else
       sum += Sum_Sequential((*this)[i], Cols());
@@ -560,7 +560,7 @@ public:
 
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       sum += SumOfSquares_StreamAligned_Sequential((*this)[i], Cols());
 #else
       sum += SumOfSquares_Sequential((*this)[i], Cols());
@@ -581,7 +581,7 @@ public:
     MTL_PARALLEL_FOR_BLOCKS(Rows())
     for (I32 i = 0; i < Rows(); i++)
     {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
       T sum = SumOfAbsolutes_StreamAligned_Sequential((*this)[i], Cols());
 #else
       T sum = SumOfAbsolutes_Sequential((*this)[i], Cols());

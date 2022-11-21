@@ -28,6 +28,7 @@
 #include <MTL/CPU.h>
 #include <MTL/Stream/SSE.h>
 #include <MTL/Stream/AVX.h>
+#include <MTL/Stream/AVX512.h>
 #include <assert.h>
 
 //
@@ -81,7 +82,7 @@ template <class T> MTL_INLINE static void ComputeParallelSubSizes
 {
   assert(numberOfThreads <= MTL_MAX_THREADS);
 
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
   SizeType chunkSize = MTL::XX<T>::StreamSize(totalSize / SizeType(numberOfThreads));
 #else
   SizeType chunkSize = totalSize / SizeType(numberOfThreads);

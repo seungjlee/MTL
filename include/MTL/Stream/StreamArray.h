@@ -28,6 +28,7 @@
 #include <MTL/Array.h>
 #include <MTL/Stream/SSE.h>
 #include <MTL/Stream/AVX.h>
+#include <MTL/Stream/AVX512.h>
 #include <MTL/OpenMP.h>
 
 namespace MTL
@@ -324,7 +325,7 @@ template <class T> MTL_INLINE void AdditionScaled_Sequential(T* pDst, const T* p
 }
 
 
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 //
 // Streamed single-threaded operations.
 //
@@ -1464,7 +1465,7 @@ AdditionScaled_StreamUnaligned_Parallel(T* pDst, const T* pSrc, const T& scalar,
                                                                              scalar, size,
                                                                              numberOfThreads);
 }
-#endif  // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#endif  // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
 }  // namespace MTL
 

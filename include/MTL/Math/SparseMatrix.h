@@ -341,7 +341,7 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
 #endif
 
@@ -357,7 +357,7 @@ public:
 
           if (i == j)
           {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
             T sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
             T sum = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
@@ -395,7 +395,7 @@ public:
           {
             if (ap[i+1] > ap[i])
             {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
               T sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
                                                             numberOfThreads);
 #else
@@ -475,7 +475,7 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
-  #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+  #if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
   #endif
 
@@ -492,7 +492,7 @@ public:
 
           if (i == j)
           {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
             T sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
                                                           numberOfThreads);
 #else
@@ -532,7 +532,7 @@ public:
           {
             if (ap[i+1] > ap[i])
             {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
               T sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i],
                                                             numberOfThreads);
 #else
@@ -600,7 +600,7 @@ public:
     const I32* ai = SparseMatrix<T>::Ai();
     const T* ax = SparseMatrix<T>::Ax();
 
-  #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+  #if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
     I32 numberOfThreads = (I32)MTL::CPU::Instance().NumberOfThreads();
   #endif
 
@@ -619,7 +619,7 @@ public:
             T sum = 0;
             if (ap[i+1] > ap[i])
             {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
               sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
               sum = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
@@ -651,7 +651,7 @@ public:
     {
       for (I32 i = 0; i < SparseMatrix<T>::Cols_; i++)
       {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
         P[i][i] = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
         P[i][i] = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
@@ -719,7 +719,7 @@ public:
             T sum = 0;
             if (ap[i+1] > ap[i])
             {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
               sum = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
               sum = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);
@@ -752,7 +752,7 @@ public:
       MTL_PARALLEL_FOR_BLOCKS(N)
       for (I32 i = 0; i < N; i++)
       {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
         P[i][i] = SumOfSquares_StreamUnaligned_Parallel(ax + ap[i], ap[i+1] - ap[i], numberOfThreads);
 #else
         P[i][i] = SumOfSquares_Sequential(ax + ap[i], ap[i+1] - ap[i]);

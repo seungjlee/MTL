@@ -29,7 +29,7 @@
 #include <MTL/Math.h>
 #include <MTL/Stream/Stream.h>
 
-#if MTL_ENABLE_AVX
+#if MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
 #include <immintrin.h>
 
@@ -588,6 +588,6 @@ MTL_INLINE X256<F64> Shuffle(const X256<F64>& a, const X256<F64>& b)
 
 }  // namespace MTL
 
-#endif  // MTL_ENABLE_AVX
+#endif  // MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
 #endif  // MTL_AVX_H

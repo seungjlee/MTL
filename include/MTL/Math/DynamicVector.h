@@ -514,7 +514,7 @@ template <class DstT, class SrcT> inline void OptimizedCast(DstT* pDst, const Sr
   Parallel_1Dst_1Src<DstT, SrcT, OptimizedCast_Sequential>(pDst, pSrc, size, 0);
 }
 
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 template <class T>
 inline void AssignAll_Stream_Unaligned_Sequential(T* p, const T& val, SizeType size)
 {
@@ -561,7 +561,7 @@ inline void AssignAll_Stream(T* p, const T& val, SizeType size)
 
 template <class T> inline void OptimizedAssignAll(T* p, const T& val, SizeType size)
 {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
   int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
   if (numberOfThreads > 1)
     Parallel_1Dst_1Val< T, AssignAll_Stream<T> >(p, val, size, numberOfThreads);
@@ -598,7 +598,7 @@ template <> MTL_INLINE void MTL::DynamicVector<T>::AssignAll(T* p, const T* pEnd
 }                                                                                                 \
 }
 
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 #ifdef WIN32
 #define MTL_DYNAMIC_VECTOR_OPTIMIZED_ZEROS_USE_ASSIGN_ALL(T)                                      \
 namespace MTL                                                                                     \

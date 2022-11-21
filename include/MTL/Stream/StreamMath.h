@@ -30,7 +30,7 @@
 namespace MTL
 {
 
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
 template <class T> class X128;
 
@@ -60,7 +60,7 @@ MTL_INLINE static T Sqrt(const T& a)
 {
   return (T)sqrt(a);
 }
-#endif  // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#endif  // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
 }  // namespace MTL
 

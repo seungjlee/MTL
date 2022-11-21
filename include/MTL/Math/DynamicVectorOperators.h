@@ -234,7 +234,7 @@ void SquareRootAll(DynamicVector<T>& v)
 
 }  // namespace MTL
 
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 // Define stream optimizations.
 #define MTL_DYNAMIC_VECTOR_STREAM_PARALLEL_OPERATIONS(T, CastT)                                  \
 namespace MTL                                                                                    \
@@ -390,7 +390,7 @@ template <class T> MTL_INLINE static T FrobeniusNorm(const DynamicVector<T>& v)
 }  // namespace MTL
 
 
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM(T)                                                          \
 namespace MTL                                                                                     \
 {                                                                                                 \
@@ -485,7 +485,7 @@ MTL_INLINE static T SumOfSquaredDifferences(const MTL::DynamicVector<T>& v1,    
 }                                                                                                 \
 }
 
-#else // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#else // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM(T)
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM_OF_ABSOLUTES(T)
@@ -498,7 +498,7 @@ MTL_INLINE static T SumOfSquaredDifferences(const MTL::DynamicVector<T>& v1,    
 #define MTL_DYNAMIC_VECTOR_STREAM_DOT_PRODUCT(T)
 #define MTL_DYNAMIC_VECTOR_STREAM_SUM_OF_SQUARED_DIFFERENCES(T)
 
-#endif // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#endif // #if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
 
 #define MTL_DYNAMIC_VECTOR_STREAM_REDUCTION_OPERATIONS(T)  \

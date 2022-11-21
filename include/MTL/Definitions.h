@@ -59,9 +59,10 @@ using OutputStream = std::wostream;
 #define MTL__FILE__   TO_WCHAR(__FILE__)
 
 // Default definitions for stream instructions.
-#if !defined(MTL_ENABLE_SSE) && !defined(MTL_ENABLE_AVX)
-#define MTL_ENABLE_SSE 1
-#define MTL_ENABLE_AVX 0
+#if !defined(MTL_ENABLE_SSE) && !defined(MTL_ENABLE_AVX) && !defined(MTL_ENABLE_AVX512)
+#define MTL_ENABLE_SSE    1
+#define MTL_ENABLE_AVX    0
+#define MTL_ENABLE_AVX512 0
 #endif
 
 #if defined(MTL_ENABLE_AVX) && MTL_ENABLE_AVX
@@ -72,6 +73,10 @@ using OutputStream = std::wostream;
 
 #if !defined(MTL_ENABLE_AVX)
 #define MTL_ENABLE_AVX 0
+#endif
+
+#if !defined(MTL_ENABLE_AVX512)
+#define MTL_ENABLE_AVX512 0
 #endif
 
 // Note that I have not really tested builds with OpenMP disabled.

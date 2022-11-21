@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/Build -G "Visual Studio 16 2019" -A x64 -DMTL_ENABLE_AVX=ON
+      run: cmake -B ${{github.workspace}}/Build -G "Visual Studio 16 2019" -A x64 -DMTL_ENABLE_AVX512=ON
 
     - name: Build
       run: cmake --build ${{github.workspace}}/Build --config ${{env.BUILD_TYPE}}

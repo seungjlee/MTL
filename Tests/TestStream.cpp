@@ -44,7 +44,7 @@ TEST(TestShuffle)
 
 TEST(TestXOR)
 {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
   MTL::XX<MTL::I32> xx = MTL::XX<MTL::I32>(1) ^ MTL::XX<MTL::I32>(-1);
 
   for (int k = 0; k < MTL::XX<MTL::I32>::Increment; k++)
@@ -54,7 +54,7 @@ TEST(TestXOR)
 
 TEST(TestToFloat)
 {
-#if MTL_ENABLE_SSE || MTL_ENABLE_AVX
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
   const int size = 1111111;
 
   std::vector<MTL::I32>  u(size);

@@ -29,7 +29,7 @@
 #include <MTL/Math.h>
 #include <MTL/Stream/Stream.h>
 
-#if MTL_ENABLE_SSE
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
 #include <emmintrin.h>
 
@@ -110,7 +110,7 @@ public:
   MTL_INLINE       T& operator[](SizeType i)            { return ((T*)pData())[i];      }
 
 protected:
-  DataType Data_;
+  DataType Data_{};
 };
 
 template <class T> class X128;
@@ -643,6 +643,6 @@ MTL_INLINE X128<U32> RotateLeft(const X128<U32>& a)  { return ShiftLeft<SHIFT>(a
 
 }  // namespace MTL
 
-#endif  // MTL_ENABLE_SSE
+#endif  // MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
 #endif  // MTL_SSE_H
