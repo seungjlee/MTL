@@ -136,8 +136,8 @@ private:
 #ifdef WIN32
         __cpuidex(cpui.data(), i, 0);
 #else
-        __get_cpuid(i, (unsigned int*)&cpui[0], (unsigned int*)&cpui[1],
-                    (unsigned int*)&cpui[2], (unsigned int*)&cpui[3]);
+        __get_cpuid_count(i, 0, (unsigned int*)&cpui[0], (unsigned int*)&cpui[1],
+                          (unsigned int*)&cpui[2], (unsigned int*)&cpui[3]);
 #endif
         data_.push_back(cpui);
       }
