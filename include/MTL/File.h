@@ -25,18 +25,14 @@
 #ifndef MTL_FILE_H
 #define MTL_FILE_H
 
-#ifdef WIN32
 #include <filesystem>
-#else
-#include <experimental/filesystem>
-#endif
 
 namespace MTL
 {
 
 namespace File
 {
-  using namespace std::experimental::filesystem::v1;
+  using namespace std::filesystem;
 
   template <class StringType>
   static bool Exists(const StringType& filePath)
