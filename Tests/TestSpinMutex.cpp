@@ -55,7 +55,8 @@ static void ThreadProcess(uint32_t ID, MutexClass* mutex) {
 template <class MutexClass>
 static void TestMutex(const std::string& mutexName, int iterations)
 {
-  std::vector<std::thread> threads(NumberOfThreads);
+  int numberOfThreads = Min(NumberOfThreads, int(2 * CPU::Instance().NumberOfCores()));
+  std::vector<std::thread> threads(numberOfThreads);
 
   MutexClass mutex;
   Counter = 0;
