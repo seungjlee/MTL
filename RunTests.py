@@ -21,7 +21,6 @@ import sys
 import time
 
 import color
-import distro
 from color import ColorString
 
 totalStartTime = time.time()
@@ -51,10 +50,12 @@ TestSeparatorString = '{:-<100}'.format('')
 TestSeparator = TestSeparatorString.encode() + b'\n'
 CurrentDir = os.getcwd()
 
-print(ColorString(color.LCYAN, '\nOS: ') + distro.name(pretty=True))
 if platform.system() == 'Linux':
+  import distro
+  print(ColorString(color.LCYAN, '\nOS: ') + distro.name(pretty=True))
   TestDir = BuildDir + '/Tests/'
 else:
+  print(ColorString(color.LCYAN, '\nOS: ') + platform.platform())
   if args.Debug:
     TestDir = BuildDir + '/Tests/Debug/'
   else:
