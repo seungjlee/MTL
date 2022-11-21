@@ -20,7 +20,9 @@ import subprocess
 import sys
 import time
 
+import color
 import distro
+from color import ColorString
 
 totalStartTime = time.time()
 
@@ -49,7 +51,7 @@ TestSeparatorString = '{:-<100}'.format('')
 TestSeparator = TestSeparatorString.encode() + b'\n'
 CurrentDir = os.getcwd()
 
-print('\033[96m\nOS:\033[0m ' + distro.name(pretty=True))
+print(ColorString(color.LCYAN, '\nOS: ') + distro.name(pretty=True))
 if platform.system() == 'Linux':
   TestDir = BuildDir + '/Tests/'
 else:
@@ -59,7 +61,7 @@ else:
     TestDir = BuildDir + '/Tests/Release/'
 
 LogFile = BuildDir + '/TestLog_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
-print('\033[96mLog File:\033[0m ' + LogFile)
+print(ColorString(color.LCYAN, 'Log File: ') + LogFile)
 
 file = open(LogFile, 'w', encoding="utf-8")
 
@@ -88,7 +90,7 @@ for test in TestList:
     print('{:.<60}'.format(test), end='')
     sys.stdout.flush()
 
-    testResult = '\033[92mOK \033[0m'
+    testResult = ColorString(color.LGREEN, 'OK ')
 
     startTime = time.time()
     processResult = subprocess.run(['./' + test] + TestArguments, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, check=False)
@@ -101,7 +103,7 @@ for test in TestList:
     Output.write('\n\n')
 
     if processResult.returncode != 0:
-      testResult = '\033[31mBAD\033[0m'
+      testResult = ColorString(color.RED, 'BAD')
       errorCount = errorCount + 1
 
     print('{:<7}'.format(testResult), end='')
@@ -111,9 +113,9 @@ Output.write(TestSeparator.decode('utf-8'))
 totalEndTime = time.time()
 
 if errorCount > 0:
-  print('\033[31m\nNumber of failed tests: %d. Total time: ' % errorCount, end='')
+  print(color.RED + '\nNumber of failed tests: %d. Total time: ' % errorCount, end='')
 else:
-  print('\033[92m\nAll tests passed. Total time: ', end='')
+  print(color.LGREEN + '\nAll tests passed. Total time: ', end='')
 
 totalSeconds = totalEndTime - totalStartTime
 
@@ -129,7 +131,8 @@ else:
 
   print(' (%.3f secs.)' % totalSeconds)
 
-print('\033[96m' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '\033[0m\n')
+print(color.LCYAN + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+print(color.RESET)
 
 if args.ConsoleOut:
   print('')
