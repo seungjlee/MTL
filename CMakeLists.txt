@@ -79,7 +79,7 @@ else(MSVC)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -mavx2 -mfma")
   endif(MTL_ENABLE_AVX)
   if (MTL_ENABLE_AVX512)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -mavx2 -mavx512 -mfma")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -mavx2 -mavx512f -mfma")
   endif(MTL_ENABLE_AVX512)
 
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-char-subscripts")
