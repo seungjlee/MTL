@@ -149,13 +149,13 @@ private:
   Vector3D<T> RotationVector_;
 
   // Cached values.
-  T SinHalfAngle_;
-  T CosHalfAngle_;
-  T SinAngle_;
-  T CosAngle_;
-  T Angle_;
-  Vector3D<T> UnitRotationVector_;
-  bool DirtyCachedValues_;
+  T SinHalfAngle_ = 0;
+  T CosHalfAngle_ = 0;
+  T SinAngle_ = 0;
+  T CosAngle_ = 0;
+  T Angle_ = 0;
+  Vector3D<T> UnitRotationVector_{};
+  bool DirtyCachedValues_ = true;
 
   MTL_INLINE Vector3D<T> Multiply(const AxisAngle& other) const
   {
