@@ -18,9 +18,9 @@ template<typename T> static void TestSwap(T bytes)
 TEST(TestByteSwap)
 {
   std::vector<uint8_t> bytes(8);
-  std::iota(bytes.begin(), bytes.end(), 1);
+  std::iota(bytes.begin(), bytes.end(), (uint8_t)1);
 
-  // TestSwap(*(int16_t*)bytes.data());
+  TestSwap(*(int16_t*)bytes.data());
   TestSwap(*(int32_t*)bytes.data());
   TestSwap(*(int64_t*)bytes.data());
 }

@@ -84,11 +84,11 @@ using OutputStream = std::wostream;
   #define MTL_ENABLE_OPENMP 1
 #endif
 
-#define MTL_THROW(MSG)                                                                               \
-{                                                                                                    \
-  char _msg_[1024];                                                                                  \
-  std::snprintf(_msg_, sizeof(_msg_), "%s, %s, line %d: %s", __FUNCTION__, __FILE__, __LINE__, MSG); \
-  throw MTL::Exception(_msg_);                                                                       \
+#define MTL_THROW(MSG)                                                                        \
+{                                                                                             \
+  char _msg_[1024];                                                                           \
+  std::snprintf(_msg_, sizeof(_msg_), "%s, %s, line %d: ", __FUNCTION__, __FILE__, __LINE__); \
+  throw MTL::Exception(std::string(_msg_) + MSG);                                             \
 }
 
 #endif  // MTL_DEFINITIONS_H
