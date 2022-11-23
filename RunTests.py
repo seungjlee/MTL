@@ -50,7 +50,8 @@ TestSeparatorString = '{:-<100}'.format('')
 TestSeparator = TestSeparatorString.encode() + b'\n'
 CurrentDir = os.getcwd()
 
-print(ColorString(color.LCYAN, '\nPython: ') + sys.version.replace('\n', ''))
+print()
+print(ColorString(color.LCYAN, 'Python: ') + sys.version.replace('\n', ''))
 
 if platform.system() == 'Linux':
   import distro
