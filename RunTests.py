@@ -50,12 +50,14 @@ TestSeparatorString = '{:-<100}'.format('')
 TestSeparator = TestSeparatorString.encode() + b'\n'
 CurrentDir = os.getcwd()
 
+print(ColorString(color.LCYAN, '\nPython: ') + sys.version.replace('\n', ''))
+
 if platform.system() == 'Linux':
   import distro
-  print(ColorString(color.LCYAN, '\nOS: ') + distro.name(pretty=True))
+  print(ColorString(color.LCYAN, 'OS: ') + distro.name(pretty=True))
   TestDir = BuildDir + '/Tests/'
 else:
-  print(ColorString(color.LCYAN, '\nOS: ') + platform.platform())
+  print(ColorString(color.LCYAN, 'OS: ') + platform.platform())
   if args.Debug:
     TestDir = BuildDir + '/Tests/Debug/'
   else:
@@ -67,7 +69,7 @@ print(ColorString(color.LCYAN, 'Log File: ') + LogFile)
 file = open(LogFile, 'w', encoding="utf-8")
 
 os.chdir(TestDir)
-print(os.getcwd())
+print(ColorString(color.LCYAN, 'Tests Directory: ') + os.getcwd())
 
 if platform.system() == 'Linux':
   TestList = glob.glob('Test*')
