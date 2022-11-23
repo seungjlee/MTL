@@ -29,12 +29,7 @@
 
 namespace MTL
 {
-#ifdef WIN32
-MTL_INLINE uint16_t _vs_byte_swap(uint16_t bytes) { return _byteswap_ushort(bytes); }
-MTL_INLINE uint32_t _vs_byte_swap(uint32_t bytes) { return _byteswap_ulong (bytes); }
-MTL_INLINE uint64_t _vs_byte_swap(uint64_t bytes) { return _byteswap_uint64(bytes); }
-#endif
-
+#ifdef __GNUC__
 template <typename T> MTL_INLINE T _bswap_x86(T bytes)
 {
   asm("bswap %0" : "=r" (bytes));
@@ -45,6 +40,11 @@ template <> MTL_INLINE uint16_t _bswap_x86(uint16_t bytes)
   asm("xchg %%al, %%ah" : "=a" (bytes));
   return bytes;
 }
+#elif defined(WIN32)
+MTL_INLINE uint16_t _vs_byte_swap(uint16_t bytes) { return _byteswap_ushort(bytes); }
+MTL_INLINE uint32_t _vs_byte_swap(uint32_t bytes) { return _byteswap_ulong (bytes); }
+MTL_INLINE uint64_t _vs_byte_swap(uint64_t bytes) { return _byteswap_uint64(bytes); }
+#endif
 
 template <typename T> MTL_INLINE T ByteSwapOptimized(T bytes)
 {
