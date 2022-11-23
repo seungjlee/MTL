@@ -29,15 +29,27 @@
 
 namespace MTL
 {
+#ifdef WIN32
 MTL_INLINE uint16_t _vs_byte_swap(uint16_t bytes) { return _byteswap_ushort(bytes); }
 MTL_INLINE uint32_t _vs_byte_swap(uint32_t bytes) { return _byteswap_ulong (bytes); }
 MTL_INLINE uint64_t _vs_byte_swap(uint64_t bytes) { return _byteswap_uint64(bytes); }
+#endif
 
-template <typename T> MTL_INLINE T _bwap_x86(T bytes)
+template <typename T> MTL_INLINE T _bswap_x86(T bytes)
 {
-#ifdef __GNUC__
   asm("bswap %0" : "=r" (bytes));
   return bytes;
+}
+template <> MTL_INLINE uint16_t _bswap_x86(uint16_t bytes)
+{
+  asm("xchg %%al, %%ah" : "=a" (bytes));
+  return bytes;
+}
+
+template <typename T> MTL_INLINE T ByteSwapOptimized(T bytes)
+{
+#ifdef __GNUC__
+  return _bswap_x86(bytes);
 #elif defined(WIN32)
   return _vs_byte_swap(bytes);
 #endif
@@ -46,11 +58,11 @@ template <typename T> MTL_INLINE T _bwap_x86(T bytes)
 template <typename T> MTL_INLINE static T ByteSwap(T bytes)
 {
   if (sizeof(T) == 2)
-    return (T)_bwap_x86((uint16_t&)bytes);
+    return (T)ByteSwapOptimized((uint16_t&)bytes);
   else if (sizeof(T) == 4)
-    return (T)_bwap_x86((uint32_t&)bytes);
+    return (T)ByteSwapOptimized((uint32_t&)bytes);
   else if (sizeof(T) == 8)
-    return (T)_bwap_x86((uint64_t&)bytes);
+    return (T)ByteSwapOptimized((uint64_t&)bytes);
   else
     MTL_THROW("Unsupported number of bytes for input! " + std::to_string(sizeof(T)));
 }
