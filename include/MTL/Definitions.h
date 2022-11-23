@@ -88,7 +88,7 @@ using OutputStream = std::wostream;
 {                                                                                                    \
   char _msg_[1024];                                                                                  \
   std::snprintf(_msg_, sizeof(_msg_), "%s, %s, line %d: %s", __FUNCTION__, __FILE__, __LINE__, MSG); \
-  throw MTL::Exception(MTL::ToUTF16(_msg_));                                                         \
+  throw MTL::Exception(_msg_);                                                                       \
 }
 
 #endif  // MTL_DEFINITIONS_H

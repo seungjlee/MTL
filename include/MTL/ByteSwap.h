@@ -1,8 +1,7 @@
 //
 // Math Template Library
 //
-// Copyright (c) 2014: Seung Jae Lee, https://github.com/seungjlee/MTL
-//
+// Copyright (c) 2022: Seung Jae Lee, https://github.com/seungjlee/MTL
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted
 // provided that the following conditions are met:
@@ -23,36 +22,30 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef MTL_EXCEPTION_H
-#define MTL_EXCEPTION_H
+#ifndef MTL_BYTE_SWAP_H
+#define MTL_BYTE_SWAP_H
 
-#include <MTL/StringHelpers.h>
-#include <exception>
+#include<MTL/Exception.h>
 
 namespace MTL
 {
-
-class Exception : public std::runtime_error
+template <typename T> MTL_INLINE T _bwap_x86(T bytes)
 {
-public:
-  Exception(const std::string& message = "", U64 ID = 0)
-    : Exception(MTL::ToUTF16(message), ID)
-  {
-  }
-  Exception(const String& message = L"", U64 ID = 0)
-    : std::runtime_error(ToUTF8(message)), Message_(message), ID_(ID)
-  {
-  }
+  asm("bswap %0" : "=r" (bytes));
+  return bytes;
+}
 
-  const String& Message() const  { return Message_; }
-  U64 ID() const  { return ID_;}
+template <typename T> MTL_INLINE static T ByteSwap(T bytes)
+{
+  if (sizeof(T) == 2)
+    return _bwap_x86((uint16_t&)bytes);
+  else if (sizeof(T) == 4)
+    return _bwap_x86((uint32_t&)bytes);
+  else if (sizeof(T) == 8)
+    return _bwap_x86((uint64_t&)bytes);
+  else
+    MTL_THROW("Unsupported number of bytes for input! " + std::to_string(sizeof(T)));
+}
 
-private:
-  String Message_;
-  U64 ID_;
-};
-
-}  // namespace MTL
-
-
-#endif  // MTL_EXCEPTION_H
+}
+#endif  // MTL_BYTE_SWAP_H
