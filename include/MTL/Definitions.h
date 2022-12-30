@@ -91,4 +91,36 @@ using OutputStream = std::wostream;
   throw MTL::Exception(std::string(_msg_) + MSG);                                             \
 }
 
+#ifdef WIN32
+
+#include <corecrt.h>
+#pragma warning(push)
+#pragma warning(disable: _UCRT_DISABLED_WARNINGS)
+_UCRT_DISABLE_CLANG_WARNINGS
+_CRT_BEGIN_C_HEADER
+_ACRTIMP void __cdecl _wassert(
+  _In_z_ wchar_t const* _Message,
+  _In_z_ wchar_t const* _File,
+  _In_   unsigned       _Line
+);
+_CRT_END_C_HEADER
+
+#define MTL_ALWAYS_ASSERT(expression) (void)(                                                 \
+            (!!(expression)) ||                                                               \
+            (_wassert(_CRT_WIDE(#expression), _CRT_WIDE(__FILE__), (unsigned)(__LINE__)), 0))
+_UCRT_RESTORE_CLANG_WARNINGS
+#pragma warning(pop) // _UCRT_DISABLED_WARNINGS
+
+#else
+
+extern "C" void __assert_fail(const char *__assertion, const char *__file,
+  unsigned int __line, const char *__function)
+  __THROW __attribute__((__noreturn__));
+#define MTL_ALWAYS_ASSERT(expr)							\
+     (static_cast <bool> (expr)						  \
+      ? void (0)							              \
+      : __assert_fail (#expr, __FILE__, __LINE__, __ASSERT_FUNCTION))
+
+#endif
+
 #endif  // MTL_DEFINITIONS_H
