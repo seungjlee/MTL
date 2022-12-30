@@ -97,13 +97,12 @@ using OutputStream = std::wostream;
 #pragma warning(push)
 #pragma warning(disable: _UCRT_DISABLED_WARNINGS)
 _UCRT_DISABLE_CLANG_WARNINGS
-_CRT_BEGIN_C_HEADER
-_ACRTIMP void __cdecl _wassert(
+
+extern "C" _ACRTIMP void __cdecl _wassert(
   _In_z_ wchar_t const* _Message,
   _In_z_ wchar_t const* _File,
   _In_   unsigned       _Line
 );
-_CRT_END_C_HEADER
 
 #define MTL_ALWAYS_ASSERT(expression) (void)(                                                 \
             (!!(expression)) ||                                                               \
