@@ -62,7 +62,7 @@ TEST(TestMemoryBandwitdh)
   double maxBandwidth = 0;
   int bestThreads = 0;
 
-  for (int numberOfThreads = 4; numberOfThreads <= maxNumberOfThreads; numberOfThreads += 2)
+  for (int numberOfThreads = 2; numberOfThreads <= maxNumberOfThreads; numberOfThreads += 2)
   {
     DynamicVector<double> testV1(kVectorSize, 11);
     DynamicVector<double> testV2(kVectorSize, 22);
