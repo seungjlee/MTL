@@ -53,7 +53,7 @@ TEST(TestMemoryBandwitdh)
   Timer t;
   double bestTime;
 
-  int maxNumberOfThreads = MAX_TEST_THREADS; // Min(MAX_TEST_THREADS, (int)CPU::Instance().NumberOfThreads());
+  int maxNumberOfThreads = Min(MAX_TEST_THREADS, (int)CPU::Instance().NumberOfThreads() * 2);
 
   // Used for overwriting the cache since we are trying to just test memory bandwidth.
   DynamicVector<double> tempV(kVectorSize);
