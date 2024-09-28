@@ -31,6 +31,7 @@
 
 // Color macros.
 #define COLOR_UTF8_RESET     "\033[0m"
+#define COLOR_UTF8_BOLD      "\033[1m"
 
 #define COLOR_UTF8_BLACK     "\033[30m"
 #define COLOR_UTF8_RED       "\033[31m"
@@ -51,6 +52,7 @@
 #define COLOR_UTF8_LWHITE    "\033[97m"
 
 #define COLOR_RESET     TO_WCHAR(COLOR_UTF8_RESET)
+#define COLOR_BOLD      TO_WCHAR(COLOR_UTF8_BOLD)
 
 #define COLOR_BLACK     TO_WCHAR(COLOR_UTF8_BLACK)
 #define COLOR_RED       TO_WCHAR(COLOR_UTF8_RED)

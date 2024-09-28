@@ -30,7 +30,7 @@ using namespace MTL;
 
 static const double kTol = 1e-13;
 
-constexpr int MAX_TEST_THREADS = VALUE_DEBUG_RELEASE(2, 8);
+constexpr int MAX_TEST_THREADS = VALUE_DEBUG_RELEASE(2, 24);
 
 #define CHECK_FEATURE(FEATURE) \
   wprintf(L"  %-8hs %hs\n", #FEATURE, CPU::Instance().FEATURE()  ? "Yes" : "No");
@@ -47,19 +47,22 @@ TEST(TestCPU)
 
 TEST(TestMemoryBandwitdh)
 {
-  static const long kVectorSize = 3*1024*1024;
-  static const long kTries = 4;
+  static const long kVectorSize = VALUE_DEBUG_RELEASE(2*1024*1024, 8*1024*1024);
+  static const long kTries = 8;
 
   Timer t;
   double bestTime;
 
-  int maxNumberOfThreads = Min(MAX_TEST_THREADS, (int)CPU::Instance().NumberOfThreads());
+  int maxNumberOfThreads = MAX_TEST_THREADS; // Min(MAX_TEST_THREADS, (int)CPU::Instance().NumberOfThreads());
 
   // Used for overwriting the cache since we are trying to just test memory bandwidth.
   DynamicVector<double> tempV(kVectorSize);
   tempV.Zeros();
 
-  for (int numberOfThreads = 1; numberOfThreads <= maxNumberOfThreads; numberOfThreads++)
+  double maxBandwidth = 0;
+  int bestThreads = 0;
+
+  for (int numberOfThreads = 4; numberOfThreads <= maxNumberOfThreads; numberOfThreads += 2)
   {
     DynamicVector<double> testV1(kVectorSize, 11);
     DynamicVector<double> testV2(kVectorSize, 22);
@@ -77,8 +80,13 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    wprintf(L"  Zero:                  %8.3f GB/s.\n",
-            sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    double bandwidth = sizeof(double) * kVectorSize * 1e-9 / bestTime;
+    if (bandwidth > maxBandwidth)
+    {
+      maxBandwidth = bandwidth;
+      bestThreads = numberOfThreads;
+    }
+    wprintf(L"  Zero:                  %8.3f GB/s.\n", bandwidth);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 0, kTol);
 
@@ -92,25 +100,15 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    wprintf(L"  Assign:                %8.3f GB/s.\n",
-            sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    bandwidth = sizeof(double) * kVectorSize * 1e-9 / bestTime;
+    if (bandwidth > maxBandwidth)
+    {
+      maxBandwidth = bandwidth;
+      bestThreads = numberOfThreads;
+    }
+    wprintf(L"  Assign:                %8.3f GB/s.\n", bandwidth);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 101, kTol);
-
-    bestTime = kINF;
-    for (long i = 0; i < kTries; i++)
-    {
-      tempV += (double)numberOfThreads;  // Dirty the cache memory.
-
-      t.ResetAndStart();
-      testV2 = testV1;
-      t.Stop();
-      bestTime = Min(bestTime, t.Seconds());
-    }
-    wprintf(L"  Copy:                  %8.3f GB/s.\n",
-            2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
-    FOR_EACH_INDEX(testV2)
-      MTL_EQUAL_FLOAT(testV2[testV2Index], 11, kTol);
 
     bestTime = kINF;
     for (long i = 0; i < kTries; i++)
@@ -123,8 +121,13 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    wprintf(L"  Add Scalar:            %8.3f GB/s.\n",
-            2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    bandwidth = sizeof(double) * kVectorSize * 1e-9 / bestTime;
+    if (bandwidth > maxBandwidth)
+    {
+      maxBandwidth = bandwidth;
+      bestThreads = numberOfThreads;
+    }
+    wprintf(L"  Add Scalar:            %8.3f GB/s.\n", bandwidth);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 28, kTol);
 
@@ -139,8 +142,13 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    wprintf(L"  Multiply Scalar:       %8.3f GB/s.\n",
-            2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    bandwidth = sizeof(double) * kVectorSize * 1e-9 / bestTime;
+    if (bandwidth > maxBandwidth)
+    {
+      maxBandwidth = bandwidth;
+      bestThreads = numberOfThreads;
+    }
+    wprintf(L"  Multiply Scalar:       %8.3f GB/s.\n", bandwidth);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 77, kTol);
 
@@ -155,10 +163,35 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    wprintf(L"  Divide Scalar:         %8.3f GB/s.\n",
-            2 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    bandwidth = sizeof(double) * kVectorSize * 1e-9 / bestTime;
+    if (bandwidth > maxBandwidth)
+    {
+      maxBandwidth = bandwidth;
+      bestThreads = numberOfThreads;
+    }
+    wprintf(L"  Divide Scalar:         %8.3f GB/s.\n", bandwidth);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 5.5, kTol);
+
+    bestTime = kINF;
+    for (long i = 0; i < kTries; i++)
+    {
+      tempV += (double)numberOfThreads;  // Dirty the cache memory.
+
+      t.ResetAndStart();
+      testV2 = testV1;
+      t.Stop();
+      bestTime = Min(bestTime, t.Seconds());
+    }
+    bandwidth = 2 * sizeof(double) * kVectorSize * 1e-9 / bestTime;
+    if (bandwidth > maxBandwidth)
+    {
+      maxBandwidth = bandwidth;
+      bestThreads = numberOfThreads;
+    }
+    wprintf(L"  Copy:                  %8.3f GB/s.\n", bandwidth);
+    FOR_EACH_INDEX(testV2)
+      MTL_EQUAL_FLOAT(testV2[testV2Index], 11, kTol);
 
     bestTime = kINF;
     for (long i = 0; i < kTries; i++)
@@ -172,8 +205,13 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    wprintf(L"  Add Vectors:           %8.3f GB/s.\n",
-            3 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    bandwidth = 2 * sizeof(double) * kVectorSize * 1e-9 / bestTime;
+    if (bandwidth > maxBandwidth)
+    {
+      maxBandwidth = bandwidth;
+      bestThreads = numberOfThreads;
+    }
+    wprintf(L"  Add Vectors:           %8.3f GB/s.\n", bandwidth);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], 9999.777-123.456, kTol);
 
@@ -189,11 +227,18 @@ TEST(TestMemoryBandwitdh)
       t.Stop();
       bestTime = Min(bestTime, t.Seconds());
     }
-    wprintf(L"  Multiply Vectors:      %8.3f GB/s.\n",
-            3 * sizeof(double) * kVectorSize * 1e-9 / bestTime);
+    bandwidth = 2 * sizeof(double) * kVectorSize * 1e-9 / bestTime;
+    if (bandwidth > maxBandwidth)
+    {
+      maxBandwidth = bandwidth;
+      bestThreads = numberOfThreads;
+    }
+    wprintf(L"  Multiply Vectors:      %8.3f GB/s.\n", bandwidth);
     FOR_EACH_INDEX(testV2)
       MTL_EQUAL_FLOAT(testV2[testV2Index], -123.456*9999.777, kTol);
   }
+
+  wprintf(COLOR_BOLD L"\nMax. Bandwidth: %.3f GB/s, %d threads.\n\n" COLOR_RESET, maxBandwidth, bestThreads);
 }
 
 TEST(TestStreamPerformance)
@@ -205,9 +250,9 @@ TEST(TestStreamPerformance)
   Timer t;
   double bestTime;
 
-  int maxNumberOfThreads = Min(MAX_TEST_THREADS, (int)CPU::Instance().NumberOfThreads());
+  int maxNumberOfThreads = MAX_TEST_THREADS; // Min(MAX_TEST_THREADS, (int)CPU::Instance().NumberOfThreads());
 
-  for (int numberOfThreads = 1; numberOfThreads <= maxNumberOfThreads; numberOfThreads++)
+  for (int numberOfThreads = 2; numberOfThreads <= maxNumberOfThreads; numberOfThreads *= 2)
   {
     DynamicVector<double> testV1(kVectorSize, -1);
     DynamicVector<double> testV2(kVectorSize, -2);
