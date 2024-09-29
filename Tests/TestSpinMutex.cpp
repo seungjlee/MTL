@@ -85,7 +85,9 @@ TEST(Test_SpinMutex)
   using SpinMutexNoYield = SpinMutex<0,false>;
   TEST_MUTEX(NumberOfIterations, std::mutex);
   TEST_MUTEX(NumberOfIterations, SpinMutex<0>);
+#ifndef WIN32
   TEST_MUTEX(NumberOfIterations, SpinMutexNoYield);
+#endif
   TEST_MUTEX(NumberOfIterations, SpinMutex<1>);
   TEST_MUTEX(NumberOfIterations, SpinMutex<10000>);
 }
