@@ -31,7 +31,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}")
 include(MTL)
 
 option (MTL_ENABLE_SSE    "Enables SSE instructions."          ON)
-option (MTL_ENABLE_AVX    "Enables AVX and FMA instructions." OFF)
+option (MTL_ENABLE_AVX    "Enables AVX and FMA instructions."  ON)
 option (MTL_ENABLE_AVX512 "Enables AVX512 instructions."      OFF)
 option (MTL_USE_FAST_FMA  "Use faster version of std::fma()."  ON)
 
