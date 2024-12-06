@@ -28,6 +28,7 @@
 
 #include <MTL/Math.h>
 #include <MTL/Stream/Stream.h>
+#include <MTL/Stream/SSE.h>
 
 #if MTL_ENABLE_AVX || MTL_ENABLE_AVX512
 
