@@ -84,12 +84,16 @@ using OutputStream = std::wostream;
   #define MTL_ENABLE_OPENMP 1
 #endif
 
+#ifdef __cpp_exceptions
 #define MTL_THROW(MSG)                                                                        \
 {                                                                                             \
   char _msg_[1024];                                                                           \
   std::snprintf(_msg_, sizeof(_msg_), "%s, %s, line %d: ", __FUNCTION__, __FILE__, __LINE__); \
   throw MTL::Exception(std::string(_msg_) + MSG);                                             \
 }
+#else
+#define MTL_THROW(MSG) assert(false);
+#endif
 
 #ifdef WIN32
 
