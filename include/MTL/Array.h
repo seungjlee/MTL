@@ -36,6 +36,8 @@ public:
   MTL_INLINE static T Sum(const T* p)  { return Array<N-1,T>::Sum(p) + p[N-1];             }
   MTL_INLINE static T Min(const T* p)  { return MTL::Min<T>(Array<N-1,T>::Min(p), p[N-1]); }
   MTL_INLINE static T Max(const T* p)  { return MTL::Max<T>(Array<N-1,T>::Max(p), p[N-1]); }
+  MTL_INLINE static T And(const T* p)  { return Array<N-1,T>::And(p) & p[N-1];             }
+  MTL_INLINE static T Or(const T* p)   { return Array<N-1,T>::Or(p) | p[N-1];              }
 
   MTL_INLINE static T MinOfAbsolutes(const T* p)
   {
@@ -128,6 +130,8 @@ public:
   MTL_INLINE static T Sum(const T* p)                           { return p[0];          }
   MTL_INLINE static T Min(const T* p)                           { return p[0];          }
   MTL_INLINE static T Max(const T* p)                           { return p[0];          }
+  MTL_INLINE static T And(const T* p)                           { return p[0];          }
+  MTL_INLINE static T Or(const T* p)                            { return p[0];          }
   MTL_INLINE static T MinOfAbsolutes(const T* p)                { return Abs(p[0]);     }
   MTL_INLINE static T MaxOfAbsolutes(const T* p)                { return Abs(p[0]);     }
   MTL_INLINE static T SumOfSquares(const T* p)                  { return Square(p[0]);  }
