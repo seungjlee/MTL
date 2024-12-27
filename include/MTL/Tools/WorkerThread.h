@@ -41,7 +41,8 @@ static bool SetThreadName(unsigned long dwThreadID, char* threadName);
 namespace MTL
 {
 
-template<class DataType, class VectorClass = std::vector<DataType>>
+template<class DataType, class VectorClass = std::vector<DataType>,
+         class MutexClass = std::recursive_mutex>
 class WorkerThread
 {
 public:
@@ -154,7 +155,7 @@ protected:
   MTL::String Name_;
   MTL::Event ProcessData_;
   std::thread Thread_;
-  std::recursive_mutex QueueMutex_;
+  MutexClass QueueMutex_;
   VectorClass QueueData_;
   VectorClass ThreadWorkData_;
   uint32_t MaxWorkQueueSize_;
