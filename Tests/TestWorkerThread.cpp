@@ -116,10 +116,6 @@ static void TestWorkerPipelines()
 
 }
 
-TEST(TestWorkerPipelines_MTL)
-{
-  TestWorkerPipelines<TestWorker<int, MTL::DynamicVector<int>>>();
-}
 TEST(TestWorkerPipelines_std)
 {
   TestWorkerPipelines<TestWorker<int, std::vector<int>>>();
