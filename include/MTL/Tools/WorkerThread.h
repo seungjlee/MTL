@@ -28,8 +28,9 @@
 
 #include <MTL/Exception.h>
 #include <MTL/Colors.h>
+#include <MTL/Timer.h>
 #include <MTL/Tools/Event.h>
-#include <mutex>
+#include <MTL/Tools/Lock.h>
 #include <string>
 #include <thread>
 #include <vector>
@@ -42,16 +43,16 @@ namespace MTL
 {
 
 template<class DataType, class VectorClass = std::vector<DataType>,
-         class MutexClass = std::recursive_mutex>
+         class MutexClass = std::recursive_mutex, int PeriodMilliseconds = 0>
 class WorkerThread
 {
 public:
-  WorkerThread(const std::wstring& name)
-    : Running_(true), Name_(name), MaxWorkQueueSize_(10000)
+  WorkerThread(const std::wstring& name, uint64_t maxBatchSize = 1024, uint64_t maxWorkQueueSize = 1 << 20)
+    : Running_(true), Name_(name), MaxBatchSize_(maxBatchSize), MaxWorkQueueSize_(maxWorkQueueSize)
   {
   }
-  WorkerThread(const std::string& name)
-    : WorkerThread(ToUTF16(name))
+  WorkerThread(const std::string& name, uint64_t maxBatchSize = 1024, uint64_t maxWorkQueueSize = 1 << 20)
+    : WorkerThread(ToUTF16(name), maxBatchSize, maxWorkQueueSize)
   {
   }
   ~WorkerThread()
@@ -79,18 +80,20 @@ public:
 #endif
   }
 
-  void Pause()
+  virtual void Pause()
   {
-    Running_ = false;
+    if (PeriodMilliseconds == 0)
+      Running_ = false;
   }
-  void Continue()
+  virtual void Continue()
   {
-    Running_ = true;
+    if (PeriodMilliseconds == 0)
+      Running_ = true;
   }
 
   void ClearQueue()
   {
-    std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
+    MTL::GenericLock<MutexClass> lock(QueueMutex_);
     QueueData_.clear();
   }
 
@@ -106,9 +109,15 @@ public:
 
   virtual void QueueWork(const DataType& data)
   {
-    std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
+    MTL::GenericLock<MutexClass> lock(QueueMutex_);
     QueueData_.push_back(data);
     ProcessData_.Signal();
+  }
+
+  bool IsIdle() const
+  {
+    MTL::GenericLock<MutexClass> lock(QueueMutex_);
+    return QueueData_.size() == 0 && ThreadWorkData_.size() == 0;
   }
 
   bool IsRunning() const
@@ -158,36 +167,74 @@ protected:
   MutexClass QueueMutex_;
   VectorClass QueueData_;
   VectorClass ThreadWorkData_;
-  uint32_t MaxWorkQueueSize_;
+  uint64_t MaxBatchSize_;
+  uint64_t MaxWorkQueueSize_;
+  MTL::Timer periodTimer;
+
+  std::string name() { return ToUTF8(Name_); }
 
   void ProcessThread()
   {
     try
     {
       InitializeThread();
-      while (true)
+      if (PeriodMilliseconds > 0)
       {
-        ProcessBeforeWait();
-        ProcessData_.Wait();
-        if (!Running_)
-          break;
-
-        if (QueueData_.size() > 0)
+        periodTimer.Restart();
+        while (Running_)
         {
+          bool workDone = false;
+          if (QueueData_.size() > 0)
           {
-            std::lock_guard<std::recursive_mutex> lock(QueueMutex_);
-            if (QueueData_.size() > MaxWorkQueueSize_)
             {
-              uint32_t startOffset = (uint32_t)QueueData_.size() - MaxWorkQueueSize_;
-              ThreadWorkData_ = std::vector<DataType>(QueueData_.begin() + startOffset, QueueData_.end());
+              MTL::GenericLock<MutexClass> lock(QueueMutex_);
+              assert(QueueData_.size() <= MaxWorkQueueSize_); // For debugging.
+
+              ThreadWorkData_.insert(ThreadWorkData_.end(), QueueData_.begin(), QueueData_.end());
+              QueueData_.clear();
             }
-            else
+            if (periodTimer.Milliseconds() >= PeriodMilliseconds || ThreadWorkData_.size() >= MaxBatchSize_)
             {
-              ThreadWorkData_ = QueueData_;
+              ProcessWork(ThreadWorkData_);
+              ThreadWorkData_.clear();
+              workDone = true;
             }
-            QueueData_.clear();
           }
-          ProcessWork(ThreadWorkData_);
+
+          int64_t sleepTime = int64_t(PeriodMilliseconds - periodTimer.Milliseconds());
+          if (sleepTime > 0)
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+
+          if (workDone)
+            periodTimer.Restart();
+        }
+      }
+      else
+      {
+        while (true)
+        {
+          ProcessBeforeWait();
+          ProcessData_.Wait();
+          if (!Running_)
+            break;
+
+          if (QueueData_.size() > 0)
+          {
+            {
+              MTL::GenericLock<MutexClass> lock(QueueMutex_);
+              if (QueueData_.size() > MaxWorkQueueSize_)
+              {
+                size_t startOffset = QueueData_.size() - MaxWorkQueueSize_;
+                ThreadWorkData_ = std::vector<DataType>(QueueData_.begin() + startOffset, QueueData_.end());
+              }
+              else
+              {
+                ThreadWorkData_ = QueueData_;
+              }
+              QueueData_.clear();
+            }
+            ProcessWork(ThreadWorkData_);
+          }
         }
       }
       CleanupThread();

@@ -31,23 +31,26 @@
 namespace MTL
 {
 
-class Lock
+template <class MutexClass = std::recursive_mutex>
+class GenericLock
 {
 public:
-  Lock(std::recursive_mutex& mutex)
+  GenericLock(MutexClass& mutex)
     : mutex_(mutex)
   {
     mutex_.lock();
   }
 
-  ~Lock()
+  ~GenericLock()
   {
     mutex_.unlock();
   }
 
 private:
-  std::recursive_mutex& mutex_;
+  MutexClass& mutex_;
 };
+
+typedef GenericLock<std::recursive_mutex> Lock;
 
 }  // namespace MTL
 

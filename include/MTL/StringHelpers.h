@@ -99,17 +99,29 @@ inline std::string ToUpperCase(const std::string& input)
 
 inline std::string ToUTF8(const std::wstring& str)
 {
+#ifdef WIN32
+  // TODO: Fix this for windows. Just a work around handling only ascii (casting).
+  std::string output(str.size(), ' ');
+  std::transform(str.begin(), str.end(), output.begin(),
+	               [](wchar_t x) { return static_cast<char>(x); });
+  return output;
+#else
   std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
   return converter.to_bytes(str);
+#endif
 }
 inline std::wstring ToUTF16(const std::string& str)
 {
 #ifdef WIN32
-  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-#else  // g++ 5.4
+	// TODO: Fix this for windows. Just a work around handling only ascii (casting).
+	std::wstring output(str.size(), ' ');
+	std::transform(str.begin(), str.end(), output.begin(),
+                 [](wchar_t x) { return static_cast<wchar_t>(x); });
+	return output;
+#else
   std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-#endif
   return converter.from_bytes(str);
+#endif
 }
 
 template <class CharType>

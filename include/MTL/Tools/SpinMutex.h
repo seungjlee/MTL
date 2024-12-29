@@ -54,7 +54,7 @@ public:
         {
           // Note that the minimum sleep time will depend on std implementation
           // and OS.
-          std::this_thread::sleep_for(std::chrono::nanoseconds(NANO_SECONDS));;
+          std::this_thread::sleep_for(std::chrono::nanoseconds(NANO_SECONDS));
         }
       }
     }
