@@ -116,8 +116,16 @@ public:
 
   bool IsIdle() const
   {
-    MTL::GenericLock<MutexClass> lock(const_cast<WorkerThread*>(this)->QueueMutex_);
-    return QueueData_.size() == 0 && ThreadWorkData_.size() == 0;
+    bool queueEmpty, workListEmpty;
+    {
+      MTL::GenericLock<MutexClass> lock(const_cast<WorkerThread*>(this)->QueueMutex_);
+      queueEmpty = QueueData_.size() == 0;
+    }
+    {
+      MTL::GenericLock<MutexClass> lock(const_cast<WorkerThread*>(this)->ThreadWorkMutex_);
+      workListEmpty = ThreadWorkData_.size() == 0;
+    }
+    return queueEmpty && workListEmpty;
   }
 
   bool IsRunning() const
