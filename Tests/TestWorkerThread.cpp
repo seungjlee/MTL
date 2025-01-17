@@ -23,15 +23,16 @@
 // WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <MTL/Math/DynamicVector.h>
+#include <MTL/Tools/SpinMutex.h>
 #include <MTL/Tools/WorkerThread.h>
 #include <MTL/Tools/Test.h>
 
 using namespace MTL;
 
-static const int MaxCount = 100000;
+static const int MaxCount = 200000;
 
-template <class DataType, class VectorClass = std::vector<DataType>>
-class TestWorker : public WorkerThread<DataType, VectorClass>
+template <class DataType, class VectorClass = std::vector<DataType>, class MutexClass = std::mutex>
+class TestWorker : public WorkerThread<DataType, VectorClass, MutexClass>
 {
 public:
   int Count;
@@ -39,7 +40,7 @@ public:
   TestWorker* pNext;
 
   TestWorker(int id, TestWorker* next = nullptr)
-    : WorkerThread<DataType, VectorClass>("TestWorker" + std::to_string(id)),
+    : WorkerThread<DataType, VectorClass, MutexClass>("TestWorker" + std::to_string(id)),
       Count(0), ID(id), pNext(next)
   {
     this->MaxWorkQueueSize(MaxCount);
@@ -48,7 +49,7 @@ public:
 
   virtual void CleanupThread()
   {
-    std::lock_guard<std::recursive_mutex> lock(this->QueueMutex_);
+    GenericLock lock(this->QueueMutex_);
     ProcessWork(this->QueueData_);
     this->QueueData_.clear();
   }

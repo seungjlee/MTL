@@ -47,12 +47,12 @@ template<class DataType, class VectorClass = std::vector<DataType>,
 class WorkerThread
 {
 public:
-  WorkerThread(const std::wstring& name, uint64_t maxBatchSize = 1024, uint64_t maxWorkQueueSize = 1 << 20)
-    : Running_(true), Name_(name), MaxBatchSize_(maxBatchSize), MaxWorkQueueSize_(maxWorkQueueSize)
+  WorkerThread(const std::wstring& name, uint64_t maxWorkQueueSize = 1 << 20, uint64_t maxBatchSize = 1024)
+    : Running_(true), Name_(name), MaxWorkQueueSize_(maxWorkQueueSize), MaxBatchSize_(maxBatchSize)
   {
   }
-  WorkerThread(const std::string& name, uint64_t maxBatchSize = 1024, uint64_t maxWorkQueueSize = 1 << 20)
-    : WorkerThread(ToUTF16(name), maxBatchSize, maxWorkQueueSize)
+  WorkerThread(const std::string& name, uint64_t maxWorkQueueSize = 1 << 20, uint64_t maxBatchSize = 1024)
+    : WorkerThread(ToUTF16(name), maxWorkQueueSize, maxBatchSize)
   {
   }
   ~WorkerThread()
@@ -186,8 +186,8 @@ protected:
   VectorClass QueueData_;
   MutexClass ThreadWorkMutex_;
   VectorClass ThreadWorkData_;
-  uint64_t MaxBatchSize_;
   uint64_t MaxWorkQueueSize_;
+  uint64_t MaxBatchSize_;
   MTL::Timer periodTimer;
 
   std::string name() { return ToUTF8(Name_); }
