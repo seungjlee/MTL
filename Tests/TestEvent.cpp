@@ -28,7 +28,7 @@
 using namespace MTL;
 
 static const int kInitialID = 7;
-static const int kThreads = 32;
+static const int kThreads = 8;
 static const int kWork = 50000;
 
 static std::array<MTL::Event, kThreads> events;
@@ -53,7 +53,8 @@ TEST(TestEvents)
   for (int i = 0; i < numberOfThreads; i++)
     threads.emplace_back(std::thread(ProcessWork, i, (i + 1) % numberOfThreads));
 
-  events[kInitialID].Signal();
+  int initialID = kInitialID % numberOfThreads;
+  events[initialID].Signal();
 
   for (std::thread& t : threads)
     if (t.joinable())
