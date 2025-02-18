@@ -27,7 +27,6 @@
 
 #include <vector>
 #include <deque>
-#include <mutex>
 
 namespace MTL
 {
@@ -114,10 +113,10 @@ private:
     }
 };
 
+// User is responsible for thread safety.
 class MemoryPool
 {
     std::deque<PoolBlock> blocks_;
-    std::mutex mutex_;
     size_t blockSize_;
 
 public:
@@ -131,7 +130,6 @@ public:
 
     void* allocate(size_t size)
     {
-        std::lock_guard<std::mutex> lock(mutex_);
         for (auto& block : blocks_) {
             if (void* ptr = block.allocate(size))
                 return ptr;
@@ -142,7 +140,6 @@ public:
 
     void deallocate(void* ptr)
     {
-        std::lock_guard<std::mutex> lock(mutex_);
         for (auto& block : blocks_) {
             if (block.deallocate(ptr))
                 return;
