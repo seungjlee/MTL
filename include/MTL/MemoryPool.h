@@ -26,7 +26,7 @@
 #define MTL_MEMORY_POOL_H
 
 #include <vector>
-#include <list>
+#include <deque>
 #include <mutex>
 
 namespace MTL
@@ -42,7 +42,7 @@ struct MemoryRegion
 class PoolBlock
 {
     std::vector<uint8_t> data_;
-    std::list<MemoryRegion> regions_;
+    std::deque<MemoryRegion> regions_;
     
 public:
     explicit PoolBlock(size_t size) : data_(size)
@@ -52,15 +52,24 @@ public:
     
     void* allocate(size_t size)
     {
-        for (auto it = regions_.begin(); it != regions_.end(); ++it) {
-            if (!it->used && it->size >= size) {
-                if (it->size > size) {
-                    regions_.insert(std::next(it), 
-                        {it->offset + size, it->size - size, false});
+        for (auto it = regions_.begin(); it != regions_.end(); ++it)
+        {
+            if (!it->used && it->size >= size)
+            {
+                // Carve out 'size' bytes from this region
+                size_t oldOffset = it->offset;
+                size_t remain = it->size - size;
+                it->offset = oldOffset;
+                it->size   = size;
+                it->used   = true;
+
+                // Insert a new region if there's leftover
+                if (remain > 0)
+                {
+                    MemoryRegion newRegion { oldOffset + size, remain, false };
+                    regions_.insert(std::next(it), newRegion);
                 }
-                it->size = size;
-                it->used = true;
-                return data_.data() + it->offset;
+                return data_.data() + oldOffset;
             }
         }
         return nullptr;
@@ -68,9 +77,13 @@ public:
     
     bool deallocate(void* ptr)
     {
+        assert(ptr != nullptr);
         size_t offset = static_cast<uint8_t*>(ptr) - data_.data();
-        for (auto it = regions_.begin(); it != regions_.end(); ++it) {
-            if (it->offset == offset && it->used) {
+        
+        for (auto it = regions_.begin(); it != regions_.end(); ++it)
+        {
+            if (it->offset == offset && it->used)
+            {
                 it->used = false;
                 merge_regions();
                 return true;
@@ -82,13 +95,19 @@ public:
 private:
     void merge_regions()
     {
-        auto it = regions_.begin();
-        while (it != regions_.end()) {
+        // Merge adjacent free regions
+        for (auto it = regions_.begin(); it != regions_.end(); /* no inc */)
+        {
             auto next = std::next(it);
-            if (next != regions_.end() && !it->used && !next->used) {
+            if (next != regions_.end() && !it->used && !next->used &&
+                it->offset + it->size == next->offset)
+            {
+                // Extend 'it' region
                 it->size += next->size;
                 regions_.erase(next);
-            } else {
+            }
+            else
+            {
                 ++it;
             }
         }
@@ -97,7 +116,7 @@ private:
 
 class MemoryPool
 {
-    std::list<PoolBlock> blocks_;
+    std::deque<PoolBlock> blocks_;
     std::mutex mutex_;
     size_t blockSize_;
 

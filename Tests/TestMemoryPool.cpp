@@ -58,7 +58,7 @@ TEST(TestMemoryPoolMultiple)
     }
 }
 
-TEST(TestMemoryPoolMergeRegions)
+TEST(TestMemoryPoolMergeRegions1)
 {
     PoolBlock block(1024);
     
@@ -89,4 +89,34 @@ TEST(TestMemoryPoolMergeRegions)
     // Should be able to allocate full size
     void* full = block.allocate(1024);
     MTL_VERIFY(full == p1);
+}
+
+TEST(TestMemoryPoolMergeRegions2)
+{
+    PoolBlock block(1024);
+    
+    // Test sequential allocations
+    void* regions[4];
+    for(int i = 0; i < 4; i++) {
+        regions[i] = block.allocate(128);
+        MTL_VERIFY(regions[i] != nullptr);
+    }
+    
+    // Free middle regions - should merge
+    block.deallocate(regions[1]);
+    block.deallocate(regions[2]);
+    
+    // Try to allocate merged space
+    void* merged = block.allocate(256);
+    MTL_VERIFY(merged == regions[1]);
+    
+    // Free all regions
+    block.deallocate(regions[0]);
+    block.deallocate(merged);
+    block.deallocate(regions[3]);
+    
+    // Should be able to allocate full block
+    void* full = block.allocate(1024);
+    MTL_VERIFY(full == regions[0]);
+    MTL_VERIFY(full != nullptr);
 }
