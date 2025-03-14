@@ -95,19 +95,19 @@ private:
     void merge_regions()
     {
         // Merge adjacent free regions
-        for (auto it = regions_.begin(); it != regions_.end(); /* no inc */)
-        {
-            auto next = std::next(it);
-            if (next != regions_.end() && !it->used && !next->used &&
-                it->offset + it->size == next->offset)
-            {
-                // Extend 'it' region
-                it->size += next->size;
-                regions_.erase(next);
-            }
-            else
-            {
-                ++it;
+        bool merged = true;
+        while (merged) {
+            merged = false;
+            for (auto it = regions_.begin(); it != regions_.end(); ++it) {
+                auto next = std::next(it);
+                if (next != regions_.end() && !it->used && !next->used &&
+                    it->offset + it->size == next->offset) {
+                    // Extend 'it' region
+                    it->size += next->size;
+                    regions_.erase(next);
+                    merged = true;
+                    break;  // Start over since iterators may be invalidated
+                }
             }
         }
     }
