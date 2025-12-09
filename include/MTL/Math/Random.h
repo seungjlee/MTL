@@ -40,9 +40,13 @@ public:
 
   MTL_INLINE U32 GetNext()
   {
-    x_ = x_ * Multiplier + Increment;
+    return U32(GetNext64());
+  }
 
-    return U32(x_);
+  MTL_INLINE U64 GetNext64()
+  {
+    x_ = x_ * Multiplier + Increment;
+    return x_;
   }
 
   template<class T>
