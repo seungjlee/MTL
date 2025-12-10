@@ -43,7 +43,7 @@ template <class T> MTL_INLINE static void ComputeCosineSine(T& c, T& s, const T&
   U64 test = U64((angle+kPiOverFour)*kTwoOverPi+kTruncateOffset);
   if (test & 1)
   {
-    c = cos(angle);
+    c = std::cos(angle);
     s = Sqrt(1-Pow<2>(c));
 
     assert(angle*kOneOverPi >= -T(kTruncateOffset));
@@ -51,7 +51,7 @@ template <class T> MTL_INLINE static void ComputeCosineSine(T& c, T& s, const T&
   }
   else
   {
-    s = sin(angle);
+    s = std::sin(angle);
     c = Sqrt(1-Pow<2>(s));
 
     assert((angle+kPiOverTwo)*kOneOverPi >= -T(kTruncateOffset));

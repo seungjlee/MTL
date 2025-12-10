@@ -40,7 +40,7 @@ template <class T> MTL_INLINE static T Conditional(bool condition, const T& a, c
 
 template <class T> MTL_INLINE static T Max(const T& a, const T& b)
 {
-  return Conditional(a > b, a, b);
+  return std::max(a, b);
 }
 template <class T> MTL_INLINE static T Max(const T& a, const T& b, const T& c)
 {
@@ -53,7 +53,7 @@ template <class T> MTL_INLINE static T Max(const T& a, const T& b, const T& c, c
 
 template <class T> MTL_INLINE static T Min(const T& a, const T& b)
 {
-  return Conditional(a < b, a, b);
+  return std::min(a, b);
 }
 template <class T> MTL_INLINE static T Min(const T& a, const T& b, const T& c)
 {
