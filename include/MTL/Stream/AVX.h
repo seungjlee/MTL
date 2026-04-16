@@ -475,8 +475,12 @@ public:
   { return _mm256_cmp_pd(Data_, y.Data_, _CMP_EQ_OQ); }
   MTL_INLINE X256 operator<(const X256& y) const 
   { return _mm256_cmp_pd(Data_, y.Data_, _CMP_LT_OQ); }
+  MTL_INLINE X256 operator<=(const X256& y) const
+  { return _mm256_cmp_pd(Data_, y.Data_, _CMP_LE_OQ); }
   MTL_INLINE X256 operator>(const X256& y) const
   { return _mm256_cmp_pd(Data_, y.Data_, _CMP_GT_OQ); }
+  MTL_INLINE X256 operator>=(const X256& y) const
+  { return _mm256_cmp_pd(Data_, y.Data_, _CMP_GE_OQ); }
   MTL_INLINE X256 operator-() const               { return _mm256_xor_pd(Data_, kX256_SignF64);   }
   MTL_INLINE X256 operator+(const X256& y) const  { return _mm256_add_pd(Data_, y.Data_);         }
   MTL_INLINE X256 operator-(const X256& y) const  { return _mm256_sub_pd(Data_, y.Data_);         }
