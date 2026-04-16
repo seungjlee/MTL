@@ -283,6 +283,8 @@ public:
 
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
 
+  MTL_INLINE X128 operator+(const X128& y) const    { return _mm_add_epi16(Data_, y.Data_);    }
+  MTL_INLINE X128 operator-(const X128& y) const    { return _mm_sub_epi16(Data_, y.Data_);    }
   MTL_INLINE X128 operator&(const X128& y) const    { return _mm_and_si128(Data_, y.Data_);    }
   MTL_INLINE X128 operator|(const X128& y) const    { return _mm_or_si128(Data_, y.Data_);     }
   MTL_INLINE X128 operator^(const X128& y) const    { return _mm_xor_si128(Data_, y.Data_);    }
@@ -326,6 +328,8 @@ public:
 
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
 
+  MTL_INLINE X128 operator+(const X128& y) const  { return _mm_add_epi16(Data_, y.Data_);  }
+  MTL_INLINE X128 operator-(const X128& y) const  { return _mm_sub_epi16(Data_, y.Data_);  }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
   MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
@@ -353,6 +357,8 @@ public:
 
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
 
+  MTL_INLINE X128 operator+(const X128& y) const  { return _mm_add_epi64(Data_, y.Data_); }
+  MTL_INLINE X128 operator-(const X128& y) const  { return _mm_sub_epi64(Data_, y.Data_); }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
   MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
@@ -380,6 +386,8 @@ public:
 
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
 
+  MTL_INLINE X128 operator+(const X128& y) const  { return _mm_add_epi64(Data_, y.Data_); }
+  MTL_INLINE X128 operator-(const X128& y) const  { return _mm_sub_epi64(Data_, y.Data_); }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
   MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
@@ -501,7 +509,9 @@ public:
 
   MTL_INLINE X128 operator==(const X128& y) const  { return _mm_cmpeq_pd(Data_, y.Data_);       }
   MTL_INLINE X128 operator<(const X128& y)  const  { return _mm_cmplt_pd(Data_, y.Data_);       }
+  MTL_INLINE X128 operator<=(const X128& y) const  { return _mm_cmple_pd(Data_, y.Data_);       }
   MTL_INLINE X128 operator>(const X128& y)  const  { return _mm_cmpgt_pd(Data_, y.Data_);       }
+  MTL_INLINE X128 operator>=(const X128& y) const  { return _mm_cmpge_pd(Data_, y.Data_);       }
   MTL_INLINE X128 operator-() const                { return _mm_xor_pd(Data_, kX128_SignF64);   }
   MTL_INLINE X128 operator+(const X128& y)  const  { return _mm_add_pd(Data_, y.Data_);         }
   MTL_INLINE X128 operator-(const X128& y)  const  { return _mm_sub_pd(Data_, y.Data_);         }

@@ -118,6 +118,245 @@ TEST(TestU8_AddSub)
 }
 
 //
+// I16 operator+ and operator-
+//
+TEST(TestI16_AddSub)
+{
+#if MTL_ENABLE_SSE
+  {
+    MTL::X128<MTL::I16> a((MTL::I16)1000);
+    MTL::X128<MTL::I16> b((MTL::I16)234);
+    MTL::X128<MTL::I16> sum = a + b;
+    MTL::X128<MTL::I16> diff = a - b;
+    for (int i = 0; i < MTL::X128<MTL::I16>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::I16)1234);
+      MTL_EQUAL(diff[i], (MTL::I16)766);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::I16> a((MTL::I16)1000);
+    MTL::X256<MTL::I16> b((MTL::I16)234);
+    MTL::X256<MTL::I16> sum = a + b;
+    MTL::X256<MTL::I16> diff = a - b;
+    for (int i = 0; i < MTL::X256<MTL::I16>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::I16)1234);
+      MTL_EQUAL(diff[i], (MTL::I16)766);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X512<MTL::I16> a((MTL::I16)1000);
+    MTL::X512<MTL::I16> b((MTL::I16)234);
+    MTL::X512<MTL::I16> sum = a + b;
+    MTL::X512<MTL::I16> diff = a - b;
+    for (int i = 0; i < MTL::X512<MTL::I16>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::I16)1234);
+      MTL_EQUAL(diff[i], (MTL::I16)766);
+    }
+  }
+#endif
+}
+
+//
+// U16 operator+ and operator-
+//
+TEST(TestU16_AddSub)
+{
+#if MTL_ENABLE_SSE
+  {
+    MTL::X128<MTL::U16> a((MTL::U16)50000);
+    MTL::X128<MTL::U16> b((MTL::U16)10000);
+    MTL::X128<MTL::U16> sum = a + b;
+    MTL::X128<MTL::U16> diff = a - b;
+    for (int i = 0; i < MTL::X128<MTL::U16>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::U16)60000);
+      MTL_EQUAL(diff[i], (MTL::U16)40000);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::U16> a((MTL::U16)50000);
+    MTL::X256<MTL::U16> b((MTL::U16)10000);
+    MTL::X256<MTL::U16> sum = a + b;
+    MTL::X256<MTL::U16> diff = a - b;
+    for (int i = 0; i < MTL::X256<MTL::U16>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::U16)60000);
+      MTL_EQUAL(diff[i], (MTL::U16)40000);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X512<MTL::U16> a((MTL::U16)50000);
+    MTL::X512<MTL::U16> b((MTL::U16)10000);
+    MTL::X512<MTL::U16> sum = a + b;
+    MTL::X512<MTL::U16> diff = a - b;
+    for (int i = 0; i < MTL::X512<MTL::U16>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::U16)60000);
+      MTL_EQUAL(diff[i], (MTL::U16)40000);
+    }
+  }
+#endif
+}
+
+//
+// I64 operator+ and operator-
+//
+TEST(TestI64_AddSub)
+{
+#if MTL_ENABLE_SSE
+  {
+    MTL::X128<MTL::I64> a((MTL::I64)1000000000LL);
+    MTL::X128<MTL::I64> b((MTL::I64)234567890LL);
+    MTL::X128<MTL::I64> sum = a + b;
+    MTL::X128<MTL::I64> diff = a - b;
+    for (int i = 0; i < MTL::X128<MTL::I64>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::I64)1234567890LL);
+      MTL_EQUAL(diff[i], (MTL::I64)765432110LL);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::I64> a((MTL::I64)1000000000LL);
+    MTL::X256<MTL::I64> b((MTL::I64)234567890LL);
+    MTL::X256<MTL::I64> sum = a + b;
+    MTL::X256<MTL::I64> diff = a - b;
+    for (int i = 0; i < MTL::X256<MTL::I64>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::I64)1234567890LL);
+      MTL_EQUAL(diff[i], (MTL::I64)765432110LL);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X512<MTL::I64> a((MTL::I64)1000000000LL);
+    MTL::X512<MTL::I64> b((MTL::I64)234567890LL);
+    MTL::X512<MTL::I64> sum = a + b;
+    MTL::X512<MTL::I64> diff = a - b;
+    for (int i = 0; i < MTL::X512<MTL::I64>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::I64)1234567890LL);
+      MTL_EQUAL(diff[i], (MTL::I64)765432110LL);
+    }
+  }
+#endif
+}
+
+//
+// U64 operator+ and operator-
+//
+TEST(TestU64_AddSub)
+{
+#if MTL_ENABLE_SSE
+  {
+    MTL::X128<MTL::U64> a((MTL::U64)10000000000ULL);
+    MTL::X128<MTL::U64> b((MTL::U64)3000000000ULL);
+    MTL::X128<MTL::U64> sum = a + b;
+    MTL::X128<MTL::U64> diff = a - b;
+    for (int i = 0; i < MTL::X128<MTL::U64>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::U64)13000000000ULL);
+      MTL_EQUAL(diff[i], (MTL::U64)7000000000ULL);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::U64> a((MTL::U64)10000000000ULL);
+    MTL::X256<MTL::U64> b((MTL::U64)3000000000ULL);
+    MTL::X256<MTL::U64> sum = a + b;
+    MTL::X256<MTL::U64> diff = a - b;
+    for (int i = 0; i < MTL::X256<MTL::U64>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::U64)13000000000ULL);
+      MTL_EQUAL(diff[i], (MTL::U64)7000000000ULL);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X512<MTL::U64> a((MTL::U64)10000000000ULL);
+    MTL::X512<MTL::U64> b((MTL::U64)3000000000ULL);
+    MTL::X512<MTL::U64> sum = a + b;
+    MTL::X512<MTL::U64> diff = a - b;
+    for (int i = 0; i < MTL::X512<MTL::U64>::Increment; i++)
+    {
+      MTL_EQUAL(sum[i], (MTL::U64)13000000000ULL);
+      MTL_EQUAL(diff[i], (MTL::U64)7000000000ULL);
+    }
+  }
+#endif
+}
+
+//
+// F64 operator<= and operator>=
+//
+TEST(TestF64_LessEqualGreaterEqual)
+{
+#if MTL_ENABLE_SSE
+  {
+    MTL::X128<MTL::F64> a(3.0);
+    MTL::X128<MTL::F64> b(5.0);
+    MTL::X128<MTL::F64> le = a <= b;
+    MTL::X128<MTL::F64> ge = b >= a;
+    MTL::X128<MTL::F64> leEq = a <= a;
+    MTL::X128<MTL::F64> geEq = a >= a;
+    for (int i = 0; i < MTL::X128<MTL::F64>::Increment; i++)
+    {
+      MTL_VERIFY(le[i] != 0.0);
+      MTL_VERIFY(ge[i] != 0.0);
+      MTL_VERIFY(leEq[i] != 0.0);
+      MTL_VERIFY(geEq[i] != 0.0);
+    }
+    MTL::X128<MTL::F64> notLe = b <= a;
+    MTL::X128<MTL::F64> notGe = a >= b;
+    for (int i = 0; i < MTL::X128<MTL::F64>::Increment; i++)
+    {
+      MTL_EQUAL(notLe[i], 0.0);
+      MTL_EQUAL(notGe[i], 0.0);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::F64> a(3.0);
+    MTL::X256<MTL::F64> b(5.0);
+    MTL::X256<MTL::F64> le = a <= b;
+    MTL::X256<MTL::F64> ge = b >= a;
+    MTL::X256<MTL::F64> leEq = a <= a;
+    MTL::X256<MTL::F64> geEq = a >= a;
+    for (int i = 0; i < MTL::X256<MTL::F64>::Increment; i++)
+    {
+      MTL_VERIFY(le[i] != 0.0);
+      MTL_VERIFY(ge[i] != 0.0);
+      MTL_VERIFY(leEq[i] != 0.0);
+      MTL_VERIFY(geEq[i] != 0.0);
+    }
+    MTL::X256<MTL::F64> notLe = b <= a;
+    MTL::X256<MTL::F64> notGe = a >= b;
+    for (int i = 0; i < MTL::X256<MTL::F64>::Increment; i++)
+    {
+      MTL_EQUAL(notLe[i], 0.0);
+      MTL_EQUAL(notGe[i], 0.0);
+    }
+  }
+#endif
+}
+
+//
 // I8 / U8 bitwise operators (&, |, ^)
 //
 TEST(TestI8_Bitwise)
