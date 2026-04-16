@@ -8,3 +8,5 @@
 /build
 /Build
 /BuildDebug
+
+__pycache__

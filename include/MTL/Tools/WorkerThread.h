@@ -207,7 +207,7 @@ protected:
             MTL::GenericLock<MutexClass> lock(QueueMutex_);
             if (QueueData_.size() > 0)
             {
-              MTL::GenericLock<MutexClass> lock(ThreadWorkMutex_);
+              MTL::GenericLock<MutexClass> workLock(ThreadWorkMutex_);
               assert(QueueData_.size() <= MaxWorkQueueSize_); // For debugging.
 
               ThreadWorkData_.insert(ThreadWorkData_.end(), QueueData_.begin(), QueueData_.end());
@@ -250,7 +250,7 @@ protected:
               MTL::GenericLock<MutexClass> lock(QueueMutex_);
               if (QueueData_.size() > MaxWorkQueueSize_)
               {
-                MTL::GenericLock<MutexClass> lock(ThreadWorkMutex_);
+                MTL::GenericLock<MutexClass> workLock(ThreadWorkMutex_);
                 size_t startOffset = QueueData_.size() - MaxWorkQueueSize_;
                 ThreadWorkData_ = std::vector<DataType>(QueueData_.begin() + startOffset, QueueData_.end());
               }

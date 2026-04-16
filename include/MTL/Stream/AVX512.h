@@ -128,6 +128,8 @@ public:
 
   MTL_INLINE static X512 Zeros()   { return kX512_ZerosI;  }
 
+  MTL_INLINE X512 operator+(const X512& y) const  { return _mm512_add_epi8(Data_, y.Data_);  }
+  MTL_INLINE X512 operator-(const X512& y) const  { return _mm512_sub_epi8(Data_, y.Data_);  }
   MTL_INLINE X512 operator&(const X512& y) const  { return _mm512_and_si512(Data_, y.Data_); }
   MTL_INLINE X512 operator|(const X512& y) const  { return _mm512_or_si512(Data_, y.Data_);  }
   MTL_INLINE X512 operator^(const X512& y) const  { return _mm512_xor_si512(Data_, y.Data_); }
@@ -155,6 +157,8 @@ public:
 
   MTL_INLINE static X512 Zeros()   { return kX512_ZerosI;  }
 
+  MTL_INLINE X512 operator+(const X512& y) const  { return _mm512_add_epi8(Data_, y.Data_);  }
+  MTL_INLINE X512 operator-(const X512& y) const  { return _mm512_sub_epi8(Data_, y.Data_);  }
   MTL_INLINE X512 operator&(const X512& y) const  { return _mm512_and_si512(Data_, y.Data_); }
   MTL_INLINE X512 operator|(const X512& y) const  { return _mm512_or_si512(Data_, y.Data_);  }
   MTL_INLINE X512 operator^(const X512& y) const  { return _mm512_xor_si512(Data_, y.Data_); }

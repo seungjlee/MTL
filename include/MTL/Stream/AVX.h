@@ -129,6 +129,8 @@ public:
 
   MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
 
+  MTL_INLINE X256 operator+(const X256& y) const  { return _mm256_add_epi8(Data_, y.Data_);  }
+  MTL_INLINE X256 operator-(const X256& y) const  { return _mm256_sub_epi8(Data_, y.Data_);  }
   MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
   MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
   MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }
@@ -156,6 +158,8 @@ public:
 
   MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
 
+  MTL_INLINE X256 operator+(const X256& y) const  { return _mm256_add_epi8(Data_, y.Data_);  }
+  MTL_INLINE X256 operator-(const X256& y) const  { return _mm256_sub_epi8(Data_, y.Data_);  }
   MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
   MTL_INLINE X256 operator|(const X256& y) const  { return _mm256_or_si256(Data_, y.Data_);  }
   MTL_INLINE X256 operator^(const X256& y) const  { return _mm256_xor_si256(Data_, y.Data_); }

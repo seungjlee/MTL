@@ -137,6 +137,8 @@ public:
 
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
 
+  MTL_INLINE X128 operator+(const X128& y) const  { return _mm_add_epi8(Data_, y.Data_);  }
+  MTL_INLINE X128 operator-(const X128& y) const  { return _mm_sub_epi8(Data_, y.Data_);  }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
   MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
@@ -164,6 +166,8 @@ public:
 
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
 
+  MTL_INLINE X128 operator+(const X128& y) const  { return _mm_add_epi8(Data_, y.Data_);  }
+  MTL_INLINE X128 operator-(const X128& y) const  { return _mm_sub_epi8(Data_, y.Data_);  }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
   MTL_INLINE X128 operator|(const X128& y) const  { return _mm_or_si128(Data_, y.Data_);  }
   MTL_INLINE X128 operator^(const X128& y) const  { return _mm_xor_si128(Data_, y.Data_); }
