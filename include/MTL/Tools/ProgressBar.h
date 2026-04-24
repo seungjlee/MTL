@@ -28,12 +28,37 @@
 
 #include <MTL/Tools/WorkerThread.h>
 
+#include <clocale>
+
 #ifndef MAX_PROGRESS_BUFFER_SIZE
 #define MAX_PROGRESS_BUFFER_SIZE 512
 #endif
 
 namespace MTL
 {
+
+// Switch the C locale to UTF-8 at static-initialization time so std::wcout can
+// encode wide block glyphs to UTF-8 bytes the terminal can render. Without
+// this the default "C" locale drops non-ASCII wide chars and prints them as
+// '?'. (Note: std::wcout.imbue(std::locale("en_US.UTF-8")) is not sufficient
+// in libstdc++; the wide-stream codecvt follows the C locale.)
+namespace detail
+{
+inline bool SetUtf8CLocale()
+{
+  static const char* candidates[] =
+  {
+    "en_US.UTF-8", "en_US.utf8", "C.UTF-8", "C.utf8", ""
+  };
+  for (const char* name : candidates)
+  {
+    if (std::setlocale(LC_ALL, name) != nullptr)
+      return true;
+  }
+  return false;
+}
+static const bool kCLocaleIsUtf8 = SetUtf8CLocale();
+}  // namespace detail
 
 struct ProgressData
 {
@@ -112,51 +137,50 @@ private:
   void ShowProgressBar(double percent, const String& message, bool extraPrecision, int barLength,
                        const ColorRGB& barColor, const ColorRGB& textColor, uint16_t indent)
   {
-    int numberOfBlocksToPrint = int(barLength * percent);
     char buf[MAX_PROGRESS_BUFFER_SIZE];
 
-    std::wcout << "\r";
+    std::wcout << L"\r";
     for (uint16_t i = 0; i < indent; i++)
-      std::wcout << " ";
+      std::wcout << L" ";
 
     if (barLength > 0)
     {
-    #ifdef WIN32
-      // This code does not work on Ubuntu with default settings.
-      ColorScope cs(barColor);
-
-      int index = 0;
-      buf[index++] = '[';
-
-      for (int i = 0; i < barLength; i++)
+      // Unicode left-block characters give 8 sub-cell steps per character cell,
+      // i.e. 8x the resolution of a plain space-or-block bar.
+      static const wchar_t* kPartialBlock[8] =
       {
-        if (i < numberOfBlocksToPrint)
-          buf[index++] = '\xFE';
-        else
-          buf[index++] = ' ';
-      }
-      buf[index++] = ']';
-      buf[index++] = ' ';
-      buf[index] = 0;
-      std::wcout << buf;
-    #else
-      String bgColor = ColorRGB::BackgroundColor(barColor);
-      String endColor = ColorRGB::BackgroundColor(barColor * 0.25);
+        L" ",       // 0/8: empty (background only)
+        L"\u258F",  // 1/8
+        L"\u258E",  // 2/8
+        L"\u258D",  // 3/8
+        L"\u258C",  // 4/8
+        L"\u258B",  // 5/8
+        L"\u258A",  // 6/8
+        L"\u2589"   // 7/8
+      };
+      static const wchar_t* kFullBlock = L"\u2588";  // 8/8
+      static const ColorRGB kInitialBackground(50, 50, 50);
 
-      std::wcout << endColor;
-      std::wcout << " ";
-      std::wcout << bgColor;
+      const int subCells = barLength * 8;
+      const int filledSubCells = int(subCells * percent + 0.5);
+      const int fullCells = filledSubCells / 8;
+      const int partialIndex = filledSubCells % 8;
+
+      std::wcout << ColorRGB::BackgroundColor(kInitialBackground)
+                 << ColorRGB::ForegroundColor(barColor);
+
       int i = 0;
-      for (; i < numberOfBlocksToPrint; i++)
-        std::wcout << " ";
-
-      std::wcout << COLOR_BG(25, 25, 25);
+      for (; i < fullCells; i++)
+        std::wcout << kFullBlock;
+      if (partialIndex > 0 && i < barLength)
+      {
+        std::wcout << kPartialBlock[partialIndex];
+        i++;
+      }
       for (; i < barLength; i++)
-        std::wcout << " ";
+        std::wcout << L" ";
 
-      std::wcout << endColor;
-      std::wcout << " " << COLOR_RESET << " ";
-    #endif
+      std::wcout << COLOR_RESET << L" ";
     }
 
     {
