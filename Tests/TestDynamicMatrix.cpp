@@ -227,8 +227,10 @@ TEST(TestHouseholderQR_Speed)
 
   Timer t_QR;
   Timer t_SVD;
-  F64 maxRMS_QR  = 0;
-  F64 maxRMS_SVD = 0;
+  Timer t_HJSVD;
+  F64 maxRMS_QR    = 0;
+  F64 maxRMS_SVD   = 0;
+  F64 maxRMS_HJSVD = 0;
 
   Random random;
 
@@ -250,7 +252,6 @@ TEST(TestHouseholderQR_Speed)
 
     DynamicMatrix<F64> A = At.ComputeTranspose();
     DynamicVector<F64> residuals = A*x - b;
-    //wprintf(L" RMS = %e\n", RMS(residuals));
 
     maxRMS_QR = Max(maxRMS_QR, RMS(residuals));
 
@@ -261,16 +262,35 @@ TEST(TestHouseholderQR_Speed)
     t_SVD.Stop();
 
     residuals = A*xx - b;
-
     maxRMS_SVD = Max(maxRMS_SVD, RMS(residuals));
+
+    DynamicVector<F64> hjx;
+    F64 hjConditionNumber;
+    t_HJSVD.Start();
+    SolveHouseholderJacobiSVDTransposed(hjx, rank, hjConditionNumber, At, b);
+    t_HJSVD.Stop();
+
+    residuals = A*hjx - b;
+    maxRMS_HJSVD = Max(maxRMS_HJSVD, RMS(residuals));
+
+    // Cross-check: condition numbers and solutions should match the plain Jacobi SVD result.
+    MTL_EQUAL_FLOAT(hjConditionNumber, conditionNumber, 1e-10 * conditionNumber);
+    for (I32 k = 0; k < (I32)N; k++)
+      MTL_EQUAL_FLOAT(hjx[k], xx[k], 1e-10);
   }
 
-  wprintf(L"  QR solver:  %9.3f msecs (%d times), Max RMS = %e\n",
+  double svdSpeedup  = (t_HJSVD.Milliseconds() > 0) ? t_SVD.Milliseconds() / t_HJSVD.Milliseconds() : 0;
+
+  wprintf(L"  QR solver:                  %9.3f msecs (%d times), Max RMS = %e\n",
           t_QR.Milliseconds(), kRepeats, maxRMS_QR);
-  wprintf(L"  SVD solver: %9.3f msecs (%d times), Max RMS = %e\n",
+  wprintf(L"  Jacobi SVD solver:          %9.3f msecs (%d times), Max RMS = %e\n",
           t_SVD.Milliseconds(), kRepeats, maxRMS_SVD);
-  MTL_LESS_THAN(maxRMS_QR,  1.001);
-  MTL_LESS_THAN(maxRMS_SVD, 1.001);
+  wprintf(L"  Householder Jacobi SVD:     %9.3f msecs (%d times), Max RMS = %e\n",
+          t_HJSVD.Milliseconds(), kRepeats, maxRMS_HJSVD);
+  wprintf(L"  HJ-SVD speedup over Jacobi: %9.3fx\n", svdSpeedup);
+  MTL_LESS_THAN(maxRMS_QR,    1.001);
+  MTL_LESS_THAN(maxRMS_SVD,   1.001);
+  MTL_LESS_THAN(maxRMS_HJSVD, 1.001);
 }
 
 TEST(TestMultiplyByTranspose)
