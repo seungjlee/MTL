@@ -281,8 +281,12 @@ static bool HouseholderJacobiSVD(Matrix<M,N,T>& A, T W[N], SquareMatrix<N,T>& V)
 {
   static_assert(M >= N, "HouseholderJacobiSVD requires M >= N");
 
-  T diag[N];
-  T super[N];
+  // Zero-initialized so that the trailing super[N-1] (never written, never read by the
+  // bidiagonal builder below) does not trigger a -Wmaybe-uninitialized false positive that
+  // GCC raises through the inlined Array_2D::ColumnSumOfSquares template. Cost is N stores
+  // on small stack arrays; SVD itself dominates by orders of magnitude.
+  T diag[N] = {};
+  T super[N] = {};
 
   // Bidiagonalize A in place. Reflectors are stored in the lower triangle (left) and the
   // strict upper triangle right of the superdiagonal (right). All reflectors are normalized so

@@ -21,12 +21,15 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install gcovr
+      run: pip install gcovr
+
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/Build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/Build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DMTL_ENABLE_COVERAGE=ON
 
     - name: Build
       run: cmake --build ${{github.workspace}}/Build
 
-    - name: Run Tests
+    - name: Run Tests with Coverage
       working-directory: ${{github.workspace}}
-      run: python3 RunTests.py -ConsoleOut
+      run: python3 RunTests.py -ConsoleOut -Coverage

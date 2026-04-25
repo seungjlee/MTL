@@ -34,6 +34,7 @@ option (MTL_ENABLE_SSE    "Enables SSE instructions."          ON)
 option (MTL_ENABLE_AVX    "Enables AVX and FMA instructions."  ON)
 option (MTL_ENABLE_AVX512 "Enables AVX512 instructions."      OFF)
 option (MTL_USE_FAST_FMA  "Use faster version of std::fma()."  ON)
+option (MTL_ENABLE_COVERAGE "Compile with gcov instrumentation (gcc/clang/MinGW only)." OFF)
 
 message(STATUS "")
 
@@ -86,6 +87,13 @@ else(MSVC)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-strict-aliasing")
 
   SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+
+  if(MTL_ENABLE_COVERAGE)
+    message(STATUS "MTL_ENABLE_COVERAGE=ON: adding --coverage to compile and link flags.")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --coverage")
+  endif()
 endif(MSVC)
 
 if(MTL_ENABLE_SSE)

@@ -16,6 +16,7 @@ import io
 import math
 import os
 import platform
+import shutil
 import subprocess
 import sys
 import time
@@ -35,6 +36,9 @@ parser.add_argument('-b', dest='BuildDir', metavar='<build path>',
 parser.add_argument('-Debug', action='store_true', help='Use Debug directory instead of Release directory. (Only on Windows.)')
 parser.add_argument("-ConsoleOut", action='store_true', help='Full output to console after summary.')
 parser.add_argument("-NoColorRGB24", action='store_true', help='Disable 24-bit RGB colors on test output.')
+parser.add_argument("-Coverage", action='store_true',
+                    help='Print test coverage summary after running. Requires gcovr (pip install gcovr) ' +
+                    'and a build compiled with --coverage (gcc/clang/MinGW). Not supported with MSVC.')
 args = parser.parse_args()
 
 Pattern  = args.Pattern
@@ -87,7 +91,15 @@ TestList.sort()
 errorCount = 0
 print()
 
+# Buffer test stdout so we can optionally replay it after the summary,
+# but also write each test's output to the log file as soon as it finishes
+# so partial logs survive interruptions (Ctrl-C, crash, hang).
 Output = io.StringIO()
+
+def WriteToLogAndBuffer(text):
+  Output.write(text)
+  file.write(text.replace('\r\n', '\n'))
+  file.flush()
 
 for test in TestList:
   if (test != '') & (fnmatch.fnmatch(test, Pattern)):
@@ -100,11 +112,11 @@ for test in TestList:
     processResult = subprocess.run(['./' + test] + TestArguments, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, check=False)
     endTime = time.time()
 
-    Output.write(TestSeparator.decode('utf-8'))
-    Output.write(test + '\n')
-    Output.write(TestSeparator.decode('utf-8'))
-    Output.write(processResult.stdout.decode('utf-8'))
-    Output.write('\n\n')
+    WriteToLogAndBuffer(TestSeparator.decode('utf-8'))
+    WriteToLogAndBuffer(test + '\n')
+    WriteToLogAndBuffer(TestSeparator.decode('utf-8'))
+    WriteToLogAndBuffer(processResult.stdout.decode('utf-8'))
+    WriteToLogAndBuffer('\n\n')
 
     if processResult.returncode != 0:
       testResult = ColorString(color.RED, 'BAD')
@@ -113,7 +125,7 @@ for test in TestList:
     print('{:<7}'.format(testResult), end='')
     print(' %8.3f secs.' % (endTime - startTime,))
 
-Output.write(TestSeparator.decode('utf-8'))
+WriteToLogAndBuffer(TestSeparator.decode('utf-8'))
 totalEndTime = time.time()
 
 if errorCount > 0:
@@ -138,20 +150,75 @@ else:
 print(color.LCYAN + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
 print(color.RESET)
 
+def PrintCoverageSummary(repoRoot, buildDir):
+  gcovr = shutil.which('gcovr')
+  if gcovr is None:
+    message = "Coverage: gcovr not found. Install with: pip install gcovr"
+    print(ColorString(color.LYELLOW, message))
+    file.write('\n' + message + '\n')
+    file.flush()
+    return
+
+  # Tolerate a known gcov bug where heavily-inlined SIMD lines report bogus huge hit
+  # counts. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=68080.
+  command = [
+    gcovr,
+    '--root', repoRoot,
+    '--filter', os.path.join(repoRoot, 'include') + os.sep,
+    '--exclude', os.path.join(repoRoot, 'Tests') + os.sep,
+    '--exclude', os.path.join(repoRoot, buildDir) + os.sep,
+    '--gcov-ignore-parse-errors=suspicious_hits.warn_once_per_file',
+    '--print-summary',
+    '--txt',
+  ]
+  try:
+    result = subprocess.run(command, cwd=repoRoot, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, check=False, text=True)
+  except OSError as exception:
+    message = "Coverage: failed to run gcovr: " + str(exception)
+    print(ColorString(color.LYELLOW, message))
+    file.write('\n' + message + '\n')
+    file.flush()
+    return
+
+  if result.returncode != 0:
+    message = "Coverage: gcovr exited with code %d." % result.returncode
+    print(ColorString(color.LYELLOW, message))
+    file.write('\n' + message + '\n')
+    if result.stderr:
+      print(result.stderr.strip())
+      file.write(result.stderr)
+    hint = "Build with -DMTL_ENABLE_COVERAGE=ON and re-run the tests so .gcda files are produced."
+    print(hint)
+    file.write(hint + '\n')
+    file.flush()
+    return
+
+  # The full --txt report goes to the log file; the trailing --print-summary block (the
+  # last 3 lines: lines/functions/branches percentages) goes to stdout.
+  print()
+  print(ColorString(color.LCYAN, 'Test Coverage:'))
+  summaryLines = result.stdout.rstrip().splitlines()[-3:]
+  for summaryLine in summaryLines:
+    print(summaryLine)
+
+  file.write('\nTest Coverage:\n')
+  file.write(result.stdout)
+  file.flush()
+
+if args.Coverage:
+  PrintCoverageSummary(CurrentDir, BuildDir)
+
 if args.ConsoleOut:
   print('')
   print('-------------')
   print('Tests Output:')
   print('-------------')
   print('')
-
-Output.seek(0)
-for line in Output.readlines():
-  line = line.replace('\r', '', 1)
-  line = line.replace('\n', '', 1)
-  file.write(line)
-  file.write('\n')
-  if args.ConsoleOut:
+  Output.seek(0)
+  for line in Output.readlines():
+    line = line.replace('\r', '', 1)
+    line = line.replace('\n', '', 1)
     print(line)
-  
+
 sys.exit(errorCount)
