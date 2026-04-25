@@ -27,6 +27,13 @@
 #define MTL_HISTOGRAM_H
 
 #include "Math.h"
+#include <MTL/CPU.h>
+#include <MTL/OpenMP.h>
+#include <vector>
+
+#ifndef MTL_HISTOGRAM_PARALLEL_THRESHOLD
+#define MTL_HISTOGRAM_PARALLEL_THRESHOLD 65536
+#endif
 
 namespace MTL
 {
@@ -45,6 +52,27 @@ public:
     NumberOfElements_ = size;
     memset(Bins_, 0, sizeof(Bins_));
 
+#if MTL_ENABLE_OPENMP
+    int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
+    if (numberOfThreads > 1 && size >= MTL_HISTOGRAM_PARALLEL_THRESHOLD)
+    {
+      // Per-thread partial histograms reduced into Bins_ at the end. Local
+      // bins are heap-allocated because BINS=65536 (256 KiB for U16) is too
+      // large for a typical thread stack.
+      #pragma omp parallel num_threads(numberOfThreads)
+      {
+        std::vector<U32> localBins(BINS, 0);
+        #pragma omp for nowait
+        for (I32 i = 0; i < (I32)size; i++)
+          localBins[pData[i]]++;
+        #pragma omp critical
+        for (int b = 0; b < BINS; b++)
+          Bins_[b] += localBins[b];
+      }
+      return;
+    }
+#endif
+
     const T* pDataEnd = pData + size;
     for (; pData < pDataEnd; pData++)
       Bins_[*pData]++;
@@ -55,6 +83,32 @@ public:
   {
     NumberOfElements_ = 0;
     memset(Bins_, 0, sizeof(Bins_));
+
+#if MTL_ENABLE_OPENMP
+    int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
+    if (numberOfThreads > 1 && size >= MTL_HISTOGRAM_PARALLEL_THRESHOLD)
+    {
+      U32 localCounts = 0;
+      #pragma omp parallel num_threads(numberOfThreads) reduction(+:localCounts)
+      {
+        std::vector<U32> localBins(BINS, 0);
+        #pragma omp for nowait
+        for (I32 i = 0; i < (I32)size; i++)
+        {
+          if (pMask[i])
+          {
+            localBins[pData[i]]++;
+            localCounts++;
+          }
+        }
+        #pragma omp critical
+        for (int b = 0; b < BINS; b++)
+          Bins_[b] += localBins[b];
+      }
+      NumberOfElements_ = localCounts;
+      return;
+    }
+#endif
 
     const T* pDataEnd = pData + size;
     for (; pData < pDataEnd; pData++, pMask++)

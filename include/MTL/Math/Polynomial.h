@@ -73,7 +73,15 @@ public:
     At.Resize(N, (I32)pts.Size());
     y.Resize(pts.Size());
 
-    FOR_EACH_INDEX(pts)
+    const I32 numPts = (I32)pts.Size();
+    int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
+#if MTL_ENABLE_OPENMP
+    #pragma omp parallel for num_threads(numberOfThreads)                                          \
+                             if (DoOpenMP<T>(numPts, numberOfThreads))
+#else
+    (void)numberOfThreads;
+#endif
+    for (I32 ptsIndex = 0; ptsIndex < numPts; ptsIndex++)
     {
       T x = pts[ptsIndex].x();
 
@@ -107,7 +115,15 @@ public:
     At.Resize(N, (I32)xs.Size());
     y = ys;
 
-    FOR_EACH_INDEX(xs)
+    const I32 numPts = (I32)xs.Size();
+    int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
+#if MTL_ENABLE_OPENMP
+    #pragma omp parallel for num_threads(numberOfThreads)                                          \
+                             if (DoOpenMP<T>(numPts, numberOfThreads))
+#else
+    (void)numberOfThreads;
+#endif
+    for (I32 xsIndex = 0; xsIndex < numPts; xsIndex++)
     {
       T x = xs[xsIndex];
 

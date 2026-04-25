@@ -217,19 +217,38 @@ DynamicVector<T> operator/(const DynamicVector<T>& v, double s)
 }
 
 //
-// Need to optimize these.
+// Element-wise unary operations. Compilers reliably auto-vectorize Square()
+// and Sqrt(); OpenMP parallelizes the outer loop for large vectors.
 //
 template <class T> MTL_INLINE static
 void SquareAll(DynamicVector<T>& v)
 {
-  FOR_EACH_INDEX(v)
-    v[vIndex] = Square(v[vIndex]);
+  T* p = v.Begin();
+  const I64 size = (I64)v.Size();
+  int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
+#if MTL_ENABLE_OPENMP
+  #pragma omp parallel for num_threads(numberOfThreads)                                            \
+                           if (DoOpenMP<T>(size, numberOfThreads))
+#else
+  (void)numberOfThreads;
+#endif
+  for (I64 i = 0; i < size; i++)
+    p[i] = Square(p[i]);
 }
 template <class T> MTL_INLINE static
 void SquareRootAll(DynamicVector<T>& v)
 {
-  FOR_EACH_INDEX(v)
-    v[vIndex] = Sqrt(v[vIndex]);
+  T* p = v.Begin();
+  const I64 size = (I64)v.Size();
+  int numberOfThreads = (int)MTL::CPU::Instance().NumberOfThreads();
+#if MTL_ENABLE_OPENMP
+  #pragma omp parallel for num_threads(numberOfThreads)                                            \
+                           if (DoOpenMP<T>(size, numberOfThreads))
+#else
+  (void)numberOfThreads;
+#endif
+  for (I64 i = 0; i < size; i++)
+    p[i] = Sqrt(p[i]);
 }
 
 }  // namespace MTL
