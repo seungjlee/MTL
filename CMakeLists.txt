@@ -129,3 +129,4 @@ include_directories(
                    )
 
 add_subdirectory(Tests)
+add_subdirectory(ExampleApp)
