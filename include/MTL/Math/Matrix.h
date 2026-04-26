@@ -1007,8 +1007,10 @@ template<>
 inline SquareMatrix3x3 Inverse(const SquareMatrix3x3& M, F64 determinant)
 {
   // Callers (e.g. ChipAway tests) deliberately pass determinant == 0 to
-  // exercise the singular-matrix path; the resulting NaNs are checked for
-  // and treated as a sentinel. Suppress MSVC's static "divide by 0" warning.
+  // exercise the singular-matrix path. 1/0 yields +inf here, and the
+  // cofactors of a singular matrix are themselves 0, so the entries come
+  // out as 0 * inf = NaN, which the test treats as a sentinel. Suppress
+  // MSVC's static "divide by 0" warning.
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable: 4723)
