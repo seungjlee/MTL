@@ -37,3 +37,15 @@ jobs:
       with:
         name: test-log-ubuntu22-avx
         path: Build/TestLog_*.txt
+
+    - name: Publish test log to job summary
+      if: always()
+      shell: bash
+      run: |
+        log=$(ls -t Build/TestLog_*.txt 2>/dev/null | head -1)
+        if [ -n "$log" ]; then
+          echo "## Test log: $(basename "$log")" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat "$log" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+        fi
