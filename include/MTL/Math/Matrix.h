@@ -285,7 +285,7 @@ public:
 
   MTL_INLINE Matrix& operator-=(const T& scalar)
   {
-    Array<M*N,T>::SubtractScalar<M*N>(Data()[0], scalar);
+    Array<M*N,T>::SubtractScalar(Data()[0], scalar);
     return *this;
   }
   MTL_INLINE Matrix operator-(const T& scalar) const

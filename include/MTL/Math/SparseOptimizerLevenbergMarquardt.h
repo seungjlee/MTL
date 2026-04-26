@@ -178,6 +178,9 @@ protected:
   U32 Iterations_;
 
   virtual void ComputeSparsityMatrix(I32 numberOfParams) = 0;
+  // Bring the dense base-class overload into scope so the sparse override
+  // below does not hide it (silences -Woverloaded-virtual).
+  using DynamicOptimizerNonLinearLeastSquares<T>::ComputeJacobian;
   virtual void ComputeJacobian(CompressedSparseMatrix<T>& J,
                                const typename DynamicOptimizerNonLinearLeastSquares<T>::Parameters&
                                currentParameters) = 0;
