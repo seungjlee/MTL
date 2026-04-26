@@ -10,6 +10,13 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   OMP_WAIT_POLICY: PASSIVE
+  # gcov counters are atomic and serialize OpenMP threads under heavy
+  # contention, so multi-threaded tests run *slower* with --coverage.
+  # Pin to one thread for the coverage build to keep the workflow short.
+  OMP_NUM_THREADS: 1
+  # ccache-action is currently shipped on Node.js 20. Opt the runner into
+  # Node.js 24 so it stops emitting deprecation annotations.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
