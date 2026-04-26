@@ -48,7 +48,7 @@ fast, tested executable that I can compare against a baseline".
 | Platform | Configuration | Status |
 |----------|--------------|--------|
 | Windows Server 2022 | Visual Studio 2022 | ![Build](https://github.com/seungjlee/MTL/actions/workflows/Windows2022_VS2022.yml/badge.svg) |
-| Ubuntu 22.04 | GCC | ![Build](https://github.com/seungjlee/MTL/actions/workflows/Ubuntu22.yml/badge.svg) |
+| Ubuntu 24.04 | GCC + Coverage | ![Build](https://github.com/seungjlee/MTL/actions/workflows/TestCoverageUbuntu.yml/badge.svg) |
 | Ubuntu 22.04 | GCC + AVX | ![Build](https://github.com/seungjlee/MTL/actions/workflows/Ubuntu22_AVX.yml/badge.svg) |
 
 ## Getting started
