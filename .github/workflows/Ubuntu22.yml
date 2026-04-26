@@ -46,16 +46,48 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}
       run: |
-        echo "## Test log" >> "$GITHUB_STEP_SUMMARY"
         log=$(ls -t Build/TestLog_*.txt 2>/dev/null | head -1)
-        if [ -n "$log" ]; then
-          echo "_File: \`$log\`_" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          cat "$log" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-        else
+        if [ -z "$log" ]; then
+          echo "## Test log" >> "$GITHUB_STEP_SUMMARY"
           echo "_No TestLog_*.txt file found in Build/. Directory listing:_" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           ls -la Build/ >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit 0
         fi
+
+        # Strip ANSI escape sequences so the log renders as plain text in the
+        # GitHub job summary (which does not interpret terminal colors).
+        clean=$(mktemp)
+        sed -E 's/\x1B\[[0-9;]*[A-Za-z]//g; s/\x1B\][^\x07]*\x07//g' "$log" > "$clean"
+
+        # Pull the three percentages out of gcovr's --print-summary block and
+        # render them as a Markdown table at the top of the summary.
+        lines_pct=$(grep -E '^lines: '     "$clean" | tail -1 || true)
+        funcs_pct=$(grep -E '^functions: ' "$clean" | tail -1 || true)
+        brnch_pct=$(grep -E '^branches: '  "$clean" | tail -1 || true)
+        if [ -n "$lines_pct$funcs_pct$brnch_pct" ]; then
+          echo "## Test coverage" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Metric | Coverage | Hit / Total |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | ---: | ---: |" >> "$GITHUB_STEP_SUMMARY"
+          for row in "$lines_pct" "$funcs_pct" "$brnch_pct"; do
+            [ -z "$row" ] && continue
+            metric=$(echo "$row" | awk -F: '{print $1}' | sed 's/.*/\u&/')
+            pct=$(echo "$row" | grep -oE '[0-9]+(\.[0-9]+)?%' | head -1)
+            ratio=$(echo "$row" | grep -oE '[0-9]+ out of [0-9]+' | head -1)
+            echo "| $metric | $pct | $ratio |" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+        echo "## Test log" >> "$GITHUB_STEP_SUMMARY"
+        echo "_File: \`$log\`_" >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
+        echo "<details><summary>Show log</summary>" >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
+        echo '```' >> "$GITHUB_STEP_SUMMARY"
+        cat "$clean" >> "$GITHUB_STEP_SUMMARY"
+        echo '```' >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
+        echo "</details>" >> "$GITHUB_STEP_SUMMARY"
