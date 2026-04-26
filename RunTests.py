@@ -161,13 +161,28 @@ def PrintCoverageSummary(repoRoot, buildDir):
 
   # Tolerate a known gcov bug where heavily-inlined SIMD lines report bogus huge hit
   # counts. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=68080.
+  # --merge-lines collapses per-template-instantiation duplicates so a source line is
+  # counted once regardless of how many times the compiler instantiated it. Without
+  # this option, line totals balloon with each new template instantiation in the test
+  # suite and make the percentage hard to interpret.
   command = [
     gcovr,
     '--root', repoRoot,
     '--filter', os.path.join(repoRoot, 'include') + os.sep,
     '--exclude', os.path.join(repoRoot, 'Tests') + os.sep,
     '--exclude', os.path.join(repoRoot, buildDir) + os.sep,
+    # Davis_LDL_COLAMD.h is Timothy Davis's LDL/COLAMD code, vendored in as a
+    # third-party header. Excluding it keeps the coverage % focused on
+    # first-party MTL code.
+    '--exclude', os.path.join(repoRoot, 'include', 'MTL', 'Math', 'Davis_LDL_COLAMD.h'),
+    # Test.h is the test framework itself. Its failure-reporting branches
+    # (Verify(false), Equal mismatch, exception handlers, ...) only execute
+    # when a test actually fails, so they're impossible to cover from a
+    # passing test suite. Negative tests live in TestFrameworkNegative.cpp;
+    # excluding Test.h here keeps the metric focused on library code.
+    '--exclude', os.path.join(repoRoot, 'include', 'MTL', 'Tools', 'Test.h'),
     '--gcov-ignore-parse-errors=suspicious_hits.warn_once_per_file',
+    '--merge-lines',
     '--print-summary',
     '--txt',
   ]
