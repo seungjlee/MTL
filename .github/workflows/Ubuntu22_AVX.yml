@@ -41,11 +41,18 @@ jobs:
     - name: Publish test log to job summary
       if: always()
       shell: bash
+      working-directory: ${{github.workspace}}
       run: |
+        echo "## Test log" >> "$GITHUB_STEP_SUMMARY"
         log=$(ls -t Build/TestLog_*.txt 2>/dev/null | head -1)
         if [ -n "$log" ]; then
-          echo "## Test log: $(basename "$log")" >> "$GITHUB_STEP_SUMMARY"
+          echo "_File: \`$log\`_" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           cat "$log" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "_No TestLog_*.txt file found in Build/. Directory listing:_" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          ls -la Build/ >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
           echo '```' >> "$GITHUB_STEP_SUMMARY"
         fi
