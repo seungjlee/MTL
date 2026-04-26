@@ -26,7 +26,17 @@
 #ifndef MTL_SPARSE_H
 #define MTL_SPARSE_H
 
+// Davis_LDL_COLAMD.h is third-party code that defines its routines as
+// file-scope `static` functions. Translation units that pull in only a
+// subset of them trigger -Wunused-function under GCC; suppress it locally.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 #include <MTL/Math/Davis_LDL_COLAMD.h>
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 namespace MTL
 {
