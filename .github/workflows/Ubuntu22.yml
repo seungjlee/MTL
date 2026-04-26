@@ -33,3 +33,10 @@ jobs:
     - name: Run Tests with Coverage
       working-directory: ${{github.workspace}}
       run: python3 RunTests.py -ConsoleOut -Coverage
+
+    - name: Upload test log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-log-ubuntu22
+        path: Build/TestLog_*.txt

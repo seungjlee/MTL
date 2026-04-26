@@ -30,3 +30,10 @@ jobs:
     - name: Run Tests
       working-directory: ${{github.workspace}}
       run: python3 RunTests.py -ConsoleOut
+
+    - name: Upload test log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-log-ubuntu22-avx
+        path: Build/TestLog_*.txt
