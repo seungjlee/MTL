@@ -14,9 +14,6 @@ env:
   # contention, so multi-threaded tests run *slower* with --coverage.
   # Pin to one thread for the coverage build to keep the workflow short.
   OMP_NUM_THREADS: 1
-  # ccache-action is currently shipped on Node.js 20. Opt the runner into
-  # Node.js 24 so it stops emitting deprecation annotations.
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -32,7 +29,7 @@ jobs:
       run: pip install gcovr
 
     - name: Setup ccache
-      uses: hendrikmuhs/ccache-action@v1
+      uses: hendrikmuhs/ccache-action@v1.2.23
       with:
         key: coverage-ubuntu-24.04
 
