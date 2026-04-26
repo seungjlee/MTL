@@ -191,6 +191,12 @@ def PrintCoverageSummary(repoRoot, buildDir):
     '--exclude', os.path.join(repoRoot, 'include', 'MTL', 'Tools', 'Test.h'),
     '--gcov-ignore-parse-errors=suspicious_hits.warn_once_per_file',
     '--merge-lines',
+    # GCC emits a hidden branch for every potentially-throwing call (normal
+    # return vs. exception unwind), and another for compiler-generated paths
+    # the optimizer cannot prove unreachable. Excluding them gives a branch
+    # metric that reflects real decision coverage rather than C++ EH plumbing.
+    '--exclude-throw-branches',
+    '--exclude-unreachable-branches',
     '--print-summary',
     '--txt',
   ]
