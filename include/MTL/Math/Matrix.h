@@ -1006,7 +1006,17 @@ inline SquareMatrix2x2 Inverse(const SquareMatrix2x2& M, F64 determinant)
 template<>
 inline SquareMatrix3x3 Inverse(const SquareMatrix3x3& M, F64 determinant)
 {
+  // Callers (e.g. ChipAway tests) deliberately pass determinant == 0 to
+  // exercise the singular-matrix path; the resulting NaNs are checked for
+  // and treated as a sentinel. Suppress MSVC's static "divide by 0" warning.
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4723)
+#endif
   F64 reciprocalDet = 1. / determinant;
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
   SquareMatrix3x3 inv;
 
   inv[0][0] = (M[1][1]*M[2][2]-M[1][2]*M[2][1]) * reciprocalDet;
