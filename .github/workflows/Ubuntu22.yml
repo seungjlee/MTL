@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v5
 
     - name: Install gcovr
       run: pip install gcovr
@@ -36,7 +36,7 @@ jobs:
 
     - name: Upload test log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: test-log-ubuntu22
         path: Build/TestLog_*.txt
