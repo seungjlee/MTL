@@ -46,3 +46,14 @@ Each `Tests/Test*.cpp` compiles to a separate executable. Tests are auto-discove
 - Test macros: `TEST(Name)`, `MTL_VERIFY(expr)`, `MTL_EQUAL(actual, expected)`, `MTL_EQUAL_FLOAT(actual, expected, tol)`.
 - Every source file starts with the BSD 2-Clause license header.
 - Wide strings (`std::wstring`, `wchar_t`) are used throughout the library.
+
+## Performance trade-offs
+
+- Some class members are intentionally left uninitialized (e.g. raw numeric
+  buffers, scratch storage) to avoid touching memory the caller is about to
+  overwrite. Do not "fix" these by adding default initializers without
+  measuring — the omission is deliberate.
+- Some compiler warnings are suppressed locally for the same reason
+  (e.g. `-Wmaybe-uninitialized`, `-Wunused-function` around third-party
+  headers). Prefer narrow `#pragma` push/pop guards over disabling the
+  warning globally, and leave a short comment explaining why.
