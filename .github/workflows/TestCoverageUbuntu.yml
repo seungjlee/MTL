@@ -81,6 +81,48 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
         fi
 
+        # Per-file coverage table parsed from the gcovr --txt block in the log.
+        # gcovr wraps long file names onto a continuation line, so we glue
+        # such pairs together before splitting into Markdown columns.
+        python3 - "$clean" >> "$GITHUB_STEP_SUMMARY" <<'PY'
+        import re, sys
+        text = open(sys.argv[1], encoding='utf-8', errors='replace').read()
+        match = re.search(
+          r'^File\s+Lines\s+Exec\s+Cover\s+Missing\s*\n-+\n(.*?)\n-+\nTOTAL\s+(\d+)\s+(\d+)\s+(\d+)%',
+          text, re.M | re.S)
+        if not match:
+          sys.exit(0)
+        body, total_lines, total_exec, total_pct = match.groups()
+        rows = []
+        pending = None
+        for raw in body.splitlines():
+          if not raw.strip():
+            continue
+          parts = raw.split()
+          if pending is not None:
+            rows.append((pending, parts[0], parts[1], parts[2],
+                         ' '.join(parts[3:]) if len(parts) > 3 else ''))
+            pending = None
+            continue
+          if len(parts) >= 4 and parts[1].isdigit():
+            rows.append((parts[0], parts[1], parts[2], parts[3],
+                         ' '.join(parts[4:]) if len(parts) > 4 else ''))
+          else:
+            pending = parts[0]
+        print('## Test coverage details')
+        print()
+        print('<details><summary>Per-file coverage</summary>')
+        print()
+        print('| File | Lines | Exec | Cover | Missing |')
+        print('| --- | ---: | ---: | ---: | --- |')
+        for f, ln, ex, cov, miss in rows:
+          print(f'| `{f}` | {ln} | {ex} | {cov} | {miss} |')
+        print(f'| **TOTAL** | **{total_lines}** | **{total_exec}** | **{total_pct}%** | |')
+        print()
+        print('</details>')
+        print()
+        PY
+
         echo "## Test log" >> "$GITHUB_STEP_SUMMARY"
         echo "_File: \`$log\`_" >> "$GITHUB_STEP_SUMMARY"
         echo "" >> "$GITHUB_STEP_SUMMARY"
