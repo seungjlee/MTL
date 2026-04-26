@@ -24,6 +24,14 @@ import time
 import color
 from color import ColorString
 
+# On Windows the default console encoding (cp1252) cannot encode the Unicode
+# block characters used by the C++ progress bar. Reconfigure stdout to replace
+# unencodable characters instead of crashing the script.
+try:
+  sys.stdout.reconfigure(errors='replace')
+except AttributeError:
+  pass
+
 totalStartTime = time.time()
 
 parser = argparse.ArgumentParser(description='Run all tests or a subset of tests specified by a pattern.')
