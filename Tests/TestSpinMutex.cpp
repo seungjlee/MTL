@@ -27,10 +27,11 @@
 
 using namespace MTL;
 
-static const int Work = 4;
-static const int MAX_THREADS = 256;
-static int NumberOfThreads = 6;
-static int NumberOfIterations = 40000;
+constexpr int Work = 4;
+constexpr int MAX_THREADS = 256;
+
+static int NumberOfThreads = VALUE_DEBUG_RELEASE(4, 6);
+static int NumberOfIterations = VALUE_DEBUG_RELEASE(1000, 40000);
 static int64_t Counter = 0;
 static std::array<double, MAX_THREADS> LockTimes;
 

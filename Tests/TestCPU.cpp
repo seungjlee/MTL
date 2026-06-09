@@ -48,7 +48,7 @@ TEST(TestCPU)
 TEST(TestMemoryBandwitdh)
 {
   static const long kVectorSize = VALUE_DEBUG_RELEASE(2*1024*1024, 8*1024*1024);
-  static const long kTries = 8;
+  static const long kTries = VALUE_DEBUG_RELEASE(4, 8);
 
   Timer t;
   double bestTime;
@@ -245,7 +245,7 @@ TEST(TestStreamPerformance)
 {
   static const long kVectorSize = 32*1024;
   static const long kIterations = 1000;
-  static const long kTries = 20;
+  static const long kTries = VALUE_DEBUG_RELEASE(4, 20);
 
   Timer t;
   double bestTime;
