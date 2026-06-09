@@ -7,8 +7,10 @@ on:
     branches: [ "master" ]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
+  # Coverage is built in Debug (-O0) so gcov line/branch counters map cleanly
+  # to source. Debug also defines _DEBUG, so VALUE_DEBUG_RELEASE selects the
+  # smaller iteration counts, keeping multi-threaded tests fast under gcov.
+  BUILD_TYPE: Debug
   OMP_WAIT_POLICY: PASSIVE
   # gcov counters are atomic and serialize OpenMP threads under heavy
   # contention, so multi-threaded tests run *slower* with --coverage.
