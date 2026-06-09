@@ -173,6 +173,9 @@ public:
   MTL_INLINE X256(I32 val)         { Data_ = X256_SetPacked(val); }
   MTL_INLINE X256(const I32 *ptr)  { LoadPackedUnaligned(ptr); }
 
+  // Sign-extend eight 16-bit integers (X128<I16>) into eight 32-bit integers.
+  MTL_INLINE explicit X256(const X128<I16>& x)  { Data_ = _mm256_cvtepi16_epi32(x.Data()); }
+
   MTL_INLINE void Load(const I32* pSrc)   { LoadPackedUnaligned(pSrc);  }
   MTL_INLINE void Store(I32* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const I32* pSrc)
@@ -193,6 +196,9 @@ public:
   MTL_INLINE X256 operator>(const X256& y) const   { return _mm256_cmpgt_epi32(Data_, y.Data_);    }
   MTL_INLINE X256 operator+(const X256& y) const   { return _mm256_add_epi32(Data_, y.Data_);      }
   MTL_INLINE X256 operator-(const X256& y) const   { return _mm256_sub_epi32(Data_, y.Data_);      }
+  // Low 32-bits of the 32-bit products (wrap-around, matching _mm256_mullo_epi32).
+  MTL_INLINE X256 operator*(const X256& y) const   { return _mm256_mullo_epi32(Data_, y.Data_);    }
+  MTL_INLINE X256& operator*=(const X256& y)       { return *this = *this * y;                     }
   MTL_INLINE X256 operator&(const X256& y) const   { return _mm256_and_si256(Data_, y.Data_);      }
   MTL_INLINE X256 operator|(const X256& y) const   { return _mm256_or_si256(Data_, y.Data_);       }
   MTL_INLINE X256 operator^(const X256& y) const   { return _mm256_xor_si256(Data_, y.Data_);      }
@@ -330,6 +336,7 @@ public:
 
   MTL_INLINE static X256 Zeros()   { return kX256_ZerosI;  }
 
+  MTL_INLINE X256 operator==(const X256& y) const { return _mm256_cmpeq_epi64(Data_, y.Data_); }
   MTL_INLINE X256 operator+(const X256& y) const  { return _mm256_add_epi64(Data_, y.Data_); }
   MTL_INLINE X256 operator-(const X256& y) const  { return _mm256_sub_epi64(Data_, y.Data_); }
   MTL_INLINE X256 operator&(const X256& y) const  { return _mm256_and_si256(Data_, y.Data_); }
@@ -376,6 +383,12 @@ public:
                   F32 val4, F32 val5, F32 val6, F32 val7)
   { Set(val0, val1, val2, val3, val4, val5, val6, val7); }
   MTL_INLINE X256(const F32 *ptr)  { LoadPackedUnaligned(ptr);    }
+
+  // Combine two 128-bit halves (four floats each) and split back out.
+  MTL_INLINE X256(const X128<F32>& low, const X128<F32>& high)
+  { Data_ = _mm256_insertf128_ps(_mm256_castps128_ps256(low.Data()), high.Data(), 1); }
+  MTL_INLINE X128<F32> Lower128() const  { return _mm256_castps256_ps128(Data_);   }
+  MTL_INLINE X128<F32> Upper128() const  { return _mm256_extractf128_ps(Data_, 1); }
 
   MTL_INLINE void Set(F32 val)    { Data_ = X256_SetPacked(val); }
   MTL_INLINE void Set(F32 val0, F32 val1, F32 val2, F32 val3,
@@ -459,6 +472,10 @@ public:
   MTL_INLINE X128<I32> RoundedIntegers() const    { return X128<I32>(_mm256_cvtpd_epi32(Data_));  }
   MTL_INLINE X128<I32> TruncatedIntegers() const  { return X128<I32>(_mm256_cvttpd_epi32(Data_)); }
 
+  // Widen four single-precision floats to double precision, and narrow four doubles back to float.
+  MTL_INLINE explicit X256(const X128<F32>& x)    { Data_ = _mm256_cvtps_pd(x.Data());            }
+  MTL_INLINE X128<F32> ToSinglePrecision() const  { return _mm256_cvtpd_ps(Data_);                }
+
   MTL_INLINE static X256 Zeros()   { return kX256_ZerosF64;  }
   MTL_INLINE static X256 Ones()    { return kX256_OnesF64;   }
   MTL_INLINE static X256 Halves()  { return kX256_HalvesF64; }
@@ -527,6 +544,14 @@ template <> MTL_INLINE X256<I16> Max(const X256<I16>& a, const X256<I16>& b)
 {
   return _mm256_max_epi16(a.Data(), b.Data());
 }
+template <> MTL_INLINE X256<I32> Min(const X256<I32>& a, const X256<I32>& b)
+{
+  return _mm256_min_epi32(a.Data(), b.Data());
+}
+template <> MTL_INLINE X256<I32> Max(const X256<I32>& a, const X256<I32>& b)
+{
+  return _mm256_max_epi32(a.Data(), b.Data());
+}
 
 // Absolute value.
 MTL_INLINE X256<F64> Abs(const X256<F64>& a)
@@ -592,6 +617,19 @@ MTL_INLINE X256<double> Conditional(const X256<F64>& condition,
   return _mm256_or_pd(_mm256_and_pd(condition.Data(), a.Data()),
                       _mm256_andnot_pd(condition.Data(), b.Data()));;
 }
+
+// Reinterpret the bits of a register as another same-width type (no numeric conversion).
+MTL_INLINE X256<F64> ReinterpretAsF64(const X256<I64>& x)  { return _mm256_castsi256_pd(x.Data()); }
+MTL_INLINE X256<I64> ReinterpretAsI64(const X256<F64>& x)  { return _mm256_castpd_si256(x.Data()); }
+MTL_INLINE X256<F32> ReinterpretAsF32(const X256<I32>& x)  { return _mm256_castsi256_ps(x.Data()); }
+MTL_INLINE X256<I32> ReinterpretAsI32(const X256<F32>& x)  { return _mm256_castps_si256(x.Data()); }
+
+// NaN test: returns an all-ones mask in the lanes where the value is NaN (equivalent to x != x).
+MTL_INLINE X256<F64> IsNaN(const X256<F64>& a)  { return _mm256_cmp_pd(a.Data(), a.Data(), _CMP_UNORD_Q); }
+MTL_INLINE X256<F32> IsNaN(const X256<F32>& a)  { return _mm256_cmp_ps(a.Data(), a.Data(), _CMP_UNORD_Q); }
+
+// Zero-extend the low four unsigned bytes (X128<U8>) into four 64-bit integers.
+MTL_INLINE X256<I64> WidenLow4U8ToI64(const X128<U8>& x)  { return _mm256_cvtepu8_epi64(x.Data()); }
 
 // Permute values in registers.
 template<int PermutationBits>

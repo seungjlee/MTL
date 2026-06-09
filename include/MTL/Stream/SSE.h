@@ -33,6 +33,15 @@
 
 #include <emmintrin.h>
 
+// A few helpers below use SSE4.1 intrinsics. Enable them whenever SSE4.1 (or AVX, which implies
+// it) is available. MSVC exposes these intrinsics through <smmintrin.h> when /arch:AVX is set.
+#if defined(__SSE4_1__) || defined(__AVX__)
+#include <smmintrin.h>
+#define MTL_X128_SSE41 1
+#else
+#define MTL_X128_SSE41 0
+#endif
+
 namespace MTL
 {
 
@@ -182,6 +191,11 @@ public:
   MTL_INLINE X128(const I32 *ptr)  { LoadPackedUnaligned(ptr); }
   MTL_INLINE X128(I32 val3, I32 val2, I32 val1, I32 val0)  { Set(val3, val2, val1, val0); }
 
+#if MTL_X128_SSE41
+  // Sign-extend the low four 16-bit integers (X128<I16>) into four 32-bit integers.
+  MTL_INLINE explicit X128(const X128<I16>& x);
+#endif
+
   MTL_INLINE void Set(I32 val3, I32 val2, I32 val1, I32 val0)
   {
     Data_ = _mm_set_epi32(val3, val2, val1, val0);
@@ -207,6 +221,11 @@ public:
   MTL_INLINE X128 operator>(const X128& y) const   { return _mm_cmpgt_epi32(Data_, y.Data_);    }
   MTL_INLINE X128 operator+(const X128& y) const   { return _mm_add_epi32(Data_, y.Data_);      }
   MTL_INLINE X128 operator-(const X128& y) const   { return _mm_sub_epi32(Data_, y.Data_);      }
+#if MTL_X128_SSE41
+  // Low 32-bits of the 32-bit products (wrap-around, matching _mm_mullo_epi32).
+  MTL_INLINE X128 operator*(const X128& y) const   { return _mm_mullo_epi32(Data_, y.Data_);     }
+  MTL_INLINE X128& operator*=(const X128& y)       { return *this = *this * y;                   }
+#endif
   MTL_INLINE X128 operator&(const X128& y) const   { return _mm_and_si128(Data_, y.Data_);      }
   MTL_INLINE X128 operator|(const X128& y) const   { return _mm_or_si128(Data_, y.Data_);       }
   MTL_INLINE X128 operator^(const X128& y) const   { return _mm_xor_si128(Data_, y.Data_);      }
@@ -306,6 +325,10 @@ public:
   { Data_ = _mm_packs_epi32(lo.Data(), hi.Data()); }
 };
 
+#if MTL_X128_SSE41
+MTL_INLINE X128<I32>::X128(const X128<I16>& x)  { Data_ = _mm_cvtepi16_epi32(x.Data()); }
+#endif
+
 template<> class X128<U16> : public X128_Base<U16>
 {
 public:
@@ -357,6 +380,9 @@ public:
 
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosI;  }
 
+#if MTL_X128_SSE41
+  MTL_INLINE X128 operator==(const X128& y) const { return _mm_cmpeq_epi64(Data_, y.Data_); }
+#endif
   MTL_INLINE X128 operator+(const X128& y) const  { return _mm_add_epi64(Data_, y.Data_); }
   MTL_INLINE X128 operator-(const X128& y) const  { return _mm_sub_epi64(Data_, y.Data_); }
   MTL_INLINE X128 operator&(const X128& y) const  { return _mm_and_si128(Data_, y.Data_); }
@@ -492,6 +518,10 @@ public:
   MTL_INLINE X128<I32> RoundedIntegers() const    { return X128<I32>(_mm_cvtpd_epi32(Data_));  }
   MTL_INLINE X128<I32> TruncatedIntegers() const  { return X128<I32>(_mm_cvttpd_epi32(Data_)); }
 
+  // Widen the low two single-precision floats to double precision, and narrow two doubles to float.
+  MTL_INLINE explicit X128(const X128<F32>& x)    { Data_ = _mm_cvtps_pd(x.Data());            }
+  MTL_INLINE X128<F32> ToSinglePrecision() const  { return _mm_cvtpd_ps(Data_);                }
+
   MTL_INLINE static X128 Zeros()   { return kX128_ZerosF64;  }
   MTL_INLINE static X128 Ones()    { return kX128_OnesF64;   }
   MTL_INLINE static X128 Halves()  { return kX128_HalvesF64; }
@@ -559,6 +589,16 @@ template <> MTL_INLINE X128<I16> Max(const X128<I16>& a, const X128<I16>& b)
 {
   return _mm_max_epi16(a.Data(), b.Data());
 }
+#if MTL_X128_SSE41
+template <> MTL_INLINE X128<I32> Min(const X128<I32>& a, const X128<I32>& b)
+{
+  return _mm_min_epi32(a.Data(), b.Data());
+}
+template <> MTL_INLINE X128<I32> Max(const X128<I32>& a, const X128<I32>& b)
+{
+  return _mm_max_epi32(a.Data(), b.Data());
+}
+#endif
 
 // Absolute value.
 MTL_INLINE X128<F64> Abs(const X128<F64>& a)
@@ -624,6 +664,21 @@ MTL_INLINE X128<double> Conditional(const X128<F64>& condition,
   return _mm_or_pd(_mm_and_pd(condition.Data(), a.Data()),
                    _mm_andnot_pd(condition.Data(), b.Data()));;
 }
+
+// Reinterpret the bits of a register as another same-width type (no numeric conversion).
+MTL_INLINE X128<F64> ReinterpretAsF64(const X128<I64>& x)  { return _mm_castsi128_pd(x.Data()); }
+MTL_INLINE X128<I64> ReinterpretAsI64(const X128<F64>& x)  { return _mm_castpd_si128(x.Data()); }
+MTL_INLINE X128<F32> ReinterpretAsF32(const X128<I32>& x)  { return _mm_castsi128_ps(x.Data()); }
+MTL_INLINE X128<I32> ReinterpretAsI32(const X128<F32>& x)  { return _mm_castps_si128(x.Data()); }
+
+// NaN test: returns an all-ones mask in the lanes where the value is NaN (equivalent to x != x).
+MTL_INLINE X128<F64> IsNaN(const X128<F64>& a)  { return _mm_cmpunord_pd(a.Data(), a.Data()); }
+MTL_INLINE X128<F32> IsNaN(const X128<F32>& a)  { return _mm_cmpunord_ps(a.Data(), a.Data()); }
+
+#if MTL_X128_SSE41
+// Zero-extend the low two unsigned bytes (X128<U8>) into two 64-bit integers.
+MTL_INLINE X128<I64> WidenLow2U8ToI64(const X128<U8>& x)  { return _mm_cvtepu8_epi64(x.Data()); }
+#endif
 
 // Permute values in registers.
 template<int PermutationBits>

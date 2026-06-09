@@ -172,6 +172,9 @@ public:
   MTL_INLINE X512(I32 val)         { Data_ = X512_SetPacked(val); }
   MTL_INLINE X512(const I32 *ptr)  { LoadPackedUnaligned(ptr); }
 
+  // Sign-extend sixteen 16-bit integers (X256<I16>) into sixteen 32-bit integers.
+  MTL_INLINE explicit X512(const X256<I16>& x)  { Data_ = _mm512_cvtepi16_epi32(x.Data()); }
+
   MTL_INLINE void Load(const I32* pSrc)   { LoadPackedUnaligned(pSrc);  }
   MTL_INLINE void Store(I32* pDst) const  { StorePackedUnaligned(pDst); }
   MTL_INLINE void LoadPackedUnaligned(const I32* pSrc)
@@ -192,6 +195,9 @@ public:
   //MTL_INLINE X512 operator>(const X512& y) const   { return _mm512_cmpgt_epi32(Data_, y.Data_);    }
   MTL_INLINE X512 operator+(const X512& y) const   { return _mm512_add_epi32(Data_, y.Data_);      }
   MTL_INLINE X512 operator-(const X512& y) const   { return _mm512_sub_epi32(Data_, y.Data_);      }
+  // Low 32-bits of the 32-bit products (wrap-around, matching _mm512_mullo_epi32).
+  MTL_INLINE X512 operator*(const X512& y) const   { return _mm512_mullo_epi32(Data_, y.Data_);    }
+  MTL_INLINE X512& operator*=(const X512& y)       { return *this = *this * y;                     }
   MTL_INLINE X512 operator&(const X512& y) const   { return _mm512_and_si512(Data_, y.Data_);      }
   MTL_INLINE X512 operator|(const X512& y) const   { return _mm512_or_si512(Data_, y.Data_);       }
   MTL_INLINE X512 operator^(const X512& y) const   { return _mm512_xor_si512(Data_, y.Data_);      }
@@ -379,6 +385,12 @@ public:
   }
   MTL_INLINE X512(const F32 *ptr)  { LoadPackedUnaligned(ptr);    }
 
+  // Combine two 256-bit halves (eight floats each) and split back out.
+  MTL_INLINE X512(const X256<F32>& low, const X256<F32>& high)
+  { Data_ = _mm512_insertf32x8(_mm512_castps256_ps512(low.Data()), high.Data(), 1); }
+  MTL_INLINE X256<F32> Lower256() const  { return _mm512_castps512_ps256(Data_);    }
+  MTL_INLINE X256<F32> Upper256() const  { return _mm512_extractf32x8_ps(Data_, 1); }
+
   MTL_INLINE void Set(F32 val)    { Data_ = X512_SetPacked(val); }
   MTL_INLINE void Set(F32 val0, F32 val1, F32 val2, F32 val3,
                       F32 val4, F32 val5, F32 val6, F32 val7,
@@ -472,6 +484,10 @@ public:
   MTL_INLINE X256<I32> RoundedIntegers() const    { return X256<I32>(_mm512_cvtpd_epi32(Data_));  }
   MTL_INLINE X256<I32> TruncatedIntegers() const  { return X256<I32>(_mm512_cvttpd_epi32(Data_)); }
 
+  // Widen eight single-precision floats to double precision, and narrow eight doubles to float.
+  MTL_INLINE explicit X512(const X256<F32>& x)    { Data_ = _mm512_cvtps_pd(x.Data());            }
+  MTL_INLINE X256<F32> ToSinglePrecision() const  { return _mm512_cvtpd_ps(Data_);                }
+
   MTL_INLINE static X512 Zeros()   { return kX512_ZerosF64;  }
   MTL_INLINE static X512 Ones()    { return kX512_OnesF64;   }
   MTL_INLINE static X512 Halves()  { return kX512_HalvesF64; }
@@ -535,6 +551,14 @@ template <> MTL_INLINE X512<U8> Max(const X512<U8>& a, const X512<U8>& b)
 template <> MTL_INLINE X512<I16> Max(const X512<I16>& a, const X512<I16>& b)
 {
   return _mm512_max_epi16(a.Data(), b.Data());
+}
+template <> MTL_INLINE X512<I32> Min(const X512<I32>& a, const X512<I32>& b)
+{
+  return _mm512_min_epi32(a.Data(), b.Data());
+}
+template <> MTL_INLINE X512<I32> Max(const X512<I32>& a, const X512<I32>& b)
+{
+  return _mm512_max_epi32(a.Data(), b.Data());
 }
 
 // Absolute value.
@@ -601,6 +625,15 @@ MTL_INLINE X512<double> Conditional(const X512<F64>& condition,
   return _mm512_or_pd(_mm512_and_pd(condition.Data(), a.Data()),
                       _mm512_andnot_pd(condition.Data(), b.Data()));;
 }
+
+// Reinterpret the bits of a register as another same-width type (no numeric conversion).
+MTL_INLINE X512<F64> ReinterpretAsF64(const X512<I64>& x)  { return _mm512_castsi512_pd(x.Data()); }
+MTL_INLINE X512<I64> ReinterpretAsI64(const X512<F64>& x)  { return _mm512_castpd_si512(x.Data()); }
+MTL_INLINE X512<F32> ReinterpretAsF32(const X512<I32>& x)  { return _mm512_castsi512_ps(x.Data()); }
+MTL_INLINE X512<I32> ReinterpretAsI32(const X512<F32>& x)  { return _mm512_castps_si512(x.Data()); }
+
+// Zero-extend the low eight unsigned bytes (X128<U8>) into eight 64-bit integers.
+MTL_INLINE X512<I64> WidenLow8U8ToI64(const X128<U8>& x)  { return _mm512_cvtepu8_epi64(x.Data()); }
 
 // Permute values in registers.
 template<int PermutationBits>

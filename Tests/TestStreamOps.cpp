@@ -1671,3 +1671,390 @@ TEST(TestXX_Alias)
   }
 #endif
 }
+
+//
+// I32 multiply (low 32-bits of the products)
+//
+TEST(TestI32_Multiply)
+{
+#if MTL_ENABLE_SSE && MTL_X128_SSE41
+  {
+    MTL::X128<MTL::I32> a((MTL::I32)1000);
+    MTL::X128<MTL::I32> b((MTL::I32)1000);
+    MTL::X128<MTL::I32> prod = a * b;
+    for (int i = 0; i < MTL::X128<MTL::I32>::Increment; i++)
+      MTL_EQUAL(prod[i], 1000000);
+    a *= b;
+    for (int i = 0; i < MTL::X128<MTL::I32>::Increment; i++)
+      MTL_EQUAL(a[i], 1000000);
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::I32> a((MTL::I32)1000);
+    MTL::X256<MTL::I32> b((MTL::I32)1000);
+    MTL::X256<MTL::I32> prod = a * b;
+    for (int i = 0; i < MTL::X256<MTL::I32>::Increment; i++)
+      MTL_EQUAL(prod[i], 1000000);
+    a *= b;
+    for (int i = 0; i < MTL::X256<MTL::I32>::Increment; i++)
+      MTL_EQUAL(a[i], 1000000);
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X512<MTL::I32> a((MTL::I32)1000);
+    MTL::X512<MTL::I32> b((MTL::I32)1000);
+    MTL::X512<MTL::I32> prod = a * b;
+    for (int i = 0; i < MTL::X512<MTL::I32>::Increment; i++)
+      MTL_EQUAL(prod[i], 1000000);
+    a *= b;
+    for (int i = 0; i < MTL::X512<MTL::I32>::Increment; i++)
+      MTL_EQUAL(a[i], 1000000);
+  }
+#endif
+}
+
+//
+// Sign-extend 16-bit integers into 32-bit integers
+//
+TEST(TestI16ToI32_SignExtend)
+{
+#if MTL_ENABLE_SSE && MTL_X128_SSE41
+  {
+    MTL::X128<MTL::I16> src((MTL::I16)-7);
+    MTL::X128<MTL::I32> dst(src);
+    for (int i = 0; i < MTL::X128<MTL::I32>::Increment; i++)
+      MTL_EQUAL(dst[i], -7);
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X128<MTL::I16> src((MTL::I16)-7);
+    MTL::X256<MTL::I32> dst(src);
+    for (int i = 0; i < MTL::X256<MTL::I32>::Increment; i++)
+      MTL_EQUAL(dst[i], -7);
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X256<MTL::I16> src((MTL::I16)-7);
+    MTL::X512<MTL::I32> dst(src);
+    for (int i = 0; i < MTL::X512<MTL::I32>::Increment; i++)
+      MTL_EQUAL(dst[i], -7);
+  }
+#endif
+}
+
+//
+// Combine and split half-width float registers (AVX: 128-bit halves, AVX512: 256-bit halves)
+//
+TEST(TestF32_HalfCombine)
+{
+#if MTL_ENABLE_AVX
+  {
+    MTL::X128<MTL::F32> low(2.0f);
+    MTL::X128<MTL::F32> high(5.0f);
+    MTL::X256<MTL::F32> combined(low, high);
+    for (int i = 0; i < 4; i++)
+      MTL_EQUAL(combined[i], 2.0f);
+    for (int i = 4; i < 8; i++)
+      MTL_EQUAL(combined[i], 5.0f);
+    MTL::X128<MTL::F32> lower = combined.Lower128();
+    MTL::X128<MTL::F32> upper = combined.Upper128();
+    for (int i = 0; i < 4; i++)
+    {
+      MTL_EQUAL(lower[i], 2.0f);
+      MTL_EQUAL(upper[i], 5.0f);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X256<MTL::F32> low(2.0f);
+    MTL::X256<MTL::F32> high(5.0f);
+    MTL::X512<MTL::F32> combined(low, high);
+    for (int i = 0; i < 8; i++)
+      MTL_EQUAL(combined[i], 2.0f);
+    for (int i = 8; i < 16; i++)
+      MTL_EQUAL(combined[i], 5.0f);
+    MTL::X256<MTL::F32> lower = combined.Lower256();
+    MTL::X256<MTL::F32> upper = combined.Upper256();
+    for (int i = 0; i < 8; i++)
+    {
+      MTL_EQUAL(lower[i], 2.0f);
+      MTL_EQUAL(upper[i], 5.0f);
+    }
+  }
+#endif
+}
+
+//
+// Widen floats to doubles and narrow doubles back to floats
+//
+TEST(TestF32F64_Conversion)
+{
+#if MTL_ENABLE_SSE
+  {
+    MTL::X128<MTL::F32> f(3.5f);
+    MTL::X128<MTL::F64> d(f);
+    for (int i = 0; i < MTL::X128<MTL::F64>::Increment; i++)
+      MTL_EQUAL(d[i], 3.5);
+    MTL::X128<MTL::F32> back = d.ToSinglePrecision();
+    for (int i = 0; i < MTL::X128<MTL::F64>::Increment; i++)
+      MTL_EQUAL(back[i], 3.5f);
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X128<MTL::F32> f(3.5f);
+    MTL::X256<MTL::F64> d(f);
+    for (int i = 0; i < MTL::X256<MTL::F64>::Increment; i++)
+      MTL_EQUAL(d[i], 3.5);
+    MTL::X128<MTL::F32> back = d.ToSinglePrecision();
+    for (int i = 0; i < MTL::X256<MTL::F64>::Increment; i++)
+      MTL_EQUAL(back[i], 3.5f);
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X256<MTL::F32> f(3.5f);
+    MTL::X512<MTL::F64> d(f);
+    for (int i = 0; i < MTL::X512<MTL::F64>::Increment; i++)
+      MTL_EQUAL(d[i], 3.5);
+    MTL::X256<MTL::F32> back = d.ToSinglePrecision();
+    for (int i = 0; i < MTL::X512<MTL::F64>::Increment; i++)
+      MTL_EQUAL(back[i], 3.5f);
+  }
+#endif
+}
+
+//
+// Signed 32-bit integer Min / Max
+//
+TEST(TestMinMax_I32)
+{
+#if MTL_ENABLE_SSE && MTL_X128_SSE41
+  {
+    MTL::X128<MTL::I32> a((MTL::I32)-5);
+    MTL::X128<MTL::I32> b((MTL::I32)5);
+    MTL::X128<MTL::I32> mn = MTL::Min(a, b);
+    MTL::X128<MTL::I32> mx = MTL::Max(a, b);
+    for (int i = 0; i < MTL::X128<MTL::I32>::Increment; i++)
+    {
+      MTL_EQUAL(mn[i], -5);
+      MTL_EQUAL(mx[i], 5);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::I32> a((MTL::I32)-5);
+    MTL::X256<MTL::I32> b((MTL::I32)5);
+    MTL::X256<MTL::I32> mn = MTL::Min(a, b);
+    MTL::X256<MTL::I32> mx = MTL::Max(a, b);
+    for (int i = 0; i < MTL::X256<MTL::I32>::Increment; i++)
+    {
+      MTL_EQUAL(mn[i], -5);
+      MTL_EQUAL(mx[i], 5);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X512<MTL::I32> a((MTL::I32)-5);
+    MTL::X512<MTL::I32> b((MTL::I32)5);
+    MTL::X512<MTL::I32> mn = MTL::Min(a, b);
+    MTL::X512<MTL::I32> mx = MTL::Max(a, b);
+    for (int i = 0; i < MTL::X512<MTL::I32>::Increment; i++)
+    {
+      MTL_EQUAL(mn[i], -5);
+      MTL_EQUAL(mx[i], 5);
+    }
+  }
+#endif
+}
+
+//
+// Bitwise reinterpretation between float and integer registers
+//
+TEST(TestReinterpret)
+{
+#if MTL_ENABLE_SSE
+  {
+    MTL::X128<MTL::F32> a(1.0f);
+    MTL::X128<MTL::I32> bits = MTL::ReinterpretAsI32(a);
+    for (int i = 0; i < MTL::X128<MTL::I32>::Increment; i++)
+      MTL_EQUAL(bits[i], (MTL::I32)0x3F800000);
+    MTL::X128<MTL::F32> back = MTL::ReinterpretAsF32(bits);
+    for (int i = 0; i < MTL::X128<MTL::F32>::Increment; i++)
+      MTL_EQUAL(back[i], 1.0f);
+  }
+  {
+    MTL::X128<MTL::F64> a(1.0);
+    MTL::X128<MTL::I64> bits = MTL::ReinterpretAsI64(a);
+    for (int i = 0; i < MTL::X128<MTL::I64>::Increment; i++)
+      MTL_EQUAL(bits[i], (MTL::I64)0x3FF0000000000000LL);
+    MTL::X128<MTL::F64> back = MTL::ReinterpretAsF64(bits);
+    for (int i = 0; i < MTL::X128<MTL::F64>::Increment; i++)
+      MTL_EQUAL(back[i], 1.0);
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::F32> a(1.0f);
+    MTL::X256<MTL::I32> bits = MTL::ReinterpretAsI32(a);
+    for (int i = 0; i < MTL::X256<MTL::I32>::Increment; i++)
+      MTL_EQUAL(bits[i], (MTL::I32)0x3F800000);
+    MTL::X256<MTL::F32> back = MTL::ReinterpretAsF32(bits);
+    for (int i = 0; i < MTL::X256<MTL::F32>::Increment; i++)
+      MTL_EQUAL(back[i], 1.0f);
+  }
+  {
+    MTL::X256<MTL::F64> a(1.0);
+    MTL::X256<MTL::I64> bits = MTL::ReinterpretAsI64(a);
+    for (int i = 0; i < MTL::X256<MTL::I64>::Increment; i++)
+      MTL_EQUAL(bits[i], (MTL::I64)0x3FF0000000000000LL);
+    MTL::X256<MTL::F64> back = MTL::ReinterpretAsF64(bits);
+    for (int i = 0; i < MTL::X256<MTL::F64>::Increment; i++)
+      MTL_EQUAL(back[i], 1.0);
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X512<MTL::F32> a(1.0f);
+    MTL::X512<MTL::I32> bits = MTL::ReinterpretAsI32(a);
+    for (int i = 0; i < MTL::X512<MTL::I32>::Increment; i++)
+      MTL_EQUAL(bits[i], (MTL::I32)0x3F800000);
+    MTL::X512<MTL::F32> back = MTL::ReinterpretAsF32(bits);
+    for (int i = 0; i < MTL::X512<MTL::F32>::Increment; i++)
+      MTL_EQUAL(back[i], 1.0f);
+  }
+  {
+    MTL::X512<MTL::F64> a(1.0);
+    MTL::X512<MTL::I64> bits = MTL::ReinterpretAsI64(a);
+    for (int i = 0; i < MTL::X512<MTL::I64>::Increment; i++)
+      MTL_EQUAL(bits[i], (MTL::I64)0x3FF0000000000000LL);
+    MTL::X512<MTL::F64> back = MTL::ReinterpretAsF64(bits);
+    for (int i = 0; i < MTL::X512<MTL::F64>::Increment; i++)
+      MTL_EQUAL(back[i], 1.0);
+  }
+#endif
+}
+
+//
+// IsNaN (AVX512 returns mask types, so it is not covered there)
+//
+TEST(TestIsNaN)
+{
+#if MTL_ENABLE_SSE
+  {
+    MTL::X128<MTL::F32> zero(0.0f);
+    MTL::X128<MTL::F32> isNan = MTL::IsNaN(zero / zero);
+    MTL::X128<MTL::F32> notNan = MTL::IsNaN(MTL::X128<MTL::F32>(1.0f));
+    for (int i = 0; i < MTL::X128<MTL::F32>::Increment; i++)
+    {
+      MTL_VERIFY(isNan[i] != 0.0f);
+      MTL_EQUAL(notNan[i], 0.0f);
+    }
+  }
+  {
+    MTL::X128<MTL::F64> zero(0.0);
+    MTL::X128<MTL::F64> isNan = MTL::IsNaN(zero / zero);
+    MTL::X128<MTL::F64> notNan = MTL::IsNaN(MTL::X128<MTL::F64>(1.0));
+    for (int i = 0; i < MTL::X128<MTL::F64>::Increment; i++)
+    {
+      MTL_VERIFY(isNan[i] != 0.0);
+      MTL_EQUAL(notNan[i], 0.0);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::F32> zero(0.0f);
+    MTL::X256<MTL::F32> isNan = MTL::IsNaN(zero / zero);
+    MTL::X256<MTL::F32> notNan = MTL::IsNaN(MTL::X256<MTL::F32>(1.0f));
+    for (int i = 0; i < MTL::X256<MTL::F32>::Increment; i++)
+    {
+      MTL_VERIFY(isNan[i] != 0.0f);
+      MTL_EQUAL(notNan[i], 0.0f);
+    }
+  }
+  {
+    MTL::X256<MTL::F64> zero(0.0);
+    MTL::X256<MTL::F64> isNan = MTL::IsNaN(zero / zero);
+    MTL::X256<MTL::F64> notNan = MTL::IsNaN(MTL::X256<MTL::F64>(1.0));
+    for (int i = 0; i < MTL::X256<MTL::F64>::Increment; i++)
+    {
+      MTL_VERIFY(isNan[i] != 0.0);
+      MTL_EQUAL(notNan[i], 0.0);
+    }
+  }
+#endif
+}
+
+//
+// I64 equality (AVX512 returns mask types, so it is not covered there)
+//
+TEST(TestI64_Equal)
+{
+#if MTL_ENABLE_SSE && MTL_X128_SSE41
+  {
+    MTL::X128<MTL::I64> a((MTL::I64)123456789);
+    MTL::X128<MTL::I64> b((MTL::I64)123456789);
+    MTL::X128<MTL::I64> c((MTL::I64)987654321);
+    MTL::X128<MTL::I64> eq = a == b;
+    MTL::X128<MTL::I64> neq = a == c;
+    for (int i = 0; i < MTL::X128<MTL::I64>::Increment; i++)
+    {
+      MTL_EQUAL(eq[i], (MTL::I64)-1);
+      MTL_EQUAL(neq[i], (MTL::I64)0);
+    }
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X256<MTL::I64> a((MTL::I64)123456789);
+    MTL::X256<MTL::I64> b((MTL::I64)123456789);
+    MTL::X256<MTL::I64> c((MTL::I64)987654321);
+    MTL::X256<MTL::I64> eq = a == b;
+    MTL::X256<MTL::I64> neq = a == c;
+    for (int i = 0; i < MTL::X256<MTL::I64>::Increment; i++)
+    {
+      MTL_EQUAL(eq[i], (MTL::I64)-1);
+      MTL_EQUAL(neq[i], (MTL::I64)0);
+    }
+  }
+#endif
+}
+
+//
+// Zero-extend unsigned bytes into 64-bit integers
+//
+TEST(TestWidenU8ToI64)
+{
+#if MTL_ENABLE_SSE && MTL_X128_SSE41
+  {
+    MTL::X128<MTL::U8> a((MTL::U8)200);
+    MTL::X128<MTL::I64> w = MTL::WidenLow2U8ToI64(a);
+    for (int i = 0; i < MTL::X128<MTL::I64>::Increment; i++)
+      MTL_EQUAL(w[i], (MTL::I64)200);
+  }
+#endif
+#if MTL_ENABLE_AVX
+  {
+    MTL::X128<MTL::U8> a((MTL::U8)200);
+    MTL::X256<MTL::I64> w = MTL::WidenLow4U8ToI64(a);
+    for (int i = 0; i < MTL::X256<MTL::I64>::Increment; i++)
+      MTL_EQUAL(w[i], (MTL::I64)200);
+  }
+#endif
+#if MTL_ENABLE_AVX512
+  {
+    MTL::X128<MTL::U8> a((MTL::U8)200);
+    MTL::X512<MTL::I64> w = MTL::WidenLow8U8ToI64(a);
+    for (int i = 0; i < MTL::X512<MTL::I64>::Increment; i++)
+      MTL_EQUAL(w[i], (MTL::I64)200);
+  }
+#endif
+}
