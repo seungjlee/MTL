@@ -64,6 +64,10 @@ namespace MTL
 // Exceptions thrown by a slot propagate to the emitter; remaining slots are not invoked
 // for that emission.
 //
+// Portability note: Qt's headers #define the unreserved identifiers "signals", "slots",
+// "emit" and "foreach" as macros unless QT_NO_KEYWORDS is defined. This header avoids
+// those names so that it can be included from a Qt translation unit.
+//
 
 namespace SignalImplementation
 {
@@ -244,10 +248,7 @@ public:
   // Disconnects every slot with the same blocking guarantee as SignalConnection::Disconnect.
   void DisconnectAll()
   {
-    // Note: identifiers named "slots", "signals" or "emit" must not be used in this
-    // header - Qt defines them as macros, which would break any Qt translation unit
-    // that includes it.
-    std::vector<std::shared_ptr<Entry>> allSlots;
+    std::vector<std::shared_ptr<Entry>> allSlots;  // Not "slots": see the portability note above.
     {
       std::lock_guard<std::mutex> lock(Mutex_);
       allSlots.swap(Slots_);

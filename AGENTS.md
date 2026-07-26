@@ -47,6 +47,23 @@ Each `Tests/Test*.cpp` compiles to a separate executable. Tests are auto-discove
 - Every source file starts with the BSD 2-Clause license header.
 - Wide strings (`std::wstring`, `wchar_t`) are used throughout the library.
 
+## Consumer portability
+
+MTL is header-only, so its headers get pulled into translation units the library
+has no control over. Avoid identifiers that common frameworks claim as macros:
+
+- **Qt** `#define`s `signals`, `slots`, `emit` and `foreach` unless the consumer
+  defines `QT_NO_KEYWORDS`. These are ordinary unreserved identifiers, so the
+  collision is Qt's doing — but a local variable named `slots` still breaks every
+  Qt translation unit that includes the header. `Tools/Signal.h` hit this.
+- **Windows headers** `#define` `min`, `max`, `near`, `far` and `interface`
+  unless `NOMINMAX` / `WIN32_LEAN_AND_MEAN` are set.
+
+When a header is likely to be included from such a translation unit, guard the
+constraint with a test: define the offending macros before the `#include` in the
+corresponding `Tests/Test*.cpp` so a regression fails to compile. See
+`Tests/TestSignal.cpp` for the pattern.
+
 ## Performance trade-offs
 
 - Some class members are intentionally left uninitialized (e.g. raw numeric
