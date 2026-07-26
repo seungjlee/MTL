@@ -2,6 +2,7 @@
 #region pylint disables
 # pylint: disable=bad-indentation
 # pylint: disable=invalid-name
+# pylint: disable=missing-function-docstring
 # pylint: disable=missing-module-docstring
 # pylint: disable=consider-using-f-string
 # pylint: disable=consider-using-enumerate
