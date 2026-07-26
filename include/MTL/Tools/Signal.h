@@ -244,12 +244,15 @@ public:
   // Disconnects every slot with the same blocking guarantee as SignalConnection::Disconnect.
   void DisconnectAll()
   {
-    std::vector<std::shared_ptr<Entry>> slots;
+    // Note: identifiers named "slots", "signals" or "emit" must not be used in this
+    // header - Qt defines them as macros, which would break any Qt translation unit
+    // that includes it.
+    std::vector<std::shared_ptr<Entry>> allSlots;
     {
       std::lock_guard<std::mutex> lock(Mutex_);
-      slots.swap(Slots_);
+      allSlots.swap(Slots_);
     }
-    for (const auto& entry : slots)
+    for (const auto& entry : allSlots)
       entry->Control.Disconnect();
   }
 

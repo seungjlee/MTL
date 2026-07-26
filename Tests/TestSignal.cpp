@@ -24,8 +24,18 @@
 
 #include <MTL/Macros.h>
 #include <MTL/Tools/Event.h>
-#include <MTL/Tools/Signal.h>
 #include <MTL/Tools/Test.h>
+
+// Qt defines "signals", "slots" and "emit" as preprocessor macros. Any header used by a
+// Qt translation unit must avoid those identifiers entirely. Define them the way Qt does
+// before including Signal.h so that a regression is a compile error in this test.
+#define signals public
+#define slots
+#define emit
+#include <MTL/Tools/Signal.h>
+#undef signals
+#undef slots
+#undef emit
 
 #include <atomic>
 #include <string>
