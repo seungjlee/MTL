@@ -25,6 +25,9 @@
 #include <MTL/Tools/Test.h>
 #include <MTL/Stream/StreamArray.h>
 
+#include <cmath>
+#include <limits>
+
 TEST(TestShuffle)
 {
 #if MTL_ENABLE_SSE
@@ -72,5 +75,121 @@ TEST(TestToFloat)
     MTL_EQUAL(v32[i], (MTL::F32)u[i]);
     MTL_EQUAL(v64[i], (MTL::F64)u[i]);
   }
+#endif
+}
+
+#if MTL_ENABLE_SSE || MTL_ENABLE_AVX || MTL_ENABLE_AVX512
+#define MTL_TEST_FLOOR_CEIL 1
+#else
+#define MTL_TEST_FLOOR_CEIL 0
+#endif
+
+#if MTL_TEST_FLOOR_CEIL
+// Values that cover fractions of both signs, exact integers, signed zeros, magnitudes at and past
+// the point where every representable value is already an integer, and the non-finite inputs. The
+// count is a multiple of 16 so it tiles evenly for every register width and element size.
+template <class T> static std::vector<T> FloorCeilTestValues()
+{
+  const T kInfinity = std::numeric_limits<T>::infinity();
+  const T kNaN      = std::numeric_limits<T>::quiet_NaN();
+
+  return std::vector<T>
+  {
+    T( 0.0),        T(-0.0),        T( 1.0),        T(-1.0),
+    T( 0.25),       T(-0.25),       T( 0.5),        T(-0.5),
+    T( 0.75),       T(-0.75),       T( 1.5),        T(-1.5),
+    T( 2.5),        T(-2.5),        T( 3.75),       T(-3.75),
+    T( 100.5),      T(-100.5),      T( 1000000.5),  T(-1000000.5),
+    T( 8388607.5),  T(-8388607.5),  T( 8388608.0),  T(-8388608.0),
+    T( 4.0),        T(-4.0),        T( 1e30),       T(-1e30),
+    kInfinity,      -kInfinity,     kNaN,           -kNaN
+  };
+}
+
+template <class T> static void CheckFloorCeil(T actualFloor, T actualCeil, T input)
+{
+  if (std::isnan(input))
+  {
+    MTL_VERIFY(std::isnan(actualFloor));
+    MTL_VERIFY(std::isnan(actualCeil));
+    return;
+  }
+
+  const T expectedFloor = std::floor(input);
+  const T expectedCeil  = std::ceil(input);
+
+  MTL_EQUAL(actualFloor, expectedFloor);
+  MTL_EQUAL(actualCeil, expectedCeil);
+
+  // Zeros compare equal regardless of sign so the sign bit needs its own check. Rounding never
+  // creates a zero out of a non-zero input, so this also confirms floor(-0.5) is -0 and not +0.
+  MTL_EQUAL(std::signbit(actualFloor), std::signbit(expectedFloor));
+  MTL_EQUAL(std::signbit(actualCeil), std::signbit(expectedCeil));
+}
+
+template <class XT, class T> static void TestFloorCeilRegister(const std::vector<T>& values)
+{
+  const MTL::SizeType increment = XT::Increment;
+
+  for (MTL::SizeType offset = 0; offset + increment <= values.size(); offset += increment)
+  {
+    XT x(&values[offset]);
+    XT xFloor = MTL::Floor(x);
+    XT xCeil  = MTL::Ceil(x);
+
+    for (MTL::SizeType k = 0; k < increment; k++)
+      CheckFloorCeil<T>(xFloor[k], xCeil[k], values[offset + k]);
+  }
+}
+#endif  // MTL_TEST_FLOOR_CEIL
+
+TEST(TestFloorAndCeil)
+{
+#if MTL_TEST_FLOOR_CEIL
+  std::vector<MTL::F32> values32 = FloorCeilTestValues<MTL::F32>();
+  std::vector<MTL::F64> values64 = FloorCeilTestValues<MTL::F64>();
+
+  TestFloorCeilRegister< MTL::X128<MTL::F32> >(values32);
+  TestFloorCeilRegister< MTL::X128<MTL::F64> >(values64);
+
+#if MTL_ENABLE_AVX || MTL_ENABLE_AVX512
+  TestFloorCeilRegister< MTL::X256<MTL::F32> >(values32);
+  TestFloorCeilRegister< MTL::X256<MTL::F64> >(values64);
+#endif
+
+#if MTL_ENABLE_AVX512
+  TestFloorCeilRegister< MTL::X512<MTL::F32> >(values32);
+  TestFloorCeilRegister< MTL::X512<MTL::F64> >(values64);
+#endif
+
+  // The XX alias resolves to the widest enabled register, which is what generic stream code uses.
+  TestFloorCeilRegister< MTL::XX<MTL::F32> >(values32);
+  TestFloorCeilRegister< MTL::XX<MTL::F64> >(values64);
+#endif
+}
+
+TEST(TestFloorAndCeilLanes)
+{
+#if MTL_TEST_FLOOR_CEIL
+  // Each lane is rounded independently: check a hand-written set of four values in a known order.
+  MTL::X128<MTL::F32> x(-1.5f, -0.5f, 0.5f, 1.5f);
+
+  MTL::X128<MTL::F32> xFloor = MTL::Floor(x);
+  MTL_EQUAL(xFloor[0], -2.f);
+  MTL_EQUAL(xFloor[1], -1.f);
+  MTL_EQUAL(xFloor[2],  0.f);
+  MTL_EQUAL(xFloor[3],  1.f);
+
+  MTL::X128<MTL::F32> xCeil = MTL::Ceil(x);
+  MTL_EQUAL(xCeil[0], -1.f);
+  MTL_EQUAL(xCeil[1], -0.f);
+  MTL_EQUAL(xCeil[2],  1.f);
+  MTL_EQUAL(xCeil[3],  2.f);
+
+  MTL::X128<MTL::F64> y(-2.25, 2.25);
+  MTL_EQUAL(MTL::Floor(y)[0], -3.0);
+  MTL_EQUAL(MTL::Floor(y)[1],  2.0);
+  MTL_EQUAL(MTL::Ceil(y)[0],  -2.0);
+  MTL_EQUAL(MTL::Ceil(y)[1],   3.0);
 #endif
 }

@@ -665,6 +665,59 @@ MTL_INLINE X128<double> Conditional(const X128<F64>& condition,
                    _mm_andnot_pd(condition.Data(), b.Data()));;
 }
 
+// Round each value toward negative infinity (Floor) or positive infinity (Ceil). These keep the
+// sign of zeros and pass infinities and NaNs through, matching std::floor()/std::ceil().
+#if MTL_X128_SSE41
+MTL_INLINE X128<F64> Floor(const X128<F64>& a)  { return _mm_floor_pd(a.Data()); }
+MTL_INLINE X128<F32> Floor(const X128<F32>& a)  { return _mm_floor_ps(a.Data()); }
+MTL_INLINE X128<F64> Ceil (const X128<F64>& a)  { return _mm_ceil_pd(a.Data());  }
+MTL_INLINE X128<F32> Ceil (const X128<F32>& a)  { return _mm_ceil_ps(a.Data());  }
+#else
+// Without SSE4.1 there is no rounding instruction, so these round the magnitude by adding and then
+// subtracting the smallest value that has no fractional part (2^23 for F32 and 2^52 for F64). The
+// result of that lands within one of the input for any rounding mode, and the compare below fixes
+// up the direction. Values at or above the constant, along with the infinities and the NaNs, have
+// no fractional part to remove and are returned unchanged.
+static const __m128  kX128_NoFractionF32 = X128_SetPacked(8388608.0f);
+static const __m128d kX128_NoFractionF64 = X128_SetPacked(4503599627370496.0);
+
+// Rounding never turns a negative input into a positive result or the other way around, so the
+// sign is restored by ORing it back in. It has to be restored again after the fix up step because
+// adding zero to a negative zero produces a positive zero.
+MTL_INLINE X128<F64> Floor(const X128<F64>& a)
+{
+  X128<F64> magnitude = Abs(a);
+  X128<F64> sign = a & kX128_SignF64;
+  X128<F64> rounded = ((magnitude + kX128_NoFractionF64) - kX128_NoFractionF64) | sign;
+  rounded = (rounded - (X128<F64>::Ones() & (rounded > a))) | sign;
+  return Conditional(magnitude < kX128_NoFractionF64, rounded, a);
+}
+MTL_INLINE X128<F32> Floor(const X128<F32>& a)
+{
+  X128<F32> magnitude = Abs(a);
+  X128<F32> sign = a & kX128_SignF32;
+  X128<F32> rounded = ((magnitude + kX128_NoFractionF32) - kX128_NoFractionF32) | sign;
+  rounded = (rounded - (X128<F32>::Ones() & (rounded > a))) | sign;
+  return Conditional(magnitude < kX128_NoFractionF32, rounded, a);
+}
+MTL_INLINE X128<F64> Ceil(const X128<F64>& a)
+{
+  X128<F64> magnitude = Abs(a);
+  X128<F64> sign = a & kX128_SignF64;
+  X128<F64> rounded = ((magnitude + kX128_NoFractionF64) - kX128_NoFractionF64) | sign;
+  rounded = (rounded + (X128<F64>::Ones() & (rounded < a))) | sign;
+  return Conditional(magnitude < kX128_NoFractionF64, rounded, a);
+}
+MTL_INLINE X128<F32> Ceil(const X128<F32>& a)
+{
+  X128<F32> magnitude = Abs(a);
+  X128<F32> sign = a & kX128_SignF32;
+  X128<F32> rounded = ((magnitude + kX128_NoFractionF32) - kX128_NoFractionF32) | sign;
+  rounded = (rounded + (X128<F32>::Ones() & (rounded < a))) | sign;
+  return Conditional(magnitude < kX128_NoFractionF32, rounded, a);
+}
+#endif
+
 // Reinterpret the bits of a register as another same-width type (no numeric conversion).
 MTL_INLINE X128<F64> ReinterpretAsF64(const X128<I64>& x)  { return _mm_castsi128_pd(x.Data()); }
 MTL_INLINE X128<I64> ReinterpretAsI64(const X128<F64>& x)  { return _mm_castpd_si128(x.Data()); }

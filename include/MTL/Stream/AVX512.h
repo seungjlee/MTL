@@ -571,6 +571,19 @@ MTL_INLINE X512<F32> Abs(const X512<F32>& a)
   return a & kX512_NoSignF32;
 }
 
+// Round each value toward negative infinity (Floor) or positive infinity (Ceil). These keep the
+// sign of zeros and pass NaNs and infinities through unchanged, matching std::floor/std::ceil.
+// AVX512 has no dedicated floor/ceil instruction so these use roundscale with the precision
+// exception suppressed, which is what _mm256_floor_pd/_mm256_ceil_pd do on the 256-bit side.
+MTL_INLINE X512<F64> Floor(const X512<F64>& a)
+{ return _mm512_roundscale_pd(a.Data(), _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC); }
+MTL_INLINE X512<F32> Floor(const X512<F32>& a)
+{ return _mm512_roundscale_ps(a.Data(), _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC); }
+MTL_INLINE X512<F64> Ceil (const X512<F64>& a)
+{ return _mm512_roundscale_pd(a.Data(), _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC); }
+MTL_INLINE X512<F32> Ceil (const X512<F32>& a)
+{ return _mm512_roundscale_ps(a.Data(), _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC); }
+
 template <> MTL_INLINE
 X512<F64> MultiplyAndAdd(const X512<F64>& a, const X512<F64>& b, const X512<F64>& c)
 {

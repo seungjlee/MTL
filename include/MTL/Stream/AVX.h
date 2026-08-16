@@ -563,6 +563,13 @@ MTL_INLINE X256<F32> Abs(const X256<F32>& a)
   return a & kX256_NoSignF32;
 }
 
+// Round each value toward negative infinity (Floor) or positive infinity (Ceil). These keep the
+// sign of zeros and pass NaNs and infinities through unchanged, matching std::floor/std::ceil.
+MTL_INLINE X256<F64> Floor(const X256<F64>& a)  { return _mm256_floor_pd(a.Data()); }
+MTL_INLINE X256<F32> Floor(const X256<F32>& a)  { return _mm256_floor_ps(a.Data()); }
+MTL_INLINE X256<F64> Ceil (const X256<F64>& a)  { return _mm256_ceil_pd(a.Data());  }
+MTL_INLINE X256<F32> Ceil (const X256<F32>& a)  { return _mm256_ceil_ps(a.Data());  }
+
 template <> MTL_INLINE
 X256<F64> MultiplyAndAdd(const X256<F64>& a, const X256<F64>& b, const X256<F64>& c)
 {
