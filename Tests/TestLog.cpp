@@ -142,7 +142,7 @@ TEST(TestLogMultithreaded)
   std::vector<std::thread> threads;
   for (int t = 0; t < kThreads; t++)
   {
-    threads.emplace_back([t]()
+    threads.emplace_back([t, kMessagesPerThread]()
     {
       for (int i = 0; i < kMessagesPerThread; i++)
         MTL_LOG(Info) << "Worker " << t << " message " << i << " end.";
